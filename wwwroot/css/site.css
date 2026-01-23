@@ -1,0 +1,200 @@
+body {
+    margin: 0;
+    font-family: 'Montserrat',sans-serif;
+    background: #f4f6f9;
+}
+
+.dashboard {
+    padding: 20px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.badge-count {
+    background: #0f1445;
+}
+
+.table thead {
+    background: #0f1445;
+    color: #fff;
+}
+
+.search-box {
+    max-width: 250px;
+}
+
+/* HEADER */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 20px;
+    background: #ff3399;
+    color: #fff;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    border-bottom: 3px double #f78812;
+}
+
+.logo {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    border-bottom: 3px double #fff;
+    padding-bottom: 2px;
+}
+
+.user-area {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.logout {
+    background: #f78812;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+/* LAYOUT */
+.container {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    height: calc(100vh - 60px);
+    width: 100vw;
+    max-width: 100vw;
+    margin: 0;
+}
+
+/* LEFT PANEL */
+.left-panel {
+    background: #fff;
+    padding: 15px;
+    border-right: 1px solid #ddd;
+    height: 100%;
+    min-width: 320px;
+    max-width: 100vw;
+}
+
+    .left-panel label {
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    .left-panel input {
+        width: 100%;
+        margin-bottom: 12px;
+        padding: 6px;
+    }
+
+/* RIGHT PANEL */
+.right-panel {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.tabs {
+    display: flex;
+    gap: 10px;
+    padding: 10px;
+    background: #fff;
+    border-bottom: 1px solid #ddd;
+}
+
+.tab {
+    padding: 6px 14px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 14px;
+    background: #f4f6f9;
+}
+
+    .tab.active {
+        background: #0f1445;
+        color: #fff;
+    }
+
+.card {
+    background: #fff;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 12px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeSlide 0.4s ease forwards;
+    width: 100%;
+}
+
+@keyframes fadeSlide {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.right-panel.full-width {
+    margin-left: 0 !important;
+    width: 100vw !important;
+    max-width: 100vw !important;
+    box-sizing: border-box;
+}
+
+.tabs.full-width {
+    margin-left: 0 !important;
+    padding-left: 0 !important;
+}
+
+/* Wizard pages (hidden by default) */
+.tabs {
+    position: relative;
+    z-index: 60;
+}
+/* keep tabs on top so they remain clickable */
+.page {
+    display: none; /* hidden until activated */
+    position: relative;
+    z-index: 10;
+}
+/* wizard pages sit under tabs */
+.right-panel.wizard-active .tabs {
+    z-index: 120;
+}
+/* ensure tabs remain above when wizard active */
+.page.active {
+    display: block;
+}
+
+.page .card {
+    box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+    padding: 30px;
+    border-radius: 10px;
+}
+
+.page h2 {
+    margin-bottom: 20px;
+    font-weight: 700;
+    color: #0f1445;
+}
+
+/* display-only field styling for wizard step */
+.fs-field {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    background: #fafafa;
+    margin-bottom: 12px;
+}
+
+.fs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit,minmax(220px,1fr));
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
