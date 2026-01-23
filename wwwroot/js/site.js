@@ -113,30 +113,6 @@
     function saveMD() {localStorage.setItem(STORAGE_KEY, JSON.stringify(masterData)); }
 
     function showMasterData() {
-        dashboard.innerHTML = `
-                                <div class="card p-4">
-                                  <h4 class="fw-bold mb-3">Master Data Management</h4>
-                                  <p class="text-muted">You can manage companies, licenses, employees and status from here.</p>
-                                  <ul class="nav nav-tabs mb-3" id="mdTabs">
-                                    <li class="nav-item"><a class="nav-link active" data-type="Employees" href="#">Employees <span class="badge badge-count ms-1" id="countEmployees">0</span></a></li>
-                                    <li class="nav-item"><a class="nav-link" data-type="Companies" href="#">Companies <span class="badge badge-count ms-1" id="countCompanies">0</span></a></li>
-                                    <li class="nav-item"><a class="nav-link" data-type="AppTypes" href="#">License Types <span class="badge badge-count ms-1" id="countAppTypes">0</span></a></li>
-                                    <li class="nav-item"><a class="nav-link" data-type="Statuses" href="#">Statuses <span class="badge badge-count ms-1" id="countStatuses">0</span></a></li>
-                                  </ul>
-
-                                  <div class="d-flex justify-content-between mb-3">
-                                    <button class="btn btn-success btn-sm" id="addBtn">➕ Add</button>
-                                    <input type="text" id="searchInput" placeholder="Search...">
-                                              <div class="dropdown" id="dropdown">
-                                                  <!-- Options will be populated by JS -->
-                                              </div>
-                                  </div>
-
-                                  <table class="table table-bordered">
-                                    <thead><tr id="mdTableHead"><th>#</th><th>Name</th><th width="150">Actions</th></tr></thead>
-                                    <tbody id="tableBody"></tbody>
-                                  </table>
-                                </div>`;
 
     initMD();
         }

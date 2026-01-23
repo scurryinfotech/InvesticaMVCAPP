@@ -1,5 +1,35 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-@{
-}
+﻿@* <!-- Page 2: Company Info (index 2) -->
+<div class="page" data-page="2">
+    <div class="card">
+        <h2>Company Information</h2>
+
+        <!-- Replace the existing logo + company name area inside the Page 2 card with this -->
+        <div style="display:flex; align-items:center; gap:16px; margin-bottom:12px;">
+            <img src="D:\Work\Websites\Investica\scurry logo.png" alt="logo" style="max-height:60px;">
+            <div style="font-size:20px; font-weight:700; color:#0f1445; text-transform:none;">Scurry Infotech Llp</div>
+        </div>
+
+        <label class="form-label">Company Address</label>
+        <textarea id="address" class="form-control mb-3" placeholder="Enter company address"></textarea>
+
+        <label class="form-label">License Type</label>
+        <select id="companyLicenseType" class="form-select mb-3">
+            <option value="">-- Select License Type --</option>
+            <option>License A</option>
+            <option>License B</option>
+            <option>License C</option>
+        </select>
+
+        <label class="form-label">Status</label>
+        <select id="companyStatus" class="form-select mb-3">
+            <option>Active</option>
+            <option>Inactive</option>
+            <option>Suspended</option>
+        </select>
+
+        <div style="display:flex; gap:10px;">
+            <button class="btn btn-warning" onclick="showPage(3)">Submit</button>
+            <button class="btn" style="background:#999; color:#fff;" onclick="this.closest('.card').querySelectorAll('input,textarea,select').forEach(e=>e.value='')">Clear</button>
+        </div>
+    </div>
+</div> *@

@@ -13,117 +13,13 @@
     <div id="loader" class="loader">Loading more cards...</div>
 
     <!-- Wizard pages inserted below (hidden until activated) -->
-    <!-- Page 2: Company Info (index 2) -->
-    <div class="page" data-page="2">
-        <div class="card">
-            <h2>Company Information</h2>
-
-            <!-- Replace the existing logo + company name area inside the Page 2 card with this -->
-            <div style="display:flex; align-items:center; gap:16px; margin-bottom:12px;">
-                <img src="D:\Work\Websites\Investica\scurry logo.png" alt="logo" style="max-height:60px;">
-                <div style="font-size:20px; font-weight:700; color:#0f1445; text-transform:none;">Scurry Infotech Llp</div>
-            </div>
-
-            <label class="form-label">Company Address</label>
-            <textarea id="address" class="form-control mb-3" placeholder="Enter company address"></textarea>
-
-            <label class="form-label">License Type</label>
-            <select id="companyLicenseType" class="form-select mb-3">
-                <option value="">-- Select License Type --</option>
-                <option>License A</option>
-                <option>License B</option>
-                <option>License C</option>
-            </select>
-
-            <label class="form-label">Status</label>
-            <select id="companyStatus" class="form-select mb-3">
-                <option>Active</option>
-                <option>Inactive</option>
-                <option>Suspended</option>
-            </select>
-
-            <div style="display:flex; gap:10px;">
-                <button class="btn btn-warning" onclick="showPage(3)">Submit</button>
-                <button class="btn" style="background:#999; color:#fff;" onclick="this.closest('.card').querySelectorAll('input,textarea,select').forEach(e=>e.value='')">Clear</button>
-            </div>
-        </div>
-    </div>
+    
 
     <!-- Page 3: Frontsheet & Invoice Details (index 3) - inputs removed, display-only fields added -->
-    <div class="page" data-page="3">
-        <div class="card">
-            <h2>Frontsheet & Invoice Details</h2>
-
-            <p class="text-muted">This step displays the data that will be used to populate the Frontsheet and Invoice pages. All editable inputs were removed — values are fetched from Company Info (previous step) and left-panel filters / master-data.</p>
-
-            <div class="fs-grid">
-                <div>
-                    <label class="form-label">Company Name</label>
-                    <div id="fs_company" class="fs-field">—</div>
-                </div>
-                <div>
-                    <label class="form-label">Company Address</label>
-                    <div id="fs_address" class="fs-field">—</div>
-                </div>
-                <div>
-                    <label class="form-label">Contact / Phone</label>
-                    <div id="fs_phone" class="fs-field">—</div>
-                </div>
-                <div>
-                    <label class="form-label">Email</label>
-                    <div id="fs_email" class="fs-field">—</div>
-                </div>
-                <div>
-                    <label class="form-label">GSTIN</label>
-                    <div id="fs_gstin" class="fs-field">—</div>
-                </div>
-                <div>
-                    <label class="form-label">PAN</label>
-                    <div id="fs_pan" class="fs-field">—</div>
-                </div>
-                <div>
-                    <label class="form-label">Entity Type</label>
-                    <div id="fs_entity" class="fs-field">—</div>
-                </div>
-                <div>
-                    <label class="form-label">Product / Service</label>
-                    <div id="fs_product" class="fs-field">—</div>
-                </div>
-                <div style="grid-column: span 2;">
-                    <label class="form-label">Location (Area / Ward / Zone)</label>
-                    <div id="fs_location" class="fs-field">—</div>
-                </div>
-                <div>
-                    <label class="form-label">License Type (from Company)</label>
-                    <div id="fs_license" class="fs-field">—</div>
-                </div>
-                <div>
-                    <label class="form-label">Status (from Company)</label>
-                    <div id="fs_status" class="fs-field">—</div>
-                </div>
-            </div>
-
-            <div style="display:flex; gap:10px;">
-                <button class="btn btn-secondary" type="button" onclick="populateFrontsheetInvoiceFields()">Fetch Data</button>
-                <button class="btn btn-warning" type="button" onclick="fillSummary(); showPage(4)">Next</button>
-                <button class="btn btn-outline-dark" type="button" onclick="showPage(2)">Back</button>
-            </div>
-        </div>
-    </div>
+    
 
     <!-- Page 4: Summary (index 4) -->
-    <div class="page" data-page="4">
-        <div class="card">
-            <h2>Summary</h2>
-            <div class="summary-item mb-2"><strong>Ticket:</strong> <span id="sTicket">Auto-generated on save</span></div>
-            <div class="summary-item mb-2"><strong>Company:</strong> <span id="sCompany"></span></div>
-            <div class="summary-item mb-2"><strong>Address:</strong> <span id="sAddress"></span></div>
-            <div class="summary-item mb-2"><strong>License:</strong> <span id="sLicense"></span></div>
-            <div class="summary-item mb-2"><strong>Status:</strong> <span id="sStatus"></span></div>
-            <div class="summary-item mb-4"><strong>Employee:</strong> <span id="sEmployee"></span></div>
-            <button class="btn btn-warning" onclick="alert('Ticket Created Successfully'); goToTickets();">Create Ticket</button>
-        </div>
-    </div>
+    
 
     <!-- Modals -->
     <div class="modal fade" id="attachmentsModal" tabindex="-1" aria-labelledby="attachmentsModalLabel" aria-hidden="true">

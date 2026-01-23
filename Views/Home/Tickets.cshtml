@@ -1,5 +1,35 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-@{
-}
+﻿@* <div class='container-fluid' style='height:100%;'>
+    <div class='row g-3' style='height:100%;'>
+        <div class='col-md-3' style='display:flex; flex-direction:column; height:100%;'>
+            <div>
+                <div id='${cid}_status' class='rounded border p-2 text-center fw-bold mb-3'>STATUS</div>
+                <div id='${cid}_license' class='rounded border p-2 text-center fw-bold mb-3'>License Type</div>
+                <div id='${cid}_tracking' class='rounded border p-2 text-center fw-bold mb-3'>Tracking No</div>
+            </div>
+            <div style='margin-top:auto;'>
+                <div class='d-flex' style='gap:8px;'>
+                    <button class='btn btn-outline-dark btn-sm rounded-pill' style='min-width:70px; padding:6px 10px; font-size:0.9rem;'>More</button>
+                    <button class='btn btn-outline-dark btn-sm rounded-pill edit-btn' data-card='${cid}' style='min-width:70px; padding:6px 10px; font-size:0.9rem;'>Edit</button>
+                    <button class='btn btn-outline-dark btn-sm rounded-pill' style='min-width:70px; padding:6px 10px; font-size:0.9rem;'>Attachments</button>
+                </div>
+            </div>
+        </div>
+        <div class='col-md-5'>
+            <div id='${cid}_company' class='rounded border p-2 text-center fw-bold mb-3'>Company Name</div>
+            <div id='${cid}_address' class='rounded border p-3 fw-bold mb-3'>Address of company/stores</div>
+            <div>
+                <label class='fw-bold mb-2' style='font-size: 0.9em;'>Add Note</label>
+                <textarea id='${cid}_noteInput' class='form-control mb-2' rows='2' placeholder='Enter your note here...' style='font-size: 0.85em;'></textarea>
+                <button class='btn btn-sm btn-primary w-100 mb-2' id='${cid}_noteBtn' style='background:#0f1445; border:none;'>Add Note</button>
+                <div id='${cid}_notes' class='rounded border p-2' style='background:#f8f9fa; max-height: 100px; overflow-y: auto; min-height: 60px;'>
+                    <small style='color: #666;'>Notes will appear here</small>
+                </div>
+            </div>
+        </div>
+        <div class='col-md-4' style='display:flex; flex-direction:column; height:100%;'>
+            <div id='${cid}_employee' class='rounded border p-2 text-center fw-bold mb-3'>Employee Name - Date</div>
+            <div id='${cid}_validity' class='rounded border p-2 text-center fw-bold mb-3'>Date of Validity</div>
+            <div id='${cid}_desc' class='rounded border p-3 fw-bold' style='flex:1; min-height:245px; white-space:pre-line; overflow-y:auto; background:#f8f9fa;'>Description</div>
+        </div>
+    </div>
+</div> *@

@@ -1,5 +1,69 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-@{
-}
+﻿@* <div style='background:#fff; padding:30px; font-family:Arial, sans-serif; line-height:1.6; max-width:900px;'>
+    <div style='display:flex; justify-content:space-between; margin-bottom:30px; border-bottom:2px solid #0f1445; padding-bottom:15px;'>
+        <div>
+            <div style='font-size:18px; font-weight:bold; color:#0f1445;'>INVOICE TO:</div>
+            <div style='font-size:13px; margin-top:5px; color:#333;'>
+                <div><strong>CUREFOODS INDIA PVT. LTD</strong></div>
+                <div>RAJARKHAT</div>
+                <div>KOLKATA, WEST BENGAL</div>
+                <div style='margin-top:8px;'><strong>GSTIN:</strong> 19AAJCC0315JJZ</div>
+            </div>
+        </div>
+        <div style='text-align:right;'>
+            <div style='font-size:18px; font-weight:bold; color:#0f1445;'>INVOICE FROM:</div>
+            <div style='font-size:13px; margin-top:5px; color:#333;'>
+                <div><strong>INVESTIRE LEX & AUDIRE (OPC) PVT. LTD.</strong></div>
+                <div>SECTOR-19, VASHI</div>
+                <div>NAVI MUMBAI MAHARASHTRA</div>
+                <div style='margin-top:8px;'><strong>GSTIN:</strong> 27AAGCIT23R1Z</div>
+            </div>
+        </div>
+    </div>
+
+    <div style='text-align:center; margin-bottom:20px;'>
+        <div style='font-size:16px; font-weight:bold; color:#0f1445;'>INVOICE NUMBER: KOL/SER/590</div>
+        <div style='font-size:12px; color:#666; margin-top:5px;'>Date: 09th June, 2025</div>
+    </div>
+
+    <table style='width:100%; border-collapse:collapse; margin-bottom:20px;'>
+        <thead>
+            <tr style='background:#0f1445; color:#fff;'>
+                <th style='border:1px solid #0f1445; padding:12px; text-align:left; font-weight:bold;'>PARTICULARS</th>
+                <th style='border:1px solid #0f1445; padding:12px; text-align:right; font-weight:bold; width:140px;'>GROSS AMOUNT Rs.</th>
+                <th style='border:1px solid #0f1445; padding:12px; text-align:right; font-weight:bold; width:140px;'>NET AMOUNT Rs.</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td style='border:1px solid #ddd; padding:12px;'><strong>BUSINESS COMPLIANCE | SHOPS & FSTB RENEWAL | SERVICE CHARGES | KOLKATA</strong></td>
+                <td style='border:1px solid #ddd; padding:12px; text-align:right;'></td>
+                <td style='border:1px solid #ddd; padding:12px; text-align:right;'></td>
+            </tr>
+            <tr style='background:#f8f9fa;'>
+                <td style='border:1px solid #ddd; padding:12px;'>BALLYGUNGE | APPROVAL DATE: 06/03/2025</td>
+                <td style='border:1px solid #ddd; padding:12px; text-align:right;'>3500.00</td>
+                <td style='border:1px solid #ddd; padding:12px; text-align:right;'>3500.00</td>
+            </tr>
+            <tr>
+                <td style='border:1px solid #ddd; padding:12px; font-weight:bold;'>SUB TOTAL</td>
+                <td style='border:1px solid #ddd; padding:12px; text-align:right;'></td>
+                <td style='border:1px solid #ddd; padding:12px; text-align:right;'><strong>3500.00</strong></td>
+            </tr>
+            <tr style='background:#f8f9fa;'>
+                <td style='border:1px solid #ddd; padding:12px; font-weight:bold;'>IGST 18%</td>
+                <td style='border:1px solid #ddd; padding:12px; text-align:right;'>630.00</td>
+                <td style='border:1px solid #ddd; padding:12px; text-align:right;'>630.00</td>
+            </tr>
+            <tr style='background:#0f1445; color:#fff;'>
+                <td style='border:1px solid #0f1445; padding:12px; font-weight:bold;'>NET TOTAL: FOUR THOUSAND ONE HUNDRED & THIRTY ONLY.</td>
+                <td style='border:1px solid #0f1445; padding:12px; text-align:right;'></td>
+                <td style='border:1px solid #0f1445; padding:12px; text-align:right; font-weight:bold;'>4130.00</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div style='margin-top:30px; display:flex; gap:10px; justify-content:flex-start;'>
+        <button class='btn btn-primary invoice-edit-btn' data-invoice='${invoiceId}' style='background:#0f1445; border:none; padding:8px 16px; font-size:14px;'>Edit</button>
+        <button class='btn btn-secondary' onclick='window.print()' style='background:#6c757d; border:none; padding:8px 16px; font-size:14px; color:#fff;'>Print</button>
+    </div>
+</div> *@
