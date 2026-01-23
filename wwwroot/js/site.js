@@ -126,7 +126,10 @@
 
                                   <div class="d-flex justify-content-between mb-3">
                                     <button class="btn btn-success btn-sm" id="addBtn">➕ Add</button>
-                                    <input class="form-control form-control-sm search-box" id="searchInput" placeholder="🔍 Search">
+                                    <input type="text" id="searchInput" placeholder="Search...">
+                                              <div class="dropdown" id="dropdown">
+                                                  <!-- Options will be populated by JS -->
+                                              </div>
                                   </div>
 
                                   <table class="table table-bordered">
