@@ -1,0 +1,36 @@
+﻿.search-container {
+    position: relative;
+    width: 100%;
+}
+
+    .search-container #searchInput {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #ced4da;
+        border-radius: 6px;
+        outline: none;
+    }
+
+    .search-container .dropdown {
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        width: 100%;
+        background: white;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        max-height: 200px;
+        overflow-y: auto;
+        z-index: 9999;
+        display: none;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    .search-container .dropdown-item {
+        padding: 10px 12px;
+        cursor: pointer;
+    }
+
+        .search-container .dropdown-item:hover {
+            background: #f2f2f2;
+        }

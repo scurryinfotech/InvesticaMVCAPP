@@ -1,0 +1,182 @@
+﻿@{
+    ViewData["Title"] = "Tickets";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-custom">
+    @Html.Partial("~/Views/Shared/_leftPanel.cshtml")
+
+    <div class="right-panel">
+        @Html.Partial("~/Views/Shared/_rightPanel.cshtml")
+
+        <div class="dashboard" id="dashboard">
+            <!-- Ticket Card 1 -->
+            <div class="card p-4">
+                <div class="container-fluid">
+                    <div class="row g-3">
+
+                        <!-- Left column -->
+                        <div class="col-md-3 d-flex flex-column">
+                            <div>
+                                <div id="t1_status" class="rounded border p-2 text-center fw-bold mb-3">STATUS</div>
+                                <div id="t1_license" class="rounded border p-2 text-center fw-bold mb-3">License Type</div>
+                                <div id="t1_tracking" class="rounded border p-2 text-center fw-bold mb-3">Tracking No</div>
+                            </div>
+
+                            <div class="mt-auto d-flex gap-2">
+                                <button class="btn btn-outline-dark btn-sm rounded-pill">More</button>
+                                <button class="btn btn-outline-dark btn-sm rounded-pill edit-btn" data-card="t1">Edit</button>
+                                <button class="btn btn-outline-dark btn-sm rounded-pill attach-btn" data-card="t1">Attachments</button>
+                            </div>
+                        </div>
+
+                        <!-- Middle column -->
+                        <div class="col-md-5">
+                            <div id="t1_company" class="rounded border p-2 text-center fw-bold mb-3">Company Name</div>
+                            <div id="t1_address" class="rounded border p-3 fw-bold mb-3">Address of company/stores</div>
+
+                            <label class="fw-bold mb-2" style="font-size:0.9em;">Add Note</label>
+                            <textarea id="t1_noteInput" class="form-control mb-2" rows="2" placeholder="Enter your note here..."></textarea>
+                            <button class="btn btn-sm btn-primary w-100 mb-2 note-btn" data-card="t1"
+                                    style="background:#0f1445;border:none;">
+                                Add Note
+                            </button>
+
+                            <div id="t1_notes" class="rounded border p-2 bg-light" style="max-height:120px; overflow-y:auto;">
+                                <small style="color:#666;">Notes will appear here</small>
+                            </div>
+                        </div>
+
+                        <!-- Right column -->
+                        <div class="col-md-4 d-flex flex-column">
+                            <div id="t1_employee" class="rounded border p-2 text-center fw-bold mb-3">Employee Name - Date</div>
+                            <div id="t1_validity" class="rounded border p-2 text-center fw-bold mb-3">Date of Validity</div>
+                            <div id="t1_desc" class="rounded border p-3 fw-bold bg-light"
+                                 style="flex:1; min-height:245px; white-space:pre-line; overflow-y:auto;">
+                                Description
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ticket Card 2 -->
+            <div class="card p-4">
+                <div class="container-fluid">
+                    <div class="row g-3">
+
+                        <div class="col-md-3 d-flex flex-column">
+                            <div>
+                                <div id="t2_status" class="rounded border p-2 text-center fw-bold mb-3">STATUS</div>
+                                <div id="t2_license" class="rounded border p-2 text-center fw-bold mb-3">License Type</div>
+                                <div id="t2_tracking" class="rounded border p-2 text-center fw-bold mb-3">Tracking No</div>
+                            </div>
+
+                            <div class="mt-auto d-flex gap-2">
+                                <button class="btn btn-outline-dark btn-sm rounded-pill">More</button>
+                                <button class="btn btn-outline-dark btn-sm rounded-pill edit-btn" data-card="t2">Edit</button>
+                                <button class="btn btn-outline-dark btn-sm rounded-pill attach-btn" data-card="t2">Attachments</button>
+                            </div>
+                        </div>
+
+                        <div class="col-md-5">
+                            <div id="t2_company" class="rounded border p-2 text-center fw-bold mb-3">Company Name</div>
+                            <div id="t2_address" class="rounded border p-3 fw-bold mb-3">Address of company/stores</div>
+
+                            <label class="fw-bold mb-2" style="font-size:0.9em;">Add Note</label>
+                            <textarea id="t2_noteInput" class="form-control mb-2" rows="2" placeholder="Enter your note here..."></textarea>
+                            <button class="btn btn-sm btn-primary w-100 mb-2 note-btn" data-card="t2"
+                                    style="background:#0f1445;border:none;">
+                                Add Note
+                            </button>
+
+                            <div id="t2_notes" class="rounded border p-2 bg-light" style="max-height:120px; overflow-y:auto;">
+                                <small style="color:#666;">Notes will appear here</small>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4 d-flex flex-column">
+                            <div id="t2_employee" class="rounded border p-2 text-center fw-bold mb-3">Employee Name - Date</div>
+                            <div id="t2_validity" class="rounded border p-2 text-center fw-bold mb-3">Date of Validity</div>
+                            <div id="t2_desc" class="rounded border p-3 fw-bold bg-light"
+                                 style="flex:1; min-height:245px; white-space:pre-line; overflow-y:auto;">
+                                Description
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ticket Card 3 -->
+            <div class="card p-4">
+                <div class="container-fluid">
+                    <div class="row g-3">
+
+                        <div class="col-md-3 d-flex flex-column">
+                            <div>
+                                <div id="t3_status" class="rounded border p-2 text-center fw-bold mb-3">STATUS</div>
+                                <div id="t3_license" class="rounded border p-2 text-center fw-bold mb-3">License Type</div>
+                                <div id="t3_tracking" class="rounded border p-2 text-center fw-bold mb-3">Tracking No</div>
+                            </div>
+
+                            <div class="mt-auto d-flex gap-2">
+                                <button class="btn btn-outline-dark btn-sm rounded-pill">More</button>
+                                <button class="btn btn-outline-dark btn-sm rounded-pill edit-btn" data-card="t3">Edit</button>
+                                <button class="btn btn-outline-dark btn-sm rounded-pill attach-btn" data-card="t3">Attachments</button>
+                            </div>
+                        </div>
+
+                        <div class="col-md-5">
+                            <div id="t3_company" class="rounded border p-2 text-center fw-bold mb-3">Company Name</div>
+                            <div id="t3_address" class="rounded border p-3 fw-bold mb-3">Address of company/stores</div>
+
+                            <label class="fw-bold mb-2" style="font-size:0.9em;">Add Note</label>
+                            <textarea id="t3_noteInput" class="form-control mb-2" rows="2" placeholder="Enter your note here..."></textarea>
+                            <button class="btn btn-sm btn-primary w-100 mb-2 note-btn" data-card="t3"
+                                    style="background:#0f1445;border:none;">
+                                Add Note
+                            </button>
+
+                            <div id="t3_notes" class="rounded border p-2 bg-light" style="max-height:120px; overflow-y:auto;">
+                                <small style="color:#666;">Notes will appear here</small>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4 d-flex flex-column">
+                            <div id="t3_employee" class="rounded border p-2 text-center fw-bold mb-3">Employee Name - Date</div>
+                            <div id="t3_validity" class="rounded border p-2 text-center fw-bold mb-3">Date of Validity</div>
+                            <div id="t3_desc" class="rounded border p-3 fw-bold bg-light"
+                                 style="flex:1; min-height:245px; white-space:pre-line; overflow-y:auto;">
+                                Description
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Attachments Modal -->
+<div class="modal fade" id="attachmentsModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Attachments</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <ul class="list-group mb-3" id="attachmentsList"></ul>
+                <input type="file" id="newAttachmentInput" class="form-control" multiple />
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/Tickets.js"></script>
+}

@@ -1,0 +1,87 @@
+﻿@{
+    ViewData["Title"] = "Invoice";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-custom">
+    @Html.Partial("~/Views/Shared/_leftPanel.cshtml")
+
+
+        <div class="dashboard">
+            <div class="card p-4">
+                <div style="background:#fff; padding:30px; font-family:Arial, sans-serif; max-width:900px;">
+
+                    <div style="display:flex; justify-content:space-between; border-bottom:2px solid #0f1445; padding-bottom:15px;">
+                        <div>
+                            <div style="font-size:18px; font-weight:bold; color:#0f1445;">INVOICE TO:</div>
+                            <div style="font-size:13px; color:#333;">
+                                <div><strong id="inv_to">CUREFOODS INDIA PVT. LTD</strong></div>
+                                <div id="inv_to_address">RAJARKHAT, KOLKATA</div>
+                                <div><strong>GSTIN:</strong> <span id="inv_to_gst">19AAJCC0315JJZ</span></div>
+                            </div>
+                        </div>
+
+                        <div style="text-align:right;">
+                            <div style="font-size:18px; font-weight:bold; color:#0f1445;">INVOICE FROM:</div>
+                            <div style="font-size:13px; color:#333;">
+                                <div><strong id="inv_from">INVESTIRE LEX & AUDIRE (OPC) PVT. LTD.</strong></div>
+                                <div id="inv_from_address">SECTOR-19, VASHI</div>
+                                <div><strong>GSTIN:</strong> <span id="inv_from_gst">27AAGCIT23R1Z</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="text-align:center; margin:20px 0;">
+                        <div style="font-size:16px; font-weight:bold; color:#0f1445;">
+                            INVOICE NUMBER: <span id="inv_number">KOL/SER/590</span>
+                        </div>
+                        <div style="font-size:12px; color:#666;">
+                            Date: <span id="inv_date">09th June, 2025</span>
+                        </div>
+                    </div>
+
+                    <table class="table table-bordered">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>PARTICULARS</th>
+                                <th class="text-end">GROSS AMOUNT</th>
+                                <th class="text-end">NET AMOUNT</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>BUSINESS COMPLIANCE SERVICE CHARGES</strong></td>
+                                <td class="text-end"></td>
+                                <td class="text-end"></td>
+                            </tr>
+                            <tr>
+                                <td>BALLYGUNGE | APPROVAL DATE: 06/03/2025</td>
+                                <td class="text-end" id="inv_gross">3500.00</td>
+                                <td class="text-end" id="inv_net">3500.00</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold">IGST 18%</td>
+                                <td class="text-end" id="inv_tax">630.00</td>
+                                <td class="text-end" id="inv_tax2">630.00</td>
+                            </tr>
+                            <tr class="table-dark">
+                                <td class="fw-bold">NET TOTAL</td>
+                                <td class="text-end"></td>
+                                <td class="text-end fw-bold" id="inv_total">4130.00</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="d-flex gap-2 mt-3">
+                        <button class="btn btn-primary" id="invoiceEditBtn" style="background:#0f1445;border:none;">Edit</button>
+                        <button class="btn btn-secondary" onclick="window.print()">Print</button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/Invoice.js"></script>
+}
