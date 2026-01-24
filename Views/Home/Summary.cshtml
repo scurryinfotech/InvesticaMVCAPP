@@ -1,12 +1,42 @@
-﻿<div class="page" data-page="4">
-    <div class="card">
-        <h2>Summary</h2>
-        <div class="summary-item mb-2"><strong>Ticket:</strong> <span id="sTicket">Auto-generated on save</span></div>
-        <div class="summary-item mb-2"><strong>Company:</strong> <span id="sCompany"></span></div>
-        <div class="summary-item mb-2"><strong>Address:</strong> <span id="sAddress"></span></div>
-        <div class="summary-item mb-2"><strong>License:</strong> <span id="sLicense"></span></div>
-        <div class="summary-item mb-2"><strong>Status:</strong> <span id="sStatus"></span></div>
-        <div class="summary-item mb-4"><strong>Employee:</strong> <span id="sEmployee"></span></div>
-        <button class="btn btn-warning" onclick="alert('Ticket Created Successfully'); goToTickets();">Create Ticket</button>
+﻿@{
+    ViewData["Title"] = "Summary";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-custom">
+    @Html.Partial("~/Views/Shared/_leftPanel.cshtml")
+
+    <div class="right-panel">
+        @* @Html.Partial("~/Views/Shared/_rightPanel.cshtml") *@
+
+        <div class="dashboard">
+            <div class="card p-4">
+                <h2 style="font-weight:700;color:#0f1445;">Summary</h2>
+
+                <div class="mb-2"><strong>Ticket:</strong> <span>Auto-generated on save</span></div>
+                <div class="mb-2"><strong>Company:</strong> <span id="sCompany"></span></div>
+                <div class="mb-2"><strong>Address:</strong> <span id="sAddress"></span></div>
+                <div class="mb-2"><strong>License:</strong> <span id="sLicense"></span></div>
+                <div class="mb-2"><strong>Status:</strong> <span id="sStatus"></span></div>
+
+                <button class="btn btn-warning mt-3" onclick="createTicket()">Create Ticket</button>
+            </div>
+        </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            document.getElementById("sCompany").innerText = localStorage.getItem("sum_company") || "";
+            document.getElementById("sAddress").innerText = localStorage.getItem("sum_address") || "";
+            document.getElementById("sLicense").innerText = localStorage.getItem("sum_license") || "";
+            document.getElementById("sStatus").innerText = localStorage.getItem("sum_status") || "";
+        });
+
+        function createTicket() {
+            alert("Ticket Created Successfully ✅");
+            window.location.href = "/Home/Tickets";
+        }
+    </script>
+}

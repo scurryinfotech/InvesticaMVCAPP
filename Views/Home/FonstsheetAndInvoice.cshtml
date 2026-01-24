@@ -1,87 +1,93 @@
-﻿<div class="page active" data-page="3">
-    <div class="card fs-card">
+﻿@{
+    ViewData["Title"] = "Frontsheet & Invoice";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
 
-        <h1 class="fs-title">Frontsheet &amp; Invoice Details</h1>
+        <div class="dashboard wizard-wrap">
+            <div class="card p-4">
 
-        <p class="fs-subtitle">
-            This step displays the data that will be used to populate the Frontsheet and Invoice pages.
-            All editable inputs were removed — values are fetched from Company Info (previous step) and left-panel filters / master-data.
-        </p>
+                <div class="wizard-title">Frontsheet &amp; Invoice Details</div>
+                <div class="wizard-subtext">
+                    This step displays the data that will be used to populate the Frontsheet and Invoice pages.
+                    All editable inputs were removed — values are fetched from Company Info (previous step)
+                    and left-panel filters / master-data.
+                </div>
 
-        <!-- GRID -->
-        <div class="fs-grid">
+                <!-- Row 1 -->
+                <div class="fs-grid">
+                    <div class="fs-field">
+                        <label>Company Name</label>
+                        <div id="fs_company" class="fs-box">—</div>
+                    </div>
 
-            <div class="fs-item">
-                <label class="fs-label">Company Name</label>
-                <div id="fs_company" class="fs-box">—</div>
+                    <div class="fs-field">
+                        <label>Company Address</label>
+                        <div id="fs_address" class="fs-box">—</div>
+                    </div>
+
+                    <div class="fs-field">
+                        <label>Contact / Phone</label>
+                        <div id="fs_phone" class="fs-box">—</div>
+                    </div>
+
+                    <div class="fs-field">
+                        <label>Email</label>
+                        <div id="fs_email" class="fs-box">—</div>
+                    </div>
+
+                    <div class="fs-field">
+                        <label>GSTIN</label>
+                        <div id="fs_gstin" class="fs-box">—</div>
+                    </div>
+                </div>
+
+                <!-- Row 2 -->
+                <div class="fs-grid two-row" style="margin-top:22px;">
+                    <div class="fs-field">
+                        <label>PAN</label>
+                        <div id="fs_pan" class="fs-box">—</div>
+                    </div>
+
+                    <div class="fs-field">
+                        <label>Entity Type</label>
+                        <div id="fs_entity" class="fs-box">—</div>
+                    </div>
+
+                    <div class="fs-field">
+                        <label>Product / Service</label>
+                        <div id="fs_product" class="fs-box">—</div>
+                    </div>
+
+                    <div class="fs-field span-2">
+                        <label>Location (Area / Ward / Zone)</label>
+                        <div id="fs_location" class="fs-box">—</div>
+                    </div>
+                </div>
+
+                <!-- Row 3 -->
+                <div class="fs-grid" style="grid-template-columns: repeat(2, minmax(220px, 1fr)); margin-top:22px;">
+                    <div class="fs-field">
+                        <label>License Type (from Company)</label>
+                        <div id="fs_license" class="fs-box">—</div>
+                    </div>
+
+                    <div class="fs-field">
+                        <label>Status (from Company)</label>
+                        <div id="fs_status" class="fs-box">Active</div>
+                    </div>
+                </div>
+
+                <!-- Buttons -->
+                <div class="wizard-actions">
+                    <button type="button" class="btn-fetch" onclick="fetchFSData()">Fetch Data</button>
+                    <button type="button" class="btn-next" onclick="goSummary()">Next</button>
+                    <button type="button" class="btn-back" onclick="window.location.href='/Home/Companies'">Back</button>
+                </div>
+
             </div>
-
-            <div class="fs-item">
-                <label class="fs-label">Company Address</label>
-                <div id="fs_address" class="fs-box">—</div>
-            </div>
-
-            <div class="fs-item">
-                <label class="fs-label">Contact / Phone</label>
-                <div id="fs_phone" class="fs-box">—</div>
-            </div>
-
-            <div class="fs-item">
-                <label class="fs-label">Email</label>
-                <div id="fs_email" class="fs-box">—</div>
-            </div>
-
-            <div class="fs-item">
-                <label class="fs-label">GSTIN</label>
-                <div id="fs_gstin" class="fs-box">—</div>
-            </div>
-
-            <div class="fs-item">
-                <label class="fs-label">PAN</label>
-                <div id="fs_pan" class="fs-box">—</div>
-            </div>
-
-            <div class="fs-item">
-                <label class="fs-label">Entity Type</label>
-                <div id="fs_entity" class="fs-box">—</div>
-            </div>
-
-            <div class="fs-item">
-                <label class="fs-label">Product / Service</label>
-                <div id="fs_product" class="fs-box">—</div>
-            </div>
-
-            <div class="fs-item fs-wide">
-                <label class="fs-label">Location (Area / Ward / Zone)</label>
-                <div id="fs_location" class="fs-box">—</div>
-            </div>
-
-            <div class="fs-item">
-                <label class="fs-label">License Type (from Company)</label>
-                <div id="fs_license" class="fs-box">—</div>
-            </div>
-
-            <div class="fs-item">
-                <label class="fs-label">Status (from Company)</label>
-                <div id="fs_status" class="fs-box">Active</div>
-            </div>
-
         </div>
 
-        <!-- BUTTONS -->
-        <div class="fs-actions">
-            <button class="btn btn-secondary px-4 fw-bold" type="button" onclick="populateFrontsheetInvoiceFields()">
-                Fetch Data
-            </button>
 
-            <button class="btn btn-warning px-4 fw-bold" type="button" onclick="fillSummary(); showPage(4)">
-                Next
-            </button>
-
-            <button class="btn btn-outline-dark px-4 fw-bold" type="button" onclick="showPage(2)">
-                Back
-            </button>
-        </div>
-
-    </div>
-</div>
+@section Scripts {
+<script src="~/js/FonstsheetAndInvoice.js"></script>
+}

@@ -1,18 +1,15 @@
-﻿// Searchable Dropdown Function for Text Inputs
-function makeSearchableDropdown(inputId, options) {
+﻿function makeSearchableDropdown(inputId, options) {
     const input = document.getElementById(inputId);
     if (!input) {
         console.log(`Element with id "${inputId}" not found`);
         return;
     }
 
-    // Create dropdown container
     const wrapper = document.createElement('div');
     wrapper.style.position = 'relative';
     input.parentNode.insertBefore(wrapper, input);
     wrapper.appendChild(input);
 
-    // Create dropdown menu
     const dropdown = document.createElement('div');
     dropdown.className = 'searchable-dropdown';
     dropdown.style.position = 'absolute';
@@ -30,7 +27,6 @@ function makeSearchableDropdown(inputId, options) {
     dropdown.style.boxShadow = '0 4px 6px rgba(0,0,0,0.1)';
     wrapper.appendChild(dropdown);
 
-    // Populate dropdown
     function populateDropdown(filterText = '') {
         dropdown.innerHTML = '';
         const filtered = options.filter(opt =>
@@ -67,19 +63,16 @@ function makeSearchableDropdown(inputId, options) {
         }
     }
 
-    // Show dropdown on focus
     input.addEventListener('focus', () => {
         populateDropdown(input.value);
         dropdown.style.display = 'block';
     });
 
-    // Filter on input
     input.addEventListener('input', () => {
         populateDropdown(input.value);
         dropdown.style.display = 'block';
     });
 
-    // Hide dropdown when clicking outside
     document.addEventListener('click', (e) => {
         if (!wrapper.contains(e.target)) {
             dropdown.style.display = 'none';
@@ -87,7 +80,6 @@ function makeSearchableDropdown(inputId, options) {
     });
 }
 
-// Searchable Dropdown for Select Elements
 function makeSearchableSelect(selectId) {
     const select = document.getElementById(selectId);
     if (!select) {
@@ -95,12 +87,10 @@ function makeSearchableSelect(selectId) {
         return;
     }
 
-    // Get options from select
     const options = Array.from(select.options)
         .filter(opt => opt.value !== '')
         .map(opt => ({ text: opt.text, value: opt.value }));
 
-    // Create input to replace select
     const input = document.createElement('input');
     input.type = 'text';
     input.className = select.className;
@@ -108,7 +98,6 @@ function makeSearchableSelect(selectId) {
     input.placeholder = select.options[0].text;
     input.autocomplete = 'off';
 
-    // Create container
     const wrapper = document.createElement('div');
     wrapper.style.position = 'relative';
     select.parentNode.insertBefore(wrapper, select);
@@ -116,7 +105,6 @@ function makeSearchableSelect(selectId) {
     select.style.display = 'none';
     wrapper.appendChild(select);
 
-    // Create dropdown
     const dropdown = document.createElement('div');
     dropdown.className = 'searchable-dropdown';
     dropdown.style.position = 'absolute';
@@ -134,7 +122,6 @@ function makeSearchableSelect(selectId) {
     dropdown.style.boxShadow = '0 4px 6px rgba(0,0,0,0.1)';
     wrapper.appendChild(dropdown);
 
-    // Populate dropdown
     function populateDropdown(filterText = '') {
         dropdown.innerHTML = '';
 
@@ -229,8 +216,7 @@ function initSearchableDropdowns() {
 
 }
 
- //Multiple initialization approaches to ensure it works
-// Approach 1: DOMContentLoaded
+
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initSearchableDropdowns);
 } else {

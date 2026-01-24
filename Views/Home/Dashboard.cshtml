@@ -1,29 +1,20 @@
-﻿
-@section styles{
-    <link rel="stylesheet" href="~/css/Dashboard.css" asp-append-version="true" />
-}
-
-<div class="card">
+﻿<div class="card p-4">
     <h3 class="fw-bold">Dashboard</h3>
     <p class="text-muted">Welcome to the CRM Dashboard. You can create tickets from here.</p>
+
     <div class="card p-4 bg-light">
         <h4 class="fw-bold mb-3">Generate / Search Ticket</h4>
+
         <label>Search Ticket Number</label>
         <input class="form-control mb-3" placeholder="Enter existing ticket number">
-        <button class="btn btn-warning mb-4">Search</button>
-        <label>Select Company</label>
-        <div class="search-container">
-            <input type="text" id="searchInput" class="form-control" placeholder="Search...">
-            <div class="dropdown" id="dropdown">
-                <!-- Options will be populated by JS -->
-            </div>
-        </div>
 
-        <button class="btn btn-warning" onclick="showPage(2)">Next</button>
+        <button class="btn btn-warning mb-4">Search</button>
+
+        <label>Select Company</label>
+        <select class="form-select mb-3">
+            <option>XYZ Industries</option>
+        </select>
+
+        <a class="btn btn-warning" href="/Home/Companies">Next</a>
     </div>
 </div>
-
-@section scripts{
-    <script src="~/js/Dashboard.js" asp-append-version="true"></script>
-
-}

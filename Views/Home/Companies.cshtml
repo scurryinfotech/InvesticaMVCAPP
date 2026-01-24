@@ -1,35 +1,55 @@
-﻿<!-- Page 2: Company Info (index 2) -->
-<div class="page" data-page="2">
-    <div class="card">
-        <h2>Company Information</h2>
+﻿@{
+    ViewData["Title"] = "Companies";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+        <div class="dashboard">
+            <div class="card">
+                <h2 style="font-weight:700;color:#0f1445;">Company Information</h2>
 
-        <!-- Replace the existing logo + company name area inside the Page 2 card with this -->
-        <div style="display:flex; align-items:center; gap:16px; margin-bottom:12px;">
-            @* <img src="D:\Work\Websites\Investica\scurry logo.png" alt="logo" style="max-height:60px;"> *@
-            <div style="font-size:20px; font-weight:700; color:#0f1445; text-transform:none;">Scurry Infotech Llp</div>
-        </div>
+                <div style="display:flex; align-items:center; gap:16px; margin-bottom:12px;">
+                    <img src="~/images/scurry-logo.png" alt="logo" style="max-height:60px;">
+                    <div style="font-size:20px; font-weight:700; color:#0f1445;">Scurry Infotech Llp</div>
+                </div>
 
-        <label class="form-label">Company Address</label>
-        <textarea id="address" class="form-control mb-3" placeholder="Enter company address"></textarea>
+                <label class="form-label">Company Address</label>
+                <textarea id="address" class="form-control mb-3" placeholder="Enter company address"></textarea>
 
-        <label class="form-label">License Type</label>
-        <select id="companyLicenseType" class="form-select mb-3">
-            <option value="">-- Select License Type --</option>
-            <option>License A</option>
-            <option>License B</option>
-            <option>License C</option>
-        </select>
+                <label class="form-label">License Type</label>
+                <select id="companyLicenseType" class="form-select mb-3">
+                    <option value="">-- Select License Type --</option>
+                    <option>License A</option>
+                    <option>License B</option>
+                    <option>License C</option>
+                </select>
 
-        <label class="form-label">Status</label>
-        <select id="companyStatus" class="form-select mb-3">
-            <option>Active</option>
-            <option>Inactive</option>
-            <option>Suspended</option>
-        </select>
+                <label class="form-label">Status</label>
+                <select id="companyStatus" class="form-select mb-3">
+                    <option>Active</option>
+                    <option>Inactive</option>
+                    <option>Suspended</option>
+                </select>
 
-        <div style="display:flex; gap:10px;">
-            <button class="btn btn-warning" onclick="showPage(3)">Submit</button>
-            <button class="btn" style="background:#999; color:#fff;" onclick="this.closest('.card').querySelectorAll('input,textarea,select').forEach(e=>e.value='')">Clear</button>
+                <div style="display:flex; gap:10px;">
+                    <button class="btn btn-warning" type="button" onclick="goStep3()">Submit</button>
+                    <button class="btn" style="background:#999; color:#fff;"
+                            onclick="document.getElementById('address').value=''; document.getElementById('companyLicenseType').value=''; document.getElementById('companyStatus').value='';">
+                        Clear
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
-</div>
+
+
+@section Scripts {
+    <script>
+        function goStep3() {
+            // Save in localStorage
+            localStorage.setItem("wiz_address", document.getElementById("address").value);
+            localStorage.setItem("wiz_license", document.getElementById("companyLicenseType").value);
+            localStorage.setItem("wiz_status", document.getElementById("companyStatus").value);
+
+            window.location.href = "/Home/FrontsheetAndInvoice";
+        }
+    </script>
+}

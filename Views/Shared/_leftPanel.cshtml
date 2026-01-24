@@ -2,75 +2,86 @@
     <form id="filterForm">
         <div id="frontsheetFilters" style="display:none;">
             <div class="mb-3">
-                <label for="frontsheetDate" class="form-label fw-bold">Date</label>
-                <input type="date" class="form-control" id="frontsheetDate" name="frontsheetDate">
+                <label class="form-label fw-bold">Date</label>
+                <input type="date" class="form-control" id="frontsheetDate">
             </div>
             <div class="mb-3">
-                <label for="frontsheetCompany" class="form-label fw-bold">Company Name</label>
-                <input type="text" class="form-control" id="frontsheetCompany" name="frontsheetCompany" placeholder="Enter company name">
+                <label class="form-label fw-bold">Company Name</label>
+                <input type="text" class="form-control" id="frontsheetCompany" placeholder="Enter company name">
             </div>
             <div class="mb-3">
-                <label for="frontsheetLocation" class="form-label fw-bold">Location</label>
-                <input type="text" class="form-control" id="frontsheetLocation" name="frontsheetLocation" placeholder="Enter location">
+                <label class="form-label fw-bold">Location</label>
+                <input type="text" class="form-control" id="frontsheetLocation" placeholder="Enter location">
             </div>
         </div>
+
         <div id="invoiceFilters" style="display:none;">
             <div class="mb-3">
-                <label for="invoiceDate" class="form-label fw-bold">Invoice Date</label>
-                <input type="date" class="form-control" id="invoiceDate" name="invoiceDate">
+                <label class="form-label fw-bold">Invoice Date</label>
+                <input type="date" class="form-control" id="invoiceDate">
             </div>
             <div class="mb-3">
-                <label for="invoiceNumber" class="form-label fw-bold">Invoice Number</label>
-                <input type="text" class="form-control" id="invoiceNumber" name="invoiceNumber" placeholder="Enter invoice number">
+                <label class="form-label fw-bold">Invoice Number</label>
+                <input type="text" class="form-control" id="invoiceNumber" placeholder="Enter invoice number">
             </div>
         </div>
+
         <div id="detailsFilters">
             <div class="mb-3">
-                <label for="startDate" class="form-label fw-bold">Start Date</label>
-                <input type="date" class="form-control" id="startDate" name="startDate">
+                <label class="form-label fw-bold">Start Date</label>
+                <input type="date" class="form-control" id="startDate">
             </div>
             <div class="mb-3">
-                <label for="endDate" class="form-label fw-bold">End Date</label>
-                <input type="date" class="form-control" id="endDate" name="endDate">
+                <label class="form-label fw-bold">End Date</label>
+                <input type="date" class="form-control" id="endDate">
             </div>
             <div class="mb-3">
-                <label for="companyName" class="form-label fw-bold">Company Name</label>
-                <input type="text" class="form-control" id="companyName" name="companyName" placeholder="Enter company name">
+                <label class="form-label fw-bold">Company Name</label>
+                <input type="text" class="form-control" id="companyName" placeholder="Enter company name">
             </div>
             <div class="mb-3">
-                <label for="location" class="form-label fw-bold">Location</label>
-                <input type="text" class="form-control" id="location" name="location" placeholder="Enter location">
+                <label class="form-label fw-bold">Location</label>
+                <input type="text" class="form-control" id="location" placeholder="Enter location">
             </div>
+
             <div class="mb-3">
-                <label for="licenseType" class="form-label fw-bold">License Type</label>
-                <select class="form-select" id="licenseType" name="licenseType">
+                <label class="form-label fw-bold">License Type</label>
+                <select class="form-select" id="licenseType">
                     <option value="">Select license type</option>
                     <option value="A">Type A</option>
                     <option value="B">Type B</option>
                     <option value="C">Type C</option>
                 </select>
             </div>
+
             <div class="mb-3">
-                <label for="status" class="form-label fw-bold">Status</label>
-                <select class="form-select" id="status" name="status">
+                <label class="form-label fw-bold">Status</label>
+                <select class="form-select" id="status">
                     <option value="">Select status</option>
                     <option value="active">Active</option>
                     <option value="inactive">Inactive</option>
                     <option value="pending">Pending</option>
                 </select>
             </div>
+
             <div class="mb-3">
-                <label for="trackingNumber" class="form-label fw-bold">Tracking Number</label>
-                <input type="text" class="form-control" id="trackingNumber" name="trackingNumber" placeholder="Enter tracking number">
+                <label class="form-label fw-bold">Tracking Number</label>
+                <input type="text" class="form-control" id="trackingNumber" placeholder="Enter tracking number">
             </div>
         </div>
+
         <div id="applyResetFilters" class="d-flex gap-2 mt-4">
-            <button class="btn btn-primary flex-fill fw-bold" id="submitFilterBtn" type="button" style="background:#0f1445; border:none;">Submit</button>
-            <button class="btn btn-warning flex-fill fw-bold text-white" id="clearFilterBtn" type="button" style="background:#f78812; border:none;">Clear</button>
+            <button class="btn btn-primary flex-fill fw-bold" type="button"
+                    style="background:#0f1445; border:none;">
+                Submit
+            </button>
+            <button class="btn btn-warning flex-fill fw-bold text-white" type="button"
+                    style="background:#f78812; border:none;">
+                Clear
+            </button>
         </div>
     </form>
 </div>
-
 @section scripts{
-    <script src="~/js/LeftPanel.js" asp-append-version="true"></script>
+    <script src="~/js/LeftPanel.js"></script>
 }

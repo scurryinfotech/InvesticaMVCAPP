@@ -1,65 +1,129 @@
-﻿<div style='margin-bottom: 20px; padding: 15px; background:#f8f9fa; border-radius: 8px;'>
-    <h6 style='color: #0f1445; font-weight: 700; margin-bottom: 15px;'>FILTER RENEWALS</h6>
-    <div style='display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;'>
-        <div>
-            <label style='font-size: 11px; font-weight: bold; color: #666; margin-bottom: 5px; display: block;'>LICENSE TYPE</label>
-            <select id='filter_licenseType' class='form-select form-select-sm' style='font-size: 0.9em;'>
-                <option value=''>All License Types</option>
-                <option value='SHOP LICENSE'>Shop License</option>
-                <option value='TRADE LICENSE'>Trade License</option>
-            </select>
-        </div>
-        <div>
-            <label style='font-size: 11px; font-weight: bold; color: #666; margin-bottom: 5px; display: block;'>LOCATION</label>
-            <select id='filter_location' class='form-select form-select-sm' style='font-size: 0.9em;'>
-                <option value=''>All Locations</option>
-                <option value='KOLKATA'>Kolkata</option>
-                <option value='MUMBAI'>Mumbai</option>
-                <option value='BANGALORE'>Bangalore</option>
-                <option value='DELHI'>Delhi</option>
-                <option value='PUNE'>Pune</option>
-                <option value='NAVI MUMBAI'>Navi Mumbai</option>
-                <option value='AHMEDABAD'>Ahmedabad</option>
-                <option value='HYDERABAD'>Hyderabad</option>
-                <option value='CHENNAI'>Chennai</option>
-                <option value='JAIPUR'>Jaipur</option>
-                <option value='LUCKNOW'>Lucknow</option>
-                <option value='SURAT'>Surat</option>
-            </select>
-        </div>
-        <div>
-            <label style='font-size: 11px; font-weight: bold; color: #666; margin-bottom: 5px; display: block;'>COMPANY NAME</label>
-            <input type='text' id='filter_company' class='form-control form-control-sm' placeholder='Search company...' style='font-size: 0.9em;'>
-        </div>
-        <div>
-            <label style='font-size: 11px; font-weight: bold; color: #666; margin-bottom: 5px; display: block;'>STATUS</label>
-            <select id='filter_status' class='form-select form-select-sm' style='font-size: 0.9em;'>
-                <option value=''>All Status</option>
-                <option value='URGENT'>Urgent</option>
-                <option value='DUE SOON'>Due Soon</option>
-                <option value='PENDING'>Pending</option>
-            </select>
-        </div>
-        <div style='align-self: flex-end;'>
-            <button id='resetFilters' class='btn btn-sm btn-warning w-100' style='background: #f78812; border: none; color: white; font-weight: bold; font-size: 0.9em;'>Reset Filters</button>
+﻿@{
+    ViewData["Title"] = "Renewals";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-custom">
+    <div class="right-panel" style="grid-column:1 / span 2;">
+        @* @Html.Partial("~/Views/Shared/_rightPanel.cshtml") *@
+
+        <div class="dashboard">
+            <div class="card p-4">
+
+                <h5 style="color:#0f1445;font-weight:700;">Upcoming Renewals</h5>
+
+                <div class="row g-2 mb-3">
+                    <div class="col-md-3">
+                        <select id="filter_license" class="form-select form-select-sm">
+                            <option value="">All License Types</option>
+                            <option value="SHOP LICENSE">Shop License</option>
+                            <option value="TRADE LICENSE">Trade License</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <select id="filter_location" class="form-select form-select-sm">
+                            <option value="">All Locations</option>
+                            <option value="KOLKATA">Kolkata</option>
+                            <option value="MUMBAI">Mumbai</option>
+                            <option value="DELHI">Delhi</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <input id="filter_company" class="form-control form-control-sm" placeholder="Search company...">
+                    </div>
+
+                    <div class="col-md-3">
+                        <select id="filter_status" class="form-select form-select-sm">
+                            <option value="">All Status</option>
+                            <option value="URGENT">Urgent</option>
+                            <option value="DUE SOON">Due Soon</option>
+                            <option value="PENDING">Pending</option>
+                        </select>
+                    </div>
+                </div>
+
+                <table class="table table-bordered table-hover" id="renewalsTable">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>SR NO</th>
+                            <th>LICENSE TYPE</th>
+                            <th>LOCATION</th>
+                            <th>COMPANY</th>
+                            <th>EXPIRY</th>
+                            <th>DUE DATE</th>
+                            <th>STATUS</th>
+                        </tr>
+                    </thead>
+                    <tbody id="renewalsBody">
+                        <tr data-license="SHOP LICENSE" data-location="KOLKATA" data-company="CUREFOODS INDIA PVT. LTD" data-status="URGENT">
+                            <td>1</td>
+                            <td>SHOP LICENSE</td>
+                            <td>KOLKATA</td>
+                            <td>CUREFOODS INDIA PVT. LTD</td>
+                            <td>15-Mar-2025</td>
+                            <td>15-Feb-2025</td>
+                            <td>URGENT</td>
+                        </tr>
+                        <tr data-license="SHOP LICENSE" data-location="MUMBAI" data-company="INVESTIRE LEX & AUDIRE" data-status="URGENT">
+                            <td>2</td>
+                            <td>SHOP LICENSE</td>
+                            <td>MUMBAI</td>
+                            <td>INVESTIRE LEX & AUDIRE</td>
+                            <td>20-Apr-2025</td>
+                            <td>20-Mar-2025</td>
+                            <td>URGENT</td>
+                        </tr>
+                        <tr data-license="TRADE LICENSE" data-location="DELHI" data-company="APEX RETAIL CORP" data-status="DUE SOON">
+                            <td>3</td>
+                            <td>TRADE LICENSE</td>
+                            <td>DELHI</td>
+                            <td>APEX RETAIL CORP</td>
+                            <td>25-Jun-2025</td>
+                            <td>25-May-2025</td>
+                            <td>DUE SOON</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <button class="btn btn-warning btn-sm" onclick="resetRenewalFilters()">Reset Filters</button>
+            </div>
         </div>
     </div>
 </div>
 
-<div style='max-height: 100vh; overflow-y: auto; padding-right: 10px;'>
-    <h5 style='color: #0f1445; font-weight: 700; position: sticky; top: 0; background: #fff; padding: 10px 0; margin-bottom: 15px; z-index: 5;'>UPCOMING RENEWALS</h5>
-    <table class='table table-bordered table-hover' id='renewalsTable'>
-        <thead class='table-dark' style='position: sticky; top: 45px;'>
-            <tr>
-                <th style='width: 5%;'>SR NO</th>
-                <th style='width: 15%;'>LICENSE TYPE</th>
-                <th style='width: 15%;'>LOCATION</th>
-                <th style='width: 25%;'>COMPANY NAME</th>
-                <th style='width: 12%;'>CURRENT EXPIRY</th>
-                <th style='width: 12%;'>RENEWAL DUE DATE</th>
-                <th style='width: 12%;'>STATUS</th>
-            </tr>
-        </thead>
-        <tbody id='renewalsTableBody'></tbody>
-    </table>
-</div>
+@section Scripts {
+    <script>
+        function applyRenewalFilters() {
+            const lic = document.getElementById("filter_license").value.toUpperCase();
+            const loc = document.getElementById("filter_location").value.toUpperCase();
+            const comp = document.getElementById("filter_company").value.toUpperCase();
+            const stat = document.getElementById("filter_status").value.toUpperCase();
+
+            document.querySelectorAll("#renewalsBody tr").forEach(row => {
+                let show = true;
+                if (lic && !row.dataset.license.includes(lic)) show = false;
+                if (loc && !row.dataset.location.includes(loc)) show = false;
+                if (comp && !row.dataset.company.includes(comp)) show = false;
+                if (stat && !row.dataset.status.includes(stat)) show = false;
+                row.style.display = show ? "" : "none";
+            });
+        }
+
+        function resetRenewalFilters() {
+            document.getElementById("filter_license").value = "";
+            document.getElementById("filter_location").value = "";
+            document.getElementById("filter_company").value = "";
+            document.getElementById("filter_status").value = "";
+            applyRenewalFilters();
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            document.getElementById("filter_license").addEventListener("change", applyRenewalFilters);
+            document.getElementById("filter_location").addEventListener("change", applyRenewalFilters);
+            document.getElementById("filter_company").addEventListener("keyup", applyRenewalFilters);
+            document.getElementById("filter_status").addEventListener("change", applyRenewalFilters);
+        });
+    </script>
+}
