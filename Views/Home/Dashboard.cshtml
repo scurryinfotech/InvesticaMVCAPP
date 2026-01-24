@@ -1,11 +1,29 @@
-﻿@{
-    ViewData["Title"] = "Investica";
+﻿
+@section styles{
+    <link rel="stylesheet" href="~/css/Dashboard.css" asp-append-version="true" />
 }
 
-<div class="container">
-    <!-- LEFT SECTION -->
-    @Html.Partial("_leftPanel")
-    <!-- RIGHT SECTION -->
-    @Html.Partial("_rightPanel")
-    
+<div class="card">
+    <h3 class="fw-bold">Dashboard</h3>
+    <p class="text-muted">Welcome to the CRM Dashboard. You can create tickets from here.</p>
+    <div class="card p-4 bg-light">
+        <h4 class="fw-bold mb-3">Generate / Search Ticket</h4>
+        <label>Search Ticket Number</label>
+        <input class="form-control mb-3" placeholder="Enter existing ticket number">
+        <button class="btn btn-warning mb-4">Search</button>
+        <label>Select Company</label>
+        <div class="search-container">
+            <input type="text" id="searchInput" class="form-control" placeholder="Search...">
+            <div class="dropdown" id="dropdown">
+                <!-- Options will be populated by JS -->
+            </div>
+        </div>
+
+        <button class="btn btn-warning" onclick="showPage(2)">Next</button>
+    </div>
 </div>
+
+@section scripts{
+    <script src="~/js/Dashboard.js" asp-append-version="true"></script>
+
+}

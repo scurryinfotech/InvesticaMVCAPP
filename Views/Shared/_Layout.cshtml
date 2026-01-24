@@ -8,15 +8,32 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/Investica.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/MasterData.css" asp-append-version="true" />
+    @await RenderSectionAsync("styles", required: false)
+
 </head>
 <body>
     <header>
-        <div class="logo">INVESTICA</div>
+        <div class="tabs">
+            <div class="tab active" asp-controller="Dashboard" asp-action="Dashboard">Dashboard</div>
+
+            <div class="tab" asp-controller="Companies" asp-action="Companies">Companies</div>
+            <div class="tab" asp-controller="FonstsheetAndInvoice" asp-action="FonstsheetAndInvoice">Frontsheet &amp; Invoice</div>
+            <div class="tab" asp-controller="Summary" asp-action="Summary">Summary</div>
+            <div class="tab" asp-controller="Tickets" asp-action="Tickets">TICKETS</div>
+            <div class="tab" asp-controller="Invoice" asp-action="Invoice">Invoice</div>
+            <div class="tab" asp-controller="Frontsheet" asp-action="Frontsheet">Frontsheet</div>
+            <div class="tab" asp-controller="Links" asp-action="Links">Links</div>
+            <div class="tab" asp-controller="Renewals" asp-action="Renewals">Renewals</div>
+            <div class="tab" asp-controller="MasterData" asp-action="MasterData">Master Data</div>
+        </div>
+       
         <div class="user-area">
-            <span>Employee: Rahul</span>
+            @* <span>Employee: Rahul</span> *@
             <button class="logout" id="logoutBtn" type="button">Logout</button>
         </div>
     </header>
+
   
     <div class="container">
         <main role="main">
@@ -26,6 +43,15 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/Companies.js" asp-append-version="true"></script>
+    <script src="~/js/Dashboard.js" asp-append-version="true"></script>
+    <script src="~/js/FonstsheetAndInvoice.js" asp-append-version="true"></script>
+    <script src="~/js/Fontsheet.js" asp-append-version="true"></script>
+    <script src="~/js/Invoice.js" asp-append-version="true"></script>
+    <script src="~/js/Links.js" asp-append-version="true"></script>
+    <script src="~/js/MasterData.js" asp-append-version="true"></script>
+    <script src="~/js/Renewals.js" asp-append-version="true"></script>
+    <script src="~/js/LeftPanel.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

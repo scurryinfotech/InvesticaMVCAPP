@@ -1,0 +1,79 @@
+﻿body {
+    background-color: #f8f9fa;
+    padding: 20px;
+}
+
+.card {
+    border-radius: 8px;
+}
+
+.badge-count {
+    background-color: #6c757d;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+}
+
+.nav-link.active .badge-count {
+    background-color: #0d6efd;
+}
+
+/* Searchable Dropdown Styles */
+.search-container {
+    position: relative;
+    width: 250px;
+}
+
+#searchDropdown {
+    width: 100%;
+    padding: 8px 12px;
+    box-sizing: border-box;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+}
+
+    #searchDropdown:focus {
+        outline: none;
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    }
+
+.dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    max-height: 200px;
+    overflow-y: auto;
+    display: none;
+    z-index: 1000;
+    margin-top: 4px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.dropdown-item {
+    padding: 10px 12px;
+    cursor: pointer;
+}
+
+    .dropdown-item:hover {
+        background: #f0f0f0;
+    }
+
+#searchInput {
+    width: 250px;
+    padding: 8px 12px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+}
+
+.right-panel .card {
+    max-width: 1200px;
+    width: auto;            
+    margin: 0 auto;         
+    box-sizing: border-box;
+}

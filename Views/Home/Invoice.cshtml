@@ -1,4 +1,7 @@
-﻿@* <div style='background:#fff; padding:30px; font-family:Arial, sans-serif; line-height:1.6; max-width:900px;'>
+﻿
+    <!-- LEFT SECTION -->
+    @Html.Partial("_leftPanel")
+    <div style='background:#fff; padding:30px; font-family:Arial, sans-serif; line-height:1.6; max-width:900px;'>
     <div style='display:flex; justify-content:space-between; margin-bottom:30px; border-bottom:2px solid #0f1445; padding-bottom:15px;'>
         <div>
             <div style='font-size:18px; font-weight:bold; color:#0f1445;'>INVOICE TO:</div>
@@ -66,4 +69,4 @@
         <button class='btn btn-primary invoice-edit-btn' data-invoice='${invoiceId}' style='background:#0f1445; border:none; padding:8px 16px; font-size:14px;'>Edit</button>
         <button class='btn btn-secondary' onclick='window.print()' style='background:#6c757d; border:none; padding:8px 16px; font-size:14px; color:#fff;'>Print</button>
     </div>
-</div> *@
+</div>

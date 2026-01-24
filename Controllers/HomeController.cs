@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using Investica.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Investica.Controllers
@@ -7,10 +6,16 @@ namespace Investica.Controllers
     public class HomeController : Controller
     {
 
+        public IActionResult Index()
+        {
+            return View();
+        }
+
         public IActionResult Dashboard()
         {
             return View();
         }
+
         public IActionResult Companies()
         {
             return View();
@@ -54,13 +59,6 @@ namespace Investica.Controllers
         public IActionResult MasterData()
         {
             return View();
-        }
-
-
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
-        {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
     }
 }

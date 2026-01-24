@@ -85,12 +85,12 @@ header {
         font-weight: 600;
     }
 
-    .left-panel input {
+/*    .left-panel input {
         width: 100%;
         margin-bottom: 12px;
         padding: 6px;
     }
-
+*/
 /* RIGHT PANEL */
 .right-panel {
     display: flex;
@@ -102,7 +102,6 @@ header {
     display: flex;
     gap: 10px;
     padding: 10px;
-    background: #fff;
     border-bottom: 1px solid #ddd;
 }
 
@@ -111,7 +110,6 @@ header {
     border-radius: 20px;
     cursor: pointer;
     font-size: 14px;
-    background: #f4f6f9;
 }
 
     .tab.active {
@@ -197,4 +195,6 @@ header {
     gap: 12px;
     margin-bottom: 16px;
 }
+
+
 
