@@ -1,5 +1,4 @@
 ﻿document.addEventListener("DOMContentLoaded", function () {
-
     const tabsBar = document.getElementById("tabsBar");
     if (!tabsBar) return;
     const tabs = Array.from(tabsBar.querySelectorAll(".tab"));
