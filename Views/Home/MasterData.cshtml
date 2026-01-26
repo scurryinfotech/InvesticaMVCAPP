@@ -1,125 +1,141 @@
 ﻿@{
-    ViewData["Title"] = "Master Data";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+    Layout = "_Layout";
 }
 
-<div class="container-custom">
-    <div class="right-panel" style="grid-column:1 / span 2;">
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <h2 class="card-title">Master Data Management</h2>
+            <p class="text-muted">Manage Employees, Companies, License Types and Status.</p>
 
-        <div class="dashboard" id="dashboard">
+            <ul class="nav nav-tabs" id="masterTabs" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active" id="employees-tab" data-bs-toggle="tab" href="#employees" role="tab">Employees <span id="count-employees" class="badge bg-dark ms-1">0</span></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="companies-tab" data-bs-toggle="tab" href="#companies" role="tab">Companies <span id="count-companies" class="badge bg-dark ms-1">0</span></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="license-tab" data-bs-toggle="tab" href="#licenseTypes" role="tab">License Types <span id="count-licenses" class="badge bg-dark ms-1">0</span></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="status-tab" data-bs-toggle="tab" href="#statuses" role="tab">Statuses <span id="count-statuses" class="badge bg-dark ms-1">0</span></a>
+                </li>
+            </ul>
 
-            <div class="card p-4">
-                <h4 class="fw-bold mb-2">Master Data Management</h4>
-                <p class="text-muted">Manage Employees, Companies, License Types and Status.</p>
-
-                <!-- Tabs -->
-                <ul class="nav nav-tabs mb-3" id="mdTabs">
-                    <li class="nav-item">
-                        <a class="nav-link active" data-type="Employees" href="#">
-                            Employees <span class="badge badge-count ms-1" id="countEmployees">0</span>
-                        </a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a class="nav-link" data-type="Companies" href="#">
-                            Companies <span class="badge badge-count ms-1" id="countCompanies">0</span>
-                        </a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a class="nav-link" data-type="AppTypes" href="#">
-                            License Types <span class="badge badge-count ms-1" id="countAppTypes">0</span>
-                        </a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a class="nav-link" data-type="Statuses" href="#">
-                            Statuses <span class="badge badge-count ms-1" id="countStatuses">0</span>
-                        </a>
-                    </li>
-                </ul>
-
-                <!-- Add + Search -->
-                <div class="d-flex justify-content-between mb-3">
-                    <button class="btn btn-success btn-sm" id="addBtn">➕ Add</button>
-                    <input class="form-control form-control-sm search-box" id="searchInput" placeholder="🔍 Search" style="max-width:250px;">
+            <div class="tab-content mt-3">
+                <!-- Employees -->
+                <div class="tab-pane fade show active" id="employees" role="tabpanel">
+                    <div class="d-flex justify-content-between mb-2">
+                        <button id="btnAddEmployee" class="btn btn-success"><i class="bi bi-plus-lg"></i> Add</button>
+                        <input id="searchEmployees" class="form-control w-25" placeholder="Search" />
+                    </div>
+                    <div class="table-responsive">
+                        <table id="tblEmployees" class="table table-bordered table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width:50px">#</th>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                    <th style="width:120px">Active</th>
+                                    <th style="width:160px">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
                 </div>
 
-                <!-- Table -->
-                <table class="table table-bordered">
-                    <thead id="mdTableHead">
-                        <tr>
-                            <th style="width:5%;">#</th>
-                            <th>Name</th>
-                            <th width="150">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tableBody"></tbody>
-                </table>
+                <!-- Companies (unikey hidden) -->
+                <div class="tab-pane fade" id="companies" role="tabpanel">
+                    <div class="d-flex justify-content-between mb-2">
+                        <button id="btnAddCompany" class="btn btn-success"><i class="bi bi-plus-lg"></i> Add</button>
+                        <input id="searchCompanies" class="form-control w-25" placeholder="Search" />
+                    </div>
+                    <div class="table-responsive">
+                        <table id="tblCompanies" class="table table-bordered table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width:50px">#</th>
+                                    <th>Company Name</th>
+                                    <th style="width:120px">Active</th>
+                                    <th style="width:160px">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- License Types (unikey hidden) -->
+                <div class="tab-pane fade" id="licenseTypes" role="tabpanel">
+                    <div class="d-flex justify-content-between mb-2">
+                        <button id="btnAddLicense" class="btn btn-success"><i class="bi bi-plus-lg"></i> Add</button>
+                        <input id="searchLicenses" class="form-control w-25" placeholder="Search" />
+                    </div>
+                    <div class="table-responsive">
+                        <table id="tblLicenses" class="table table-bordered table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width:50px">#</th>
+                                    <th>App Type</th>
+                                    <th style="width:120px">Active</th>
+                                    <th style="width:160px">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Statuses (unikey hidden) -->
+                <div class="tab-pane fade" id="statuses" role="tabpanel">
+                    <div class="d-flex justify-content-between mb-2">
+                        <button id="btnAddStatus" class="btn btn-success"><i class="bi bi-plus-lg"></i> Add</button>
+                        <input id="searchStatuses" class="form-control w-25" placeholder="Search" />
+                    </div>
+                    <div class="table-responsive">
+                        <table id="tblStatuses" class="table table-bordered table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width:50px">#</th>
+                                    <th>Status Name</th>
+                                    <th style="width:120px">Active</th>
+                                    <th style="width:160px">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
 
         </div>
     </div>
 </div>
 
-<!-- ✅ Generic Master Data Modal -->
-<div class="modal fade" id="mdModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <form class="modal-content" id="mdForm">
+<!-- Generic Modal for Create/Edit -->
+<div class="modal fade" id="masterModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <form id="masterForm" class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Master Data</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <h5 id="modalTitle" class="modal-title">Modal</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-
             <div class="modal-body">
-                <input type="text" id="mdInput" class="form-control" placeholder="Enter name" required />
+                <div id="modalBodyContent"></div>
             </div>
-
             <div class="modal-footer">
-                <button type="submit" class="btn btn-primary">Save</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- ✅ Employee Modal -->
-<div class="modal fade" id="empModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <form class="modal-content" id="empForm">
-            <div class="modal-header">
-                <h5 class="modal-title">Employee</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-
-            <div class="modal-body">
-                <div class="mb-2">
-                    <label class="form-label">Employee Name</label>
-                    <input id="empName" class="form-control" required />
-                </div>
-
-                <div class="mb-2">
-                    <label class="form-label">Email</label>
-                    <input id="empEmail" class="form-control" type="email" required />
-                </div>
-
-                <div class="mb-2">
-                    <label class="form-label">Role</label>
-                    <input id="empRole" class="form-control" />
-                </div>
-
-                <div class="mb-2">
-                    <label class="form-label">Phone</label>
-                    <input id="empPhone" class="form-control" />
-                </div>
-            </div>
-
-            <div class="modal-footer">
-                <button type="submit" class="btn btn-primary">Save Employee</button>
+                <input type="hidden" id="entityType" />
+                <input type="hidden" id="entityId" />
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button id="btnSave" type="submit" class="btn btn-primary">Save</button>
             </div>
         </form>
     </div>
 </div>
 
 @section Scripts {
-
+    <script src="~/js/MasterData.js"></script>
 }

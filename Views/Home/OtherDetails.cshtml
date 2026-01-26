@@ -1,0 +1,90 @@
+﻿@{
+    ViewData["Title"] = "Other Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="dashboard wizard-wrap">
+    <div class="card p-4">
+
+        <div class="wizard-title">Frontsheet &amp; Invoice Details</div>
+        <div class="wizard-subtext">
+            This step displays the data that will be used to populate the Frontsheet and Invoice pages.
+            You can edit these values. Values are initialized from the previous step (Companies) or from saved wizard state.
+        </div>
+
+        <!-- Row 1 -->
+        <div class="fs-grid">
+            <div class="fs-field">
+                <label>Company Name</label>
+                <input id="fs_company" class="form-control" />
+            </div>
+
+            <div class="fs-field">
+                <label>Company Address</label>
+                <textarea id="fs_address" class="form-control" rows="2"></textarea>
+            </div>
+
+            <div class="fs-field">
+                <label>Contact / Phone</label>
+                <input id="fs_phone" class="form-control" />
+            </div>
+
+            <div class="fs-field">
+                <label>Email</label>
+                <input id="fs_email" class="form-control" />
+            </div>
+
+            <div class="fs-field">
+                <label>GSTIN</label>
+                <input id="fs_gstin" class="form-control" />
+            </div>
+        </div>
+
+        <!-- Row 2 -->
+        <div class="fs-grid two-row" style="margin-top:22px;">
+            <div class="fs-field">
+                <label>PAN</label>
+                <input id="fs_pan" class="form-control" />
+            </div>
+
+            <div class="fs-field">
+                <label>Entity Type</label>
+                <input id="fs_entity" class="form-control" />
+            </div>
+
+            <div class="fs-field">
+                <label>Product / Service</label>
+                <input id="fs_product" class="form-control" />
+            </div>
+
+            <div class="fs-field span-2">
+                <label>Location (Area / Ward / Zone)</label>
+                <input id="fs_location" class="form-control" />
+            </div>
+        </div>
+
+        <!-- Row 3 -->
+        <div class="fs-grid" style="grid-template-columns: repeat(2, minmax(220px, 1fr)); margin-top:22px;">
+            <div class="fs-field">
+                <label>License Type</label>
+                <select id="fs_licenseSelect" class="form-select"></select>
+            </div>
+
+            <div class="fs-field">
+                <label>Status</label>
+                <select id="fs_statusSelect" class="form-select"></select>
+            </div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="wizard-actions" style="margin-top:20px;">
+            <button type="button" class="btn-next" onclick="goSummary()">Next</button>
+            <button type="button" class="btn-back" onclick="window.location.href='/Home/Companies'">Back</button>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/OtherDetails.js"></script>
+}

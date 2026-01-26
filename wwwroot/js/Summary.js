@@ -1,1 +1,195 @@
-﻿
+﻿document.addEventListener('DOMContentLoaded', async () => {
+    // Helper to read fallback keys (sum_* preferred, else wiz_*)
+    const read = (sumKey, wizKey) => {
+        const s = localStorage.getItem(sumKey);
+        if (s && s.trim() !== '') return s;
+        const w = localStorage.getItem(wizKey);
+        return w && w.trim() !== '' ? w : '';
+    };
+
+    // fields mapping: elementId -> [sumKey, wizKey]
+    const map = {
+        sCompany: ['sum_company', 'wiz_companyName'],
+        sAddress: ['sum_address', 'wiz_address'],
+        sPhone: ['sum_phone', 'wiz_phone'],
+        sEmail: ['sum_email', 'wiz_email'],
+        sGstin: ['sum_gstin', 'wiz_gstin'],
+        sPan: ['sum_pan', 'wiz_pan'],
+        sEntity: ['sum_entity', 'wiz_entity'],
+        sProduct: ['sum_product', 'wiz_product'],
+        sLocation: ['sum_location', 'wiz_location'],
+        sLicense: ['sum_license', 'wiz_license'],
+        sStatus: ['sum_status', 'wiz_status']
+    };
+
+    // populate UI
+    Object.keys(map).forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.innerText = read(map[id][0], map[id][1]) || '—';
+    });
+
+    // If no sum_ticket, show default
+    if (!localStorage.getItem('sum_ticket')) {
+        document.getElementById('sTicket').innerText = 'Auto-generated on save';
+    } else {
+        document.getElementById('sTicket').innerText = localStorage.getItem('sum_ticket');
+    }
+
+    // try to fetch company logo using persisted companyId (wiz_companyId)
+    const companyId = localStorage.getItem('wiz_companyId') || null;
+    async function fetchJson(url) {
+        const res = await fetch(url);
+        if (!res.ok) return null;
+        return res.json();
+    }
+    async function setLogoFromCompany(id) {
+        try {
+            const company = await fetchJson(`/companies/${id}`);
+            if (!company) return;
+            if (company.documentId) {
+                const docRes = await fetch(`/document/${company.documentId}/data`);
+                if (docRes && docRes.ok) {
+                    const blob = await docRes.blob();
+                    const url = URL.createObjectURL(blob);
+                    const img = document.getElementById('sLogo');
+                    img.src = url;
+                    img.style.display = '';
+                }
+            }
+        } catch (err) {
+            console.warn('Failed to load company logo', err);
+        }
+    }
+    if (companyId) {
+        setLogoFromCompany(companyId);
+    }
+
+    // Ensure Create Ticket button reads the same persisted values when submitting
+    const btn = document.getElementById('btnCreateTicket');
+    if (btn) {
+        btn.addEventListener('click', () => {
+            // Build ticket payload from persisted keys
+            const payload = {
+                companyId: localStorage.getItem('wiz_companyId') || null,
+                companyName: read('sum_company', 'wiz_companyName'),
+                companyAddress: read('sum_address', 'wiz_address'),
+                phone: read('sum_phone', 'wiz_phone'),
+                email: read('sum_email', 'wiz_email'),
+                gstin: read('sum_gstin', 'wiz_gstin'),
+                pan: read('sum_pan', 'wiz_pan'),
+                entityType: read('sum_entity', 'wiz_entity'),
+                product: read('sum_product', 'wiz_product'),
+                location: read('sum_location', 'wiz_location'),
+                licenseId: localStorage.getItem('wiz_licenseId') || null,
+                licenseLabel: read('sum_license', 'wiz_license'),
+                statusId: localStorage.getItem('wiz_statusId') || null,
+                statusLabel: read('sum_status', 'wiz_status')
+            };
+            alert('Ticket Created Successfully ✅');
+            // Optionally clear wizard storage
+            // window.localStorage.removeItem('wiz_companyId'); // keep as needed
+            window.location.href = '/Home/Tickets';
+        });
+    }
+    // Submits ticket using POST /tickets, clears wizard state and resets navigation to default, then navigates to Tickets.
+    (() => {
+        const qs = s => document.querySelector(s);
+
+        const read = (sumKey, wizKey) => {
+            const s = localStorage.getItem(sumKey);
+            if (s && s.trim() !== '') return s;
+            const w = localStorage.getItem(wizKey);
+            return w && w.trim() !== '' ? w : '';
+        };
+
+        const toIntOrNull = (v) => {
+            if (!v) return null;
+            const n = parseInt(v, 10);
+            return Number.isNaN(n) ? null : n;
+        };
+
+        const showAlert = (msg, type = 'success') => {
+            const el = document.createElement('div');
+            el.className = `alert alert-${type} position-fixed top-0 end-0 m-3`;
+            el.style.zIndex = 2000;
+            el.textContent = msg;
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 3000);
+        };
+
+        async function createTicket() {
+            const payload = {
+                CompanyId: toIntOrNull(localStorage.getItem('wiz_companyId')),
+                EmployeeId: toIntOrNull(localStorage.getItem('wiz_employeeId')) || 1,
+                LicenseId: toIntOrNull(localStorage.getItem('wiz_licenseId')),
+                StatusId: toIntOrNull(localStorage.getItem('wiz_statusId')),
+                CompanyAddress: (localStorage.getItem('sum_address') || localStorage.getItem('wiz_address') || '') ,
+                Description: read('sum_description', 'wiz_description') || '',
+                TrackingNumber: read('sum_tracking', 'wiz_tracking') || null,
+                ValidTill: null,
+                CreatedDate: new Date().toISOString(),
+                CreatedBy: toIntOrNull(localStorage.getItem('wiz_createdBy')) || 1,
+                ModifiedDate: null,
+                ModifiedBy: null
+            };
+
+            try {
+                const res = await fetch('/tickets', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (res.status === 201 || res.ok) {
+                    let data = null;
+                    try { data = await res.json(); } catch { /* ignore */ }
+                    const createdId = data && (data.id || data.Id) ? (data.id || data.Id) : null;
+                    showAlert('Ticket created', 'success');
+
+                    // Persist created ticket id
+                    if (createdId) localStorage.setItem('createdTicketId', createdId);
+
+                    // CLEAR wizard/session state so nav resets to default
+                    try {
+                        // clear session flag that unlocked company flow
+                        sessionStorage.removeItem('companyFlowShown');
+                        // clear wizard keys (wiz_* and sum_*
+                        Object.keys(localStorage).forEach(k => {
+                            if (k.startsWith('wiz_') || k.startsWith('sum_')) {
+                                // keep createdTicketId
+                                if (k === 'createdTicketId') return;
+                                localStorage.removeItem(k);
+                            }
+                        });
+                    } catch (err) {
+                        console.warn('Failed to clear wizard state', err);
+                    }
+
+                    // Short delay so user sees toast then navigate to Tickets
+                    setTimeout(() => {
+                        window.location.href = '/Home/Tickets';
+                    }, 700);
+                    return;
+                }
+
+                const text = await res.text();
+                showAlert(`Create failed: ${text || res.statusText}`, 'danger');
+            } catch (err) {
+                console.error(err);
+                showAlert('Error creating ticket', 'danger');
+            }
+        }
+
+        // Delegate clicks so handler works regardless of load order
+        document.addEventListener('click', (e) => {
+            const btn = e.target.closest('#btnCreateTicket, #btnCreate');
+            if (!btn) return;
+            e.preventDefault();
+            createTicket();
+        });
+
+        // Also provide function in window so other scripts can call it
+        window.createTicketFromSummary = createTicket;
+    })();
+});

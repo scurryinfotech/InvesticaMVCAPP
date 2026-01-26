@@ -1,224 +1,196 @@
-﻿function makeSearchableDropdown(inputId, options) {
-    const input = document.getElementById(inputId);
-    if (!input) {
-        console.log(`Element with id "${inputId}" not found`);
-        return;
+﻿// LeftPanel.js — populate Company, License Type and Status from DB and make company input searchable.
+// Uses APIs: /api/master/companies?page=1&pageSize=200, /api/master/licensetypes, /api/master/statuses
+
+(function () {
+    const qs = (s, r = document) => r.querySelector(s);
+    const qsa = (s, r = document) => Array.from((r || document).querySelectorAll(s));
+
+    async function fetchJson(url) {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`Request failed: ${res.status}`);
+        return res.json();
     }
 
-    const wrapper = document.createElement('div');
-    wrapper.style.position = 'relative';
-    input.parentNode.insertBefore(wrapper, input);
-    wrapper.appendChild(input);
-
-    const dropdown = document.createElement('div');
-    dropdown.className = 'searchable-dropdown';
-    dropdown.style.position = 'absolute';
-    dropdown.style.top = '100%';
-    dropdown.style.left = '0';
-    dropdown.style.right = '0';
-    dropdown.style.background = 'white';
-    dropdown.style.border = '1px solid #ced4da';
-    dropdown.style.borderRadius = '4px';
-    dropdown.style.maxHeight = '200px';
-    dropdown.style.overflowY = 'auto';
-    dropdown.style.display = 'none';
-    dropdown.style.zIndex = '1050';
-    dropdown.style.marginTop = '2px';
-    dropdown.style.boxShadow = '0 4px 6px rgba(0,0,0,0.1)';
-    wrapper.appendChild(dropdown);
-
-    function populateDropdown(filterText = '') {
-        dropdown.innerHTML = '';
-        const filtered = options.filter(opt =>
-            opt.toLowerCase().includes(filterText.toLowerCase())
-        );
-
-        if (filtered.length === 0) {
-            const noResult = document.createElement('div');
-            noResult.textContent = 'No results found';
-            noResult.style.padding = '10px 12px';
-            noResult.style.color = '#6c757d';
-            noResult.style.textAlign = 'center';
-            dropdown.appendChild(noResult);
-        } else {
-            filtered.forEach(option => {
-                const item = document.createElement('div');
-                item.textContent = option;
-                item.style.padding = '10px 12px';
-                item.style.cursor = 'pointer';
-
-                item.addEventListener('mouseenter', () => {
-                    item.style.background = '#f0f0f0';
-                });
-                item.addEventListener('mouseleave', () => {
-                    item.style.background = 'white';
-                });
-                item.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    input.value = option;
-                    dropdown.style.display = 'none';
-                });
-                dropdown.appendChild(item);
-            });
+    // makeSearchableDropdown accepts options array of either strings or { id, text }
+    function makeSearchableDropdown(inputId, options) {
+        const input = document.getElementById(inputId);
+        if (!input) {
+            console.log(`Element with id "${inputId}" not found`);
+            return;
         }
-    }
 
-    input.addEventListener('focus', () => {
-        populateDropdown(input.value);
-        dropdown.style.display = 'block';
-    });
+        // remove any previously created wrapper to avoid double-init
+        if (input.dataset.searchableInit === '1') return;
+        input.dataset.searchableInit = '1';
 
-    input.addEventListener('input', () => {
-        populateDropdown(input.value);
-        dropdown.style.display = 'block';
-    });
+        const wrapper = document.createElement('div');
+        wrapper.style.position = 'relative';
+        input.parentNode.insertBefore(wrapper, input);
+        wrapper.appendChild(input);
 
-    document.addEventListener('click', (e) => {
-        if (!wrapper.contains(e.target)) {
-            dropdown.style.display = 'none';
-        }
-    });
-}
-
-function makeSearchableSelect(selectId) {
-    const select = document.getElementById(selectId);
-    if (!select) {
-        console.log(`Select element with id "${selectId}" not found`);
-        return;
-    }
-
-    const options = Array.from(select.options)
-        .filter(opt => opt.value !== '')
-        .map(opt => ({ text: opt.text, value: opt.value }));
-
-    const input = document.createElement('input');
-    input.type = 'text';
-    input.className = select.className;
-    input.id = select.id + '_search';
-    input.placeholder = select.options[0].text;
-    input.autocomplete = 'off';
-
-    const wrapper = document.createElement('div');
-    wrapper.style.position = 'relative';
-    select.parentNode.insertBefore(wrapper, select);
-    wrapper.appendChild(input);
-    select.style.display = 'none';
-    wrapper.appendChild(select);
-
-    const dropdown = document.createElement('div');
-    dropdown.className = 'searchable-dropdown';
-    dropdown.style.position = 'absolute';
-    dropdown.style.top = '100%';
-    dropdown.style.left = '0';
-    dropdown.style.right = '0';
-    dropdown.style.background = 'white';
-    dropdown.style.border = '1px solid #ced4da';
-    dropdown.style.borderRadius = '4px';
-    dropdown.style.maxHeight = '200px';
-    dropdown.style.overflowY = 'auto';
-    dropdown.style.display = 'none';
-    dropdown.style.zIndex = '1050';
-    dropdown.style.marginTop = '2px';
-    dropdown.style.boxShadow = '0 4px 6px rgba(0,0,0,0.1)';
-    wrapper.appendChild(dropdown);
-
-    function populateDropdown(filterText = '') {
-        dropdown.innerHTML = '';
-
-        // Add empty option
-        const emptyItem = document.createElement('div');
-        emptyItem.textContent = select.options[0].text;
-        emptyItem.style.padding = '10px 12px';
-        emptyItem.style.cursor = 'pointer';
-        emptyItem.style.color = '#6c757d';
-        emptyItem.addEventListener('mouseenter', () => {
-            emptyItem.style.background = '#f0f0f0';
+        const dropdown = document.createElement('div');
+        dropdown.className = 'searchable-dropdown';
+        Object.assign(dropdown.style, {
+            position: 'absolute',
+            top: '100%',
+            left: '0',
+            right: '0',
+            background: 'white',
+            border: '1px solid #ced4da',
+            borderRadius: '4px',
+            maxHeight: '200px',
+            overflowY: 'auto',
+            display: 'none',
+            zIndex: '1050',
+            marginTop: '2px',
+            boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
         });
-        emptyItem.addEventListener('mouseleave', () => {
-            emptyItem.style.background = 'white';
+        wrapper.appendChild(dropdown);
+
+        function getText(opt) {
+            return typeof opt === 'string' ? opt : (opt.text || opt.name || '');
+        }
+        function getId(opt) {
+            return typeof opt === 'string' ? '' : (opt.id ?? '');
+        }
+
+        function populateDropdown(filterText = '') {
+            dropdown.innerHTML = '';
+
+            const filtered = options.filter(opt =>
+                getText(opt).toLowerCase().includes(filterText.toLowerCase())
+            );
+
+            if (filtered.length === 0) {
+                const noResult = document.createElement('div');
+                noResult.textContent = 'No results found';
+                Object.assign(noResult.style, { padding: '10px 12px', color: '#6c757d', textAlign: 'center' });
+                dropdown.appendChild(noResult);
+            } else {
+                filtered.forEach(option => {
+                    const text = getText(option);
+                    const id = getId(option);
+                    const item = document.createElement('div');
+                    item.textContent = text;
+                    Object.assign(item.style, { padding: '10px 12px', cursor: 'pointer' });
+
+                    item.addEventListener('mouseenter', () => item.style.background = '#f0f0f0');
+                    item.addEventListener('mouseleave', () => item.style.background = 'white');
+                    item.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        input.value = text;
+                        // expose selected id for downstream usage
+                        input.dataset.selectedId = id || '';
+                        // also set hidden input if present
+                        const hidden = document.getElementById(inputId + 'Id');
+                        if (hidden) hidden.value = id || '';
+                        dropdown.style.display = 'none';
+                    });
+                    dropdown.appendChild(item);
+                });
+            }
+        }
+
+        input.addEventListener('focus', () => {
+            populateDropdown(input.value);
+            dropdown.style.display = 'block';
         });
-        emptyItem.addEventListener('click', (e) => {
-            e.stopPropagation();
-            input.value = '';
-            select.value = '';
-            dropdown.style.display = 'none';
+
+        input.addEventListener('input', () => {
+            // clear selected id while typing
+            input.dataset.selectedId = '';
+            const hidden = document.getElementById(inputId + 'Id');
+            if (hidden) hidden.value = '';
+            populateDropdown(input.value);
+            dropdown.style.display = 'block';
         });
-        dropdown.appendChild(emptyItem);
 
-        const filtered = options.filter(opt =>
-            opt.text.toLowerCase().includes(filterText.toLowerCase())
-        );
+        document.addEventListener('click', (e) => {
+            if (!wrapper.contains(e.target)) dropdown.style.display = 'none';
+        });
+    }
 
-        if (filtered.length === 0) {
-            const noResult = document.createElement('div');
-            noResult.textContent = 'No results found';
-            noResult.style.padding = '10px 12px';
-            noResult.style.color = '#6c757d';
-            noResult.style.textAlign = 'center';
-            dropdown.appendChild(noResult);
-        } else {
-            filtered.forEach(option => {
-                const item = document.createElement('div');
-                item.textContent = option.text;
-                item.style.padding = '10px 12px';
-                item.style.cursor = 'pointer';
+    // Populate <select> elements for license/status
+    function populateSelect(selectId, items, placeholder) {
+        const sel = document.getElementById(selectId);
+        if (!sel) return;
+        sel.innerHTML = `<option value="">${placeholder}</option>`;
+        items.forEach(it => {
+            const opt = document.createElement('option');
+            opt.value = it.id;
+            opt.textContent = (it.appTypeName || it.statusName || it.companyName || it.name || it.text || it);
+            sel.appendChild(opt);
+        });
+    }
 
-                item.addEventListener('mouseenter', () => {
-                    item.style.background = '#f0f0f0';
-                });
-                item.addEventListener('mouseleave', () => {
-                    item.style.background = 'white';
-                });
-                item.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    input.value = option.text;
-                    select.value = option.value;
-                    dropdown.style.display = 'none';
-                });
-                dropdown.appendChild(item);
-            });
+    async function initSearchableDropdowns() {
+        try {
+            // fetch lists in parallel
+            const [companiesRes, licensesRes, statusesRes] = await Promise.all([
+                fetchJson('/api/master/companies?page=1&pageSize=500'),
+                fetchJson('/api/master/licensetypes'),
+                fetchJson('/api/master/statuses')
+            ]);
+
+            // companiesRes is expected to be an array of CompanyMaster objects
+            const companies = (companiesRes || []).map(c => ({ id: c.id, text: c.companyName || c.unikey || `#${c.id}` }));
+
+            // license/status convert to {id, text} for select population
+            const licenses = (licensesRes || []).map(l => ({ id: l.id, appTypeName: l.appTypeName }));
+            const statuses = (statusesRes || []).map(s => ({ id: s.id, statusName: s.statusName }));
+
+            // populate selects first so makeSearchableSelect can transform them
+            populateSelect('licenseType', licenses, 'Select license type');
+            populateSelect('status', statuses, 'Select status');
+
+            // Now make searchable selects (existing function uses static options, so call after population)
+            makeSearchableSelect('licenseType');
+            makeSearchableSelect('status');
+
+            // Now make company input searchable using companies array
+            // Ensure an accompanying hidden input exists to hold selected company id
+            const companyInput = qs('#companyName');
+            if (companyInput) {
+                // create hidden input if not present
+                if (!qs('#companyNameId')) {
+                    const hid = document.createElement('input');
+                    hid.type = 'hidden';
+                    hid.id = 'companyNameId';
+                    hid.name = 'companyId';
+                    companyInput.parentNode.insertBefore(hid, companyInput.nextSibling);
+                }
+                makeSearchableDropdown('companyName', companies);
+            }
+
+            // Also support frontsheet's company input if present
+            const fsCompany = qs('#frontsheetCompany');
+            if (fsCompany) {
+                if (!qs('#frontsheetCompanyId')) {
+                    const hid = document.createElement('input');
+                    hid.type = 'hidden';
+                    hid.id = 'frontsheetCompanyId';
+                    hid.name = 'frontsheetCompanyId';
+                    fsCompany.parentNode.insertBefore(hid, fsCompany.nextSibling);
+                }
+                makeSearchableDropdown('frontsheetCompany', companies);
+            }
+
+        } catch (err) {
+            console.error('Failed to load master-data for left panel', err);
+            // fallback to existing demo lists for company/location if API fails
+            const companiesFallback = ['ABC Corp', 'XYZ Ltd', 'Tech Solutions', 'Global Industries', 'Innovation Inc', 'Acme Corporation'];
+            makeSearchableDropdown('companyName', companiesFallback);
+            makeSearchableDropdown('frontsheetCompany', companiesFallback);
+            const locations = ['New York', 'London', 'Tokyo', 'Mumbai', 'Singapore', 'Dubai', 'Paris', 'Berlin'];
+            makeSearchableDropdown('location', locations);
+            makeSearchableDropdown('frontsheetLocation', locations);
         }
     }
 
-    // Show dropdown on focus
-    input.addEventListener('focus', () => {
-        populateDropdown(input.value);
-        dropdown.style.display = 'block';
-    });
-
-    // Filter on input
-    input.addEventListener('input', () => {
-        populateDropdown(input.value);
-        dropdown.style.display = 'block';
-    });
-
-    // Hide dropdown when clicking outside
-    document.addEventListener('click', (e) => {
-        if (!wrapper.contains(e.target)) {
-            dropdown.style.display = 'none';
-        }
-    });
-}
-
-function initSearchableDropdowns() {
-
-    const companies = ['ABC Corp', 'XYZ Ltd', 'Tech Solutions', 'Global Industries', 'Innovation Inc', 'Acme Corporation'];
-    const locations = ['New York', 'London', 'Tokyo', 'Mumbai', 'Singapore', 'Dubai', 'Paris', 'Berlin'];
-
-    makeSearchableDropdown('companyName', companies);
-    makeSearchableDropdown('location', locations);
-    makeSearchableDropdown('frontsheetCompany', companies);
-    makeSearchableDropdown('frontsheetLocation', locations);
-
-    // Initialize select dropdowns
-    makeSearchableSelect('licenseType');
-    makeSearchableSelect('status');
-
-}
-
-
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initSearchableDropdowns);
-} else {
-    initSearchableDropdowns();
-}
+    // wire initialization on DOM ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initSearchableDropdowns);
+    } else {
+        initSearchableDropdowns();
+    }
+})();

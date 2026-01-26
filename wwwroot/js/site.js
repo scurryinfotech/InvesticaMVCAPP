@@ -16,84 +16,101 @@
         p = p.replace(/\/+$/, "");
         return p === "" ? "/" : p.toLowerCase();
     };
+    const normalizeText = t => (t || "").trim().toLowerCase();
 
+    // Flow definitions (keywords matched against tab text or href)
+    const defaultFlowKeywords = ['dashboard', 'tickets', 'invoice', 'fontsheet', 'links', 'renewals','admin panel'];
+    const companyFlowKeywords = ['dashboard','companies','other details','summary','admin panel'];
+
+    // Helper: does tab belong to a flow?
+    function tabMatchesKeywords(tab, keywords) {
+        const href = normalize(tab.getAttribute('href') || "");
+        const txt = normalizeText(tab.textContent);
+        if (!href && !txt) return false;
+        // match href tokens
+        for (const k of keywords) {
+            if (href.includes(k.replace(/\s+/g, ''))) return true;
+        }
+        // match visible text
+        for (const k of keywords) {
+            if (txt.includes(k)) return true;
+        }
+        return false;
+    }
+
+    // Show/Hide tabs for a selected flow. Always keep Dashboard visible.
+    function setFlow(showCompanyFlow) {
+        tabs.forEach(tab => {
+            const isDashboard = normalizeText(tab.textContent).includes('dashboard') || (normalize(tab.getAttribute('href') || '').includes('/home') && normalize(tab.getAttribute('href') || '').endsWith('/dashboard'));
+            const inCompanyFlow = tabMatchesKeywords(tab, companyFlowKeywords);
+            const inDefaultFlow = tabMatchesKeywords(tab, defaultFlowKeywords);
+
+            let shouldShow = false;
+            if (isDashboard) shouldShow = true; // Dashboard always visible
+            else if (showCompanyFlow) shouldShow = inCompanyFlow;
+            else shouldShow = inDefaultFlow;
+
+            tab.style.display = shouldShow ? "" : "none";
+        });
+    }
+
+    // Initial active-tab logic (keeps parent tab active for subroutes)
     const currentPath = normalize(window.location.pathname);
-
-    // Tab matching / active logic (keeps parent tab active for subroutes)
     tabs.forEach(t => {
         t.classList.remove("active");
         t.removeAttribute("aria-current");
     });
-
     let matched = false;
     tabs.forEach(t => {
         const href = t.getAttribute("href") || "";
         const linkPath = normalize(href);
-
-        const isMatch =
-            linkPath === "/"
-                ? currentPath === "/"
-                : currentPath === linkPath || currentPath.startsWith(linkPath + "/");
-
+        const isMatch = linkPath === "/" ? currentPath === "/" : currentPath === linkPath || currentPath.startsWith(linkPath + "/");
         if (isMatch) {
             t.classList.add("active");
             t.setAttribute("aria-current", "page");
             matched = true;
         }
     });
-
     if (!matched && tabs.length > 0) {
         tabs[0].classList.add("active");
         tabs[0].setAttribute("aria-current", "page");
     }
 
-    // Company-related tabs to hide initially
-    const companyTabsToToggle = [
-        "/home/companies",
-        "/home/fonstsheetandinvoice", // "Other Details" (matches your layout href)
-        "/home/summary"
-    ].map(normalize);
+    // Flow persistence: when Dashboard Next clicked, show company flow.
+    const persistedCompany = sessionStorage.getItem("companyFlowShown") === "1";
 
-    function setCompanyTabsVisibility(show) {
-        tabs.forEach(t => {
-            const href = t.getAttribute("href") || "";
-            const linkPath = normalize(href);
-            if (companyTabsToToggle.includes(linkPath)) {
-                t.style.display = show ? "" : "none";
-            }
-        });
-    }
+    // Decide initial flow:
+    // - If persistedCompany true -> company flow
+    // - Else -> default flow
+    setFlow(persistedCompany);
 
-    // If user navigated directly to a company-related page, show the tabs
-    const startedOnCompanyPage = companyTabsToToggle.includes(currentPath);
-
-    // Persist showing across navigation after Next is clicked
-    const persisted = sessionStorage.getItem("companyTabsShown") === "1";
-
-    // Hide by default unless user is on one of those pages or already clicked Next earlier
-    setCompanyTabsVisibility(startedOnCompanyPage || persisted);
-
-    // Expose programmatic API and custom event so Dashboard can reveal tabs
-    window.showCompanyTabs = () => {
-        setCompanyTabsVisibility(true);
-        sessionStorage.setItem("companyTabsShown", "1");
+    // Expose API to change flow programmatically
+    window.showCompanyFlow = () => {
+        sessionStorage.setItem("companyFlowShown", "1");
+        setFlow(true);
+    };
+    window.showDefaultFlow = () => {
+        sessionStorage.removeItem("companyFlowShown");
+        setFlow(false);
     };
 
-    // Custom event support: dispatch from other scripts:
-    // document.dispatchEvent(new CustomEvent('company:next'));
-    document.addEventListener('company:next', () => window.showCompanyTabs());
-
-    // Click delegation support: add one of these to your Dashboard "Next" button:
-    // data-action="company-next"  OR class="company-next"  OR id="companyNext"
+    // Click handlers: detect Dashboard "Next" buttons and other triggers
+    // Accept selectors: data-action="company-next", .company-next, #companyNext, #btnNext
     document.addEventListener('click', (e) => {
-        const btn = e.target.closest('[data-action="company-next"], .company-next, #companyNext');
+        const btn = e.target.closest('[data-action="company-next"], .company-next, #companyNext, #btnNext');
         if (btn) {
-            // reveal and persist for subsequent navigation
-            window.showCompanyTabs();
+            // switch to company flow and persist
+            window.showCompanyFlow();
+            // allow default navigation to proceed
+        }
+        // Optional: detect a 'reset' control to return to default flow (not required)
+        const reset = e.target.closest('[data-action="company-reset"], .company-reset, #companyReset');
+        if (reset) {
+            window.showDefaultFlow();
         }
     });
 
-    // Keep immediate UI feedback on tab click (does not prevent navigation)
+    // Update active tab styling on click (visual only)
     tabs.forEach(tab => {
         tab.addEventListener("click", function () {
             tabs.forEach(t => {
@@ -102,6 +119,26 @@
             });
             this.classList.add("active");
             this.setAttribute("aria-current", "page");
+
+            // If user clicked the Dashboard tab, reset to default flow and clear persistence
+            if (normalizeText(this.textContent).includes('dashboard')) {
+                window.showDefaultFlow();
+            }
         });
     });
+
+    // handle popstate (back/forward) and re-evaluate active tab
+    window.addEventListener('popstate', () => {
+        const path = normalize(location.pathname);
+        tabs.forEach(t => {
+            t.classList.remove("active");
+            t.removeAttribute("aria-current");
+            const href = normalize(t.getAttribute('href') || "");
+            if (href === path || path.startsWith(href + "/")) {
+                t.classList.add("active");
+                t.setAttribute("aria-current", "page");
+            }
+        });
+    });
+
 });

@@ -3,45 +3,39 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-   <div class="card p-4">
-       <h5 style="color:#0f1445;font-weight:700;">SHOP CATEGORY LINKS</h5>
+<div class="card p-4">
+    <h5 style="color:#0f1445;font-weight:700;">SHOP CATEGORY LINKS</h5>
 
-       <table class="table table-bordered table-hover">
-           <thead class="table-dark">
-               <tr>
-                   <th>STATE</th>
-                   <th>URL</th>
-               </tr>
-           </thead>
-           <tbody>
-               <tr><td>MAHARASHTRA (MUMBAI)</td><td><a href="https://portal.mcgm.gov.in/irj/portal/anonymous/qlsaeoService" target="_blank">Link</a></td></tr>
-               <tr><td>REST OF MAHARASHTRA</td><td><a href="https://maitri.mahsonline.gov.in/Login/Logni" target="_blank">Link</a></td></tr>
-               <tr><td>KARNATAKA</td><td><a href="http://164.100.133.176/ekarnika/Static/Home.aspx" target="_blank">Link</a></td></tr>
-               <tr><td>DELHI</td><td><a href="http://labourcis.nic.in/" target="_blank">Link</a></td></tr>
-               <tr><td>MADHYA PRADESH</td><td><a href="http://www.labour.mp.gov.in/Esr/public/Establishment_Apply.aspx" target="_blank">Link</a></td></tr>
-               <tr><td>ANDHRA PRADESH</td><td><a href="https://ineap.meeseva.gov.in/CitizenPortal/UserInterface/Citizen/CitizenHome" target="_blank">Link</a></td></tr>
-               <tr><td>WEST BENGAL</td><td><a href="https://wbshopsonline.gov.in/#" target="_blank">Link</a></td></tr>
-               <tr><td>KERALA</td><td><a href="https://lcas.lc.kerala.gov.in/office/registration/onlinemain_online_pay.php" target="_blank">Link</a></td></tr>
-               <tr><td>TAMIL NADU</td><td><a href="https://labour.tn.gov.in/services/users/login" target="_blank">Link</a></td></tr>
-               <tr><td>GUJARAT</td><td><b style="color:red;">OFFLINE</b></td></tr>
-           </tbody>
-       </table>
+    <div class="table-responsive">
+        <table id="tblShopLinks" class="table table-bordered table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>STATE</th>
+                    <th>URL</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
 
-       <h5 style="color:#0f1445;font-weight:700;margin-top:25px;">TRADE CATEGORY LINKS</h5>
+    <h5 style="color:#0f1445;font-weight:700;margin-top:25px;">TRADE CATEGORY LINKS</h5>
 
-       <table class="table table-bordered table-hover">
-           <thead class="table-dark">
-               <tr>
-                   <th>SR NO</th>
-                   <th>CORPORATION</th>
-                   <th>WEBSITE</th>
-               </tr>
-           </thead>
-           <tbody>
-               <tr><td>1</td><td>NAVI MUMBAI MUNICIPAL CORPORATION</td><td><a href="https://www.nmmc.gov.in/" target="_blank">Link</a></td></tr>
-               <tr><td>2</td><td>THANE MUNICIPAL CORPORATION</td><td><a href="https://thanecity.gov.in/tmc/CitizenHome.html" target="_blank">Link</a></td></tr>
-               <tr><td>3</td><td>KALYAN-DOMBIVALI MUNICIPAL CORPORATION</td><td><a href="https://kdmc.gov.in/kdmc/CitizenHome.html" target="_blank">Link</a></td></tr>
-               <tr><td>4</td><td>MUMBAI MUNICIPAL CORPORATION</td><td><a href="https://mcgm.gov.in/" target="_blank">Link</a></td></tr>
-           </tbody>
-       </table>
-   </div>
+    <div class="table-responsive">
+        <table id="tblTradeLinks" class="table table-bordered table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>SR NO</th>
+                    <th>CORPORATION</th>
+                    <th>WEBSITE</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/Links.js"></script>
+}

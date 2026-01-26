@@ -1,55 +1,43 @@
 ﻿@{
+    Layout = "_Layout";
     ViewData["Title"] = "Companies";
-    Layout = "~/Views/Shared/_Layout.cshtml";
 }
-        <div class="dashboard">
-            <div class="card">
-                <h2 style="font-weight:700;color:#0f1445;">Company Information</h2>
 
-                <div style="display:flex; align-items:center; gap:16px; margin-bottom:12px;">
-                    <img src="~/images/scurry-logo.png" alt="logo" style="max-height:60px;">
-                    <div style="font-size:20px; font-weight:700; color:#0f1445;">Scurry Infotech Llp</div>
-                </div>
-
-                <label class="form-label">Company Address</label>
-                <textarea id="address" class="form-control mb-3" placeholder="Enter company address"></textarea>
-
-                <label class="form-label">License Type</label>
-                <select id="companyLicenseType" class="form-select mb-3">
-                    <option value="">-- Select License Type --</option>
-                    <option>License A</option>
-                    <option>License B</option>
-                    <option>License C</option>
-                </select>
-
-                <label class="form-label">Status</label>
-                <select id="companyStatus" class="form-select mb-3">
-                    <option>Active</option>
-                    <option>Inactive</option>
-                    <option>Suspended</option>
-                </select>
-
-                <div style="display:flex; gap:10px;">
-                    <button class="btn btn-warning" type="button" onclick="goStep3()">Submit</button>
-                    <button class="btn" style="background:#999; color:#fff;"
-                            onclick="document.getElementById('address').value=''; document.getElementById('companyLicenseType').value=''; document.getElementById('companyStatus').value='';">
-                        Clear
-                    </button>
-                </div>
+<div class="container mt-4">
+    <div class="card p-4">
+        <div class="d-flex align-items-center mb-3">
+            <img id="companyLogo" src="" alt="logo" style="width:96px;height:96px;object-fit:contain;margin-right:18px;display:none;" />
+            <div>
+                <h2 id="companyName" class="mb-0"></h2>
             </div>
         </div>
-    </div>
 
+        <div class="mb-3">
+            <label class="form-label">Company Address</label>
+            <textarea id="companyAddress" class="form-control" placeholder="Enter company address"></textarea>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">License Type</label>
+            <select id="licenseTypeSelect" class="form-select">
+                <option value="">-- Select License Type --</option>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Status</label>
+            <select id="statusSelect" class="form-select">
+                <option value="">-- Select Status --</option>
+            </select>
+        </div>
+
+        <div class="d-flex gap-2">
+            <button id="btnSaveCompany" class="btn btn-primary" href="/Home/OtherDetails">Submit</button>
+            <button id="btnClearCompany" class="btn btn-secondary">Clear</button>
+        </div>
+    </div>
+</div>
 
 @section Scripts {
-    <script>
-        function goStep3() {
-            // Save in localStorage
-            localStorage.setItem("wiz_address", document.getElementById("address").value);
-            localStorage.setItem("wiz_license", document.getElementById("companyLicenseType").value);
-            localStorage.setItem("wiz_status", document.getElementById("companyStatus").value);
-
-            window.location.href = "/Home/FrontsheetAndInvoice";
-        }
-    </script>
+    <script src="~/js/Companies.js"></script>
 }
