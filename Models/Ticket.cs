@@ -23,7 +23,8 @@ namespace Investica.Models
 
         public string? Description { get; set; }
 
-        public string? TrackingNumber { get; set; }
+        public int? TrackingNumber { get; set; }
+
 
         public DateTime? ValidTill { get; set; }
 

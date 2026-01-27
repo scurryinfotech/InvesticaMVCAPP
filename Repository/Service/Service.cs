@@ -533,7 +533,7 @@ namespace Investica.Repository
                     StatusId = rdr.GetInt32(4),
                     CompanyAddress = rdr.IsDBNull(5) ? null : rdr.GetString(5),
                     Description = rdr.IsDBNull(6) ? null : rdr.GetString(6),
-                    TrackingNumber = rdr.IsDBNull(7) ? null : rdr.GetString(7),
+                    TrackingNumber = rdr.IsDBNull(7) ? null : (int?)rdr.GetInt32(7),
                     ValidTill = rdr.IsDBNull(8) ? null : (DateTime?)rdr.GetDateTime(8),
                     CreatedDate = rdr.IsDBNull(9) ? null : (DateTime?)rdr.GetDateTime(9),
                     CreatedBy = rdr.IsDBNull(10) ? null : (int?)rdr.GetInt32(10),
@@ -563,7 +563,7 @@ namespace Investica.Repository
                     StatusId = rdr.GetInt32(4),
                     CompanyAddress = rdr.IsDBNull(5) ? null : rdr.GetString(5),
                     Description = rdr.IsDBNull(6) ? null : rdr.GetString(6),
-                    TrackingNumber = rdr.IsDBNull(7) ? null : rdr.GetString(7),
+                    TrackingNumber = rdr.IsDBNull(7) ? null : (int?)rdr.GetInt32(7),
                     ValidTill = rdr.IsDBNull(8) ? null : (DateTime?)rdr.GetDateTime(8),
                     CreatedDate = rdr.IsDBNull(9) ? null : (DateTime?)rdr.GetDateTime(9),
                     CreatedBy = rdr.IsDBNull(10) ? null : (int?)rdr.GetInt32(10),
@@ -578,21 +578,20 @@ namespace Investica.Repository
         {
             try
             {
-                // Ensure a tracking number is present — generate server-side when UI doesn't provide one.
-                if (string.IsNullOrWhiteSpace(t.TrackingNumber))
-                {
-                    t.TrackingNumber = Guid.NewGuid().ToString("N").Substring(0, 6).ToUpperInvariant();
-                }
-
-                // Set default ValidTill to now + 1 year if not provided
-                if (!t.ValidTill.HasValue)
-                {
-                    t.ValidTill = DateTime.UtcNow.AddYears(1);
-                }
-
-                const string sql = @"INSERT INTO Tickets (CompanyId, EmployeeId, LicenseId, StatusId, CompanyAddress, Description, TrackingNumber, ValidTill, CreatedDate, CreatedBy, ModifiedDate, ModifiedBy)
-                             OUTPUT INSERTED.Id
-                             VALUES(@CompanyId,@EmployeeId,@LicenseId,@StatusId,@CompanyAddress,@Description,@TrackingNumber,@ValidTill,@CreatedDate,@CreatedBy,@ModifiedDate,@ModifiedBy)";
+                const string sql = @"
+                INSERT INTO Tickets
+                (
+                    CompanyId, EmployeeId, LicenseId, StatusId,
+                    CompanyAddress, Description, TrackingNumber,
+                    ValidTill, CreatedDate, CreatedBy, ModifiedDate, ModifiedBy
+                )
+                OUTPUT INSERTED.Id
+                SELECT
+                    @CompanyId, @EmployeeId, @LicenseId, @StatusId,
+                    @CompanyAddress, @Description,
+                    ISNULL(MAX(TrackingNumber), 1000) + 1,
+                    @ValidTill, @CreatedDate, @CreatedBy, @ModifiedDate, @ModifiedBy
+                FROM Tickets WITH (UPDLOCK, HOLDLOCK);";
                 await using var con = Conn();
                 await con.OpenAsync();
                 await using var cmd = new SqlCommand(sql, con);
@@ -602,7 +601,6 @@ namespace Investica.Repository
                 cmd.Parameters.AddWithValue("@StatusId", t.StatusId);
                 cmd.Parameters.AddWithValue("@CompanyAddress", (object?)t.CompanyAddress ?? DBNull.Value);
                 cmd.Parameters.AddWithValue("@Description", (object?)t.Description ?? DBNull.Value);
-                cmd.Parameters.AddWithValue("@TrackingNumber", t.TrackingNumber ?? (object)DBNull.Value);
                 cmd.Parameters.AddWithValue("@ValidTill", t.ValidTill ?? (object)DBNull.Value);
                 cmd.Parameters.AddWithValue("@CreatedDate", t.CreatedDate ?? DateTime.UtcNow);
                 cmd.Parameters.AddWithValue("@CreatedBy", t.CreatedBy ?? (object)DBNull.Value);
