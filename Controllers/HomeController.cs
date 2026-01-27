@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
@@ -18,6 +18,7 @@ namespace Investica.Controllers
             _service = service ?? throw new ArgumentNullException(nameof(service));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
+        public IActionResult Login() => View();
         public IActionResult Index() => View();
         public IActionResult Dashboard() => View();
         public IActionResult Companies() => View();
@@ -31,6 +32,31 @@ namespace Investica.Controllers
         public IActionResult MasterData() => View();
 
         #region Manage Dashboard Data
+
+        [HttpPost]
+        public async Task<IActionResult> Login([FromBody] LoginRequest request)
+        {
+            if (request == null)
+                return BadRequest("Invalid request");
+
+            string email = request.email;
+            string password = request.password;
+
+            int? roleId = null;
+
+            if (email == "abiraikath@gmail.com" && password == "Jan@2025")
+                roleId = 1; 
+            else if (email == "karan.investica@gmail.com" && password == "Jan@2025")
+                roleId = 2; 
+            else
+                return Unauthorized();
+
+            var role = await _service.GetRoleByIdAsync(roleId.Value);
+
+            return Ok(new { role = role.Name });
+        }
+
+
         [HttpGet("document/{id:int}/data")]
         public async Task<IActionResult> GetDocumentData(int id)
         {

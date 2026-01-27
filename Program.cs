@@ -5,7 +5,10 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
 builder.Services.AddTransient<IService, Service>();
+
+builder.Services.AddSession();
 
 var app = builder.Build();
 
@@ -20,11 +23,13 @@ app.UseRouting();
 
 app.UseAuthorization();
 
+app.UseSession();
+
 app.MapStaticAssets();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Dashboard}/{id?}")
+    pattern: "{controller=Home}/{action=Login}/{id?}")
     .WithStaticAssets();
 
 

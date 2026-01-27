@@ -1,16 +1,34 @@
-﻿<div class="login-card">
+﻿@{
+    Layout = "_Layout";
+    // Layout = null;
+}
+
+@section Styles {
+    <link href="~/css/Login.css" rel="stylesheet" />
+}
+
+<div class="login-card">
     <div class="brand">INVESTICA — Sign in</div>
+
     <form id="loginForm" novalidate>
         <div class="mb-3">
             <label class="form-label">Email</label>
-            <input id="email" type="email" class="form-control" required placeholder="you@example.com" />
+            <input id="email" type="email" class="form-control"
+                   required placeholder="you@example.com" />
         </div>
+
         <div class="mb-3">
             <label class="form-label">Password</label>
-            <input id="password" type="password" class="form-control" required placeholder="••••••••" />
+            <input id="password" type="password" class="form-control"
+                   required placeholder="••••••••" />
         </div>
+
         <div class="d-grid">
             <button type="submit" class="btn btn-warning">Sign in</button>
         </div>
     </form>
 </div>
+
+@section Scripts {
+    <script src="~/js/Login.js"></script>
+}
