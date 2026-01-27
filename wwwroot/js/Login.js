@@ -1,9 +1,9 @@
 ﻿document.getElementById("loginForm").addEventListener("submit", async function (e) {
-    e.preventDefault(); // stop normal form submit
+    e.preventDefault();
 
     const email = document.getElementById("email").value.trim();
     const password = document.getElementById("password").value.trim();
-    debugger
+
     try {
         const response = await fetch("/Home/Login", {
             method: "POST",
@@ -23,10 +23,13 @@
 
         const data = await response.json();
 
-        if (data.role === "Admin") {
+        // ✅ STORE ROLE (this is the missing part)
+        sessionStorage.setItem("userRole", data.role);
+
+        // redirect both roles to dashboard
+        if (data.role === "Admin" || data.role === "Editor") {
             window.location.href = "/Home/Dashboard";
-        }
-        else {
+        } else {
             alert("Access denied");
         }
     }

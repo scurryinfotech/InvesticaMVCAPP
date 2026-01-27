@@ -1,165 +1,272 @@
-﻿// Companies.js - load company info (name/logo) when companyId query param is provided
-(() => {
-    const qs = (s, r = document) => r.querySelector(s);
-    const api = {
-        companyById: id => `/companies/${id}`,
-        companies: '/companies',
-        licenses: '/licensetypes',
-        statuses: '/statuses',
-        documentData: id => `/document/${id}/data`
-    };
+﻿    // Companies.js - load company info (name/logo) when companyId query param is provided
+    (() => {
+        const qs = (s, r = document) => r.querySelector(s);
+        const api = {
+            companyById: id => `/companies/${id}`,
+            companies: '/companies',
+            licenses: '/licensetypes',
+            statuses: '/statuses',
+            documentData: id => `/document/${id}/data`
+        };
 
-    let currentCompany = null;
+        let currentCompany = null;
+        let allLicenseTypes = [];
+        let allStatuses = [];
 
-    function escapeHtml(s) {
-        if (s == null) return '';
-        return s.toString().replace(/[&<>"'`=\/]/g, c => ({
-            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;', '/': '&#x2F;', '`': '&#x60;', '=': '&#x3D;'
-        }[c]));
-    }
-
-    function getQueryParam(name) {
-        const params = new URLSearchParams(window.location.search);
-        return params.get(name);
-    }
-
-    async function fetchJson(url) {
-        const res = await fetch(url);
-        if (!res.ok) throw new Error(`Request failed: ${res.status}`);
-        return res.json();
-    }
-
-    async function loadLicenseTypes() {
-        try {
-            const list = await fetchJson(api.licenses);
-            const sel = qs('#licenseTypeSelect');
-            if (!sel) return;
-            sel.innerHTML = '<option value="">-- Select License Type --</option>';
-            list.forEach(l => {
-                const opt = document.createElement('option');
-                opt.value = l.id;
-                opt.textContent = l.appTypeName || l.unikey || `#${l.id}`;
-                sel.appendChild(opt);
-            });
-        } catch (err) {
-            console.error(err);
+        function escapeHtml(s) {
+            if (s == null) return '';
+            return s.toString().replace(/[&<>"'`=\/]/g, c => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;', '/': '&#x2F;', '`': '&#x60;', '=': '&#x3D;'
+            }[c]));
         }
-    }
 
-    async function loadStatuses() {
-        try {
-            const list = await fetchJson(api.statuses);
-            const sel = qs('#statusSelect');
-            if (!sel) return;
-            sel.innerHTML = '<option value="">-- Select Status --</option>';
-            list.forEach(s => {
-                const opt = document.createElement('option');
-                opt.value = s.id;
-                opt.textContent = s.statusName || s.unikey || `#${s.id}`;
-                sel.appendChild(opt);
-            });
-        } catch (err) {
-            console.error(err);
+        function getQueryParam(name) {
+            const params = new URLSearchParams(window.location.search);
+            return params.get(name);
         }
-    }
 
-    async function loadCompanyById(id) {
-        try {
-            const company = await fetchJson(api.companyById(id));
-            if (!company) return;
-            currentCompany = company;
-            const nameEl = qs('#companyName');
-            if (nameEl) nameEl.textContent = company.companyName || `#${company.id}`;
-            const unikeyEl = qs('#companyUnikey');
-            if (unikeyEl) unikeyEl.textContent = company.unikey ? `Mapping: ${company.unikey}` : '';
-            // If document id present, load image blob and show
-            if (company.documentId) {
-                try {
-                    const res = await fetch(api.documentData(company.documentId));
-                    if (res.ok) {
-                        const blob = await res.blob();
-                        const url = URL.createObjectURL(blob);
-                        const img = qs('#companyLogo');
-                        if (img) {
-                            img.src = url;
-                            img.style.display = '';
+        async function fetchJson(url) {
+            const res = await fetch(url);
+            if (!res.ok) throw new Error(`Request failed: ${res.status}`);
+            return res.json();
+        }
+
+        function populateLicenseDropdown(licenses) {
+            const select = qs('#licenseTypeSelect');
+            select.innerHTML = '';
+
+            if (licenses.length === 0) {
+                const opt = document.createElement('option');
+                opt.value = '';
+                opt.textContent = 'No license types found';
+                select.appendChild(opt);
+            } else {
+                licenses.forEach(l => {
+                    const opt = document.createElement('option');
+                    opt.value = l.id;
+                    opt.textContent = l.appTypeName || l.unikey || `#${l.id}`;
+                    select.appendChild(opt);
+                });
+            }
+        }
+
+        function populateStatusDropdown(statuses) {
+            const select = qs('#statusSelect');
+            select.innerHTML = '';
+
+            if (statuses.length === 0) {
+                const opt = document.createElement('option');
+                opt.value = '';
+                opt.textContent = 'No statuses found';
+                select.appendChild(opt);
+            } else {
+                statuses.forEach(s => {
+                    const opt = document.createElement('option');
+                    opt.value = s.id;
+                    opt.textContent = s.statusName || s.unikey || `#${s.id}`;
+                    select.appendChild(opt);
+                });
+            }
+        }
+
+        function filterLicenseTypes() {
+            const searchInput = qs('#licenseSearch');
+            const searchTerm = (searchInput.value || '').toLowerCase().trim();
+
+            if (!searchTerm) {
+                populateLicenseDropdown(allLicenseTypes);
+            } else {
+                const filtered = allLicenseTypes.filter(l =>
+                    (l.appTypeName || '').toLowerCase().includes(searchTerm) ||
+                    (l.unikey || '').toLowerCase().includes(searchTerm) ||
+                    String(l.id).includes(searchTerm)
+                );
+                populateLicenseDropdown(filtered);
+            }
+        }
+
+        function filterStatuses() {
+            const searchInput = qs('#statusSearch');
+            const searchTerm = (searchInput.value || '').toLowerCase().trim();
+
+            if (!searchTerm) {
+                populateStatusDropdown(allStatuses);
+            } else {
+                const filtered = allStatuses.filter(s =>
+                    (s.statusName || '').toLowerCase().includes(searchTerm) ||
+                    (s.unikey || '').toLowerCase().includes(searchTerm) ||
+                    String(s.id).includes(searchTerm)
+                );
+                populateStatusDropdown(filtered);
+            }
+        }
+
+        async function loadLicenseTypes() {
+            try {
+                const list = await fetchJson(api.licenses);
+                allLicenseTypes = list;
+                populateLicenseDropdown(allLicenseTypes);
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function loadStatuses() {
+            try {
+                const list = await fetchJson(api.statuses);
+                allStatuses = list;
+                populateStatusDropdown(allStatuses);
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function loadCompanyById(id) {
+            try {
+                const company = await fetchJson(api.companyById(id));
+                if (!company) return;
+                currentCompany = company;
+                const nameEl = qs('#companyName');
+                if (nameEl) nameEl.textContent = company.companyName || `#${company.id}`;
+                const unikeyEl = qs('#companyUnikey');
+                if (unikeyEl) unikeyEl.textContent = company.unikey ? `Mapping: ${company.unikey}` : '';
+                // If document id present, load image blob and show
+                if (company.documentId) {
+                    try {
+                        const res = await fetch(api.documentData(company.documentId));
+                        if (res.ok) {
+                            const blob = await res.blob();
+                            const url = URL.createObjectURL(blob);
+                            const img = qs('#companyLogo');
+                            if (img) {
+                                img.src = url;
+                                img.style.display = '';
+                            }
                         }
+                    } catch (err) {
+                        console.warn('Failed to load document image', err);
                     }
-                } catch (err) {
-                    console.warn('Failed to load document image', err);
+                } else {
+                    const img = qs('#companyLogo');
+                    if (img) img.style.display = 'none';
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function setupSearchableDropdown(searchInputId, selectId, hiddenInputId, filterFunction) {
+            const searchInput = qs(searchInputId);
+            const select = qs(selectId);
+            const hiddenInput = qs(hiddenInputId);
+
+            if (!searchInput || !select || !hiddenInput) return;
+
+            searchInput.addEventListener('focus', () => {
+                filterFunction();
+                select.style.display = 'block';
+            });
+
+            searchInput.addEventListener('input', () => {
+                filterFunction();
+                select.style.display = 'block';
+            });
+
+            // IMPORTANT: select on mousedown (before blur)
+            select.addEventListener('mousedown', (e) => {
+                const option = e.target;
+                if (option.tagName !== 'OPTION' || !option.value) return;
+
+                e.preventDefault(); // stop blur race
+
+                searchInput.value = option.textContent;
+                hiddenInput.value = option.value;
+                select.value = option.value;
+
+                select.style.display = 'none';
+                searchInput.blur();
+            });
+
+            // Safe blur
+            searchInput.addEventListener('blur', () => {
+                setTimeout(() => {
+                    select.style.display = 'none';
+                }, 150);
+            });
+        }
+
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Always load license types & statuses
+            await Promise.all([loadLicenseTypes(), loadStatuses()]);
+
+            // Setup searchable dropdowns
+            setupSearchableDropdown('#licenseSearch', '#licenseTypeSelect', '#selectedLicenseId', filterLicenseTypes);
+            setupSearchableDropdown('#statusSearch', '#statusSelect', '#selectedStatusId', filterStatuses);
+
+            const companyId = getQueryParam('companyId');
+            if (companyId) {
+                await loadCompanyById(companyId);
+                // if there's an address in query, populate textarea so user sees it
+                const qAddress = getQueryParam('address'); // URLSearchParams.get() returns decoded text already
+                if (qAddress) {
+                    const addrEl = qs('#companyAddress');
+                    if (addrEl) addrEl.value = qAddress;
                 }
             } else {
+                // no companyId: keep default title/logo or optionally load default company
                 const img = qs('#companyLogo');
-                if (img) img.style.display = 'none';
+                if (img && img.src && img.src.indexOf('placeholder-company.png') >= 0) {
+                    img.style.display = '';
+                }
             }
-        } catch (err) {
-            console.error(err);
-        }
-    }
 
-    document.addEventListener('DOMContentLoaded', async () => {
-        // Always load license types & statuses
-        await Promise.all([loadLicenseTypes(), loadStatuses()]);
+            // Save handler: redirect to Other Details page with selected values
+            const btnSave = qs('#btnSaveCompany');
+            if (btnSave) {
+                btnSave.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const selCompanyId = companyId || (currentCompany && currentCompany.id) || qs('#selectCompany')?.value || '';
+                    const licenseId = qs('#selectedLicenseId') ? qs('#selectedLicenseId').value : '';
+                    const statusId = qs('#selectedStatusId') ? qs('#selectedStatusId').value : '';
+                    const addressVal = qs('#companyAddress') ? qs('#companyAddress').value.trim() : '';
 
-        const companyId = getQueryParam('companyId');
-        if (companyId) {
-            await loadCompanyById(companyId);
-            // if there's an address in query, populate textarea so user sees it
-            const qAddress = getQueryParam('address'); // URLSearchParams.get() returns decoded text already
-            if (qAddress) {
-                const addrEl = qs('#companyAddress');
-                if (addrEl) addrEl.value = qAddress;
+                    // Persist into localStorage so back/forward preserves state
+                    if (selCompanyId) localStorage.setItem('wiz_companyId', selCompanyId);
+                    if (currentCompany && currentCompany.companyName) localStorage.setItem('wiz_companyName', currentCompany.companyName);
+                    if (addressVal) localStorage.setItem('wiz_address', addressVal);
+                    if (licenseId) localStorage.setItem('wiz_licenseId', licenseId);
+                    if (statusId) localStorage.setItem('wiz_statusId', statusId);
+
+                    // Build destination URL: OtherDetails reads query params but we also persisted the values
+                    const dest = '/Home/OtherDetails';
+                    const params = new URLSearchParams();
+                    if (selCompanyId) params.set('companyId', selCompanyId);
+                    if (licenseId) params.set('licenseTypeId', licenseId);
+                    if (statusId) params.set('statusId', statusId);
+                    if (addressVal) params.set('address', addressVal);
+
+                    const url = params.toString() ? `${dest}?${params.toString()}` : dest;
+
+                    // navigate
+                    window.location.href = url;
+                });
             }
-        } else {
-            // no companyId: keep default title/logo or optionally load default company
-            const img = qs('#companyLogo');
-            if (img && img.src && img.src.indexOf('placeholder-company.png') >= 0) {
-                img.style.display = '';
+
+            const btnClear = qs('#btnClearCompany');
+            if (btnClear) {
+                btnClear.addEventListener('click', () => {
+                    const addr = qs('#companyAddress');
+                    if (addr) addr.value = '';
+                    const licenseSearch = qs('#licenseSearch');
+                    if (licenseSearch) licenseSearch.value = '';
+                    const statusSearch = qs('#statusSearch');
+                    if (statusSearch) statusSearch.value = '';
+                    const hiddenLicense = qs('#selectedLicenseId');
+                    if (hiddenLicense) hiddenLicense.value = '';
+                    const hiddenStatus = qs('#selectedStatusId');
+                    if (hiddenStatus) hiddenStatus.value = '';
+                });
             }
-        }
-
-        // Save handler: redirect to Other Details page with selected values
-        const btnSave = qs('#btnSaveCompany');
-        if (btnSave) {
-            btnSave.addEventListener('click', (e) => {
-                e.preventDefault();
-                const selCompanyId = companyId || (currentCompany && currentCompany.id) || qs('#selectCompany')?.value || '';
-                const licenseId = qs('#licenseTypeSelect') ? qs('#licenseTypeSelect').value : '';
-                const statusId = qs('#statusSelect') ? qs('#statusSelect').value : '';
-                const addressVal = qs('#companyAddress') ? qs('#companyAddress').value.trim() : '';
-
-                // Persist into localStorage so back/forward preserves state
-                if (selCompanyId) localStorage.setItem('wiz_companyId', selCompanyId);
-                if (currentCompany && currentCompany.companyName) localStorage.setItem('wiz_companyName', currentCompany.companyName);
-                if (addressVal) localStorage.setItem('wiz_address', addressVal);
-                if (licenseId) localStorage.setItem('wiz_licenseId', licenseId);
-                if (statusId) localStorage.setItem('wiz_statusId', statusId);
-
-                // Build destination URL: OtherDetails reads query params but we also persisted the values
-                const dest = '/Home/OtherDetails';
-                const params = new URLSearchParams();
-                if (selCompanyId) params.set('companyId', selCompanyId);
-                if (licenseId) params.set('licenseTypeId', licenseId);
-                if (statusId) params.set('statusId', statusId);
-                if (addressVal) params.set('address', addressVal);
-
-                const url = params.toString() ? `${dest}?${params.toString()}` : dest;
-
-                // navigate
-                window.location.href = url;
-            });
-        }
-
-        const btnClear = qs('#btnClearCompany');
-        if (btnClear) {
-            btnClear.addEventListener('click', () => {
-                const addr = qs('#companyAddress');
-                if (addr) addr.value = '';
-                const lt = qs('#licenseTypeSelect');
-                if (lt) lt.value = '';
-                const st = qs('#statusSelect');
-                if (st) st.value = '';
-            });
-        }
-    });
-})();
+        });
+    })();

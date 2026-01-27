@@ -5,29 +5,65 @@
         ticketById: id => `/tickets/${id}`
     };
 
+    let allCompanies = [];
+
     function escapeHtml(s) {
         if (s == null) return '';
         return s.toString().replace(/[&<>"'`=\/]/g, c => ({
-            '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','/':'&#x2F;','`':'&#x60;','=':'&#x3D;'
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;', '/': '&#x2F;', '`': '&#x60;', '=': '&#x3D;'
         }[c]));
     }
 
     async function loadCompanies() {
         const select = qs('#selectCompany');
+        const searchInput = qs('#companySearch');
         try {
             const res = await fetch(api.companies);
             if (!res.ok) throw new Error('Failed to load companies');
             const list = await res.json();
-            select.innerHTML = '<option value="">-- Select company --</option>';
-            list.forEach(c => {
+            allCompanies = list;
+
+          
+            populateDropdown(allCompanies);
+
+            if (searchInput) searchInput.placeholder = 'Search company...';
+        } catch (err) {
+            if (searchInput) searchInput.placeholder = '(failed to load)';
+            console.error(err);
+        }
+    }
+
+    function populateDropdown(companies) {
+        const select = qs('#selectCompany');
+        select.innerHTML = '';
+
+        if (companies.length === 0) {
+            const opt = document.createElement('option');
+            opt.value = '';
+            opt.textContent = 'No companies found';
+            select.appendChild(opt);
+        } else {
+            companies.forEach(c => {
                 const opt = document.createElement('option');
                 opt.value = c.id;
                 opt.textContent = c.companyName || `#${c.id}`;
                 select.appendChild(opt);
             });
-        } catch (err) {
-            select.innerHTML = '<option value="">(failed to load)</option>';
-            console.error(err);
+        }
+    }
+
+    function filterCompanies() {
+        const searchInput = qs('#companySearch');
+        const searchTerm = (searchInput.value || '').toLowerCase().trim();
+
+        if (!searchTerm) {
+            populateDropdown(allCompanies);
+        } else {
+            const filtered = allCompanies.filter(c =>
+                (c.companyName || '').toLowerCase().includes(searchTerm) ||
+                String(c.id).includes(searchTerm)
+            );
+            populateDropdown(filtered);
         }
     }
 
@@ -70,12 +106,16 @@
                     </div>
                 </div>`;
             if (t.companyId) {
-                const sel = qs('#selectCompany');
-                if (sel) sel.value = String(t.companyId);
+                const company = allCompanies.find(c => c.id == t.companyId);
+                if (company) {
+                    const searchInput = qs('#companySearch');
+                    const hiddenInput = qs('#selectedCompanyId');
+                    if (searchInput) searchInput.value = company.companyName || `#${company.id}`;
+                    if (hiddenInput) hiddenInput.value = company.id;
+                }
             }
         } catch (err) {
             out.innerHTML = `<div class="alert alert-danger">Error: ${escapeHtml(err.message)}</div>`;
-            console.error(err);
         }
     }
 
@@ -84,25 +124,69 @@
 
         const btnSearch = qs('#btnSearchTicket');
         if (btnSearch) btnSearch.addEventListener('click', searchTicket);
+
         const input = qs('#ticketNumber');
         if (input) input.addEventListener('keyup', (e) => {
             if (e.key === 'Enter') searchTicket();
         });
 
-        // Wire Next button to include selected companyId in querystring
-        const btnNext = qs('#btnNext');
+        // Searchable dropdown functionality
+        const searchInput = qs('#companySearch');
         const select = qs('#selectCompany');
-        if (btnNext && select) {
+        const hiddenInput = qs('#selectedCompanyId');
+
+        if (searchInput) {
+            // Show dropdown with all companies when clicking on search input
+            searchInput.addEventListener('click', () => {
+                populateDropdown(allCompanies);
+                select.style.display = 'block';
+            });
+
+            // Show dropdown with all companies when focusing on search input
+            searchInput.addEventListener('focus', () => {
+                populateDropdown(allCompanies);
+                select.style.display = 'block';
+            });
+
+            // Filter as user types
+            searchInput.addEventListener('input', () => {
+                filterCompanies();
+                select.style.display = 'block';
+            });
+
+            // Hide dropdown when clicking outside
+            searchInput.addEventListener('blur', () => {
+                setTimeout(() => {
+                    select.style.display = 'none';
+                }, 200);
+            });
+        }
+
+        select.addEventListener('mousedown', (e) => {
+            const option = e.target;
+            if (option.tagName === 'OPTION' && option.value) {
+                e.preventDefault(); 
+
+                searchInput.value = option.textContent;
+                hiddenInput.value = option.value;
+
+                select.value = option.value;
+                select.style.display = 'none';
+
+                searchInput.focus(); 
+            }
+        });
+
+
+        const btnNext = qs('#btnNext');
+        if (btnNext) {
             btnNext.addEventListener('click', function (e) {
-                const id = (select.value || '').trim();
+                const id = (hiddenInput?.value || '').trim();
                 if (id) {
-                    // allow navigation but update href to include companyId
                     this.setAttribute('href', `/Home/Companies?companyId=${encodeURIComponent(id)}`);
                 } else {
-                    // no company selected — still navigate to companies without companyId
                     this.setAttribute('href', '/Home/Companies');
                 }
-                // default navigation continues
             });
         }
     });

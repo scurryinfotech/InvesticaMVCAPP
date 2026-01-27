@@ -15,10 +15,13 @@
         <button id="btnSearchTicket" class="btn btn-warning mb-4 w-100">Search</button>
 
         <label>Select Company</label>
-        <select id="selectCompany" class="form-select mb-3">
-            <option value="">Loading...</option>
-        </select>
-
+        <div style="position: relative;">
+            <input type="text" id="companySearch" class="form-control mb-3" placeholder="Search company..." />
+            <select id="selectCompany" class="form-select mb-3" size="6" style="position: absolute; z-index: 1000; width: 100%; display: none;">
+                <option value="">Loading...</option>
+            </select>
+        </div>
+        <input type="hidden" id="selectedCompanyId" />
         <a class="btn btn-warning" id="btnNext" href="/Home/Companies">Next</a>
 
         <div id="ticketResult" class="mt-4"></div>

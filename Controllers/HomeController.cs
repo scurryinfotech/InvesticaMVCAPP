@@ -339,7 +339,7 @@ namespace Investica.Controllers
             s.CreatedDate = DateTime.UtcNow;
             var id = await _service.CreateStatusAsync(s);
             return Created("", new { id });
-        }
+        } 
 
         [HttpPut("statuses/{id:int}")]
         public async Task<IActionResult> UpdateStatus(int id, [FromBody] StatusMaster s)
