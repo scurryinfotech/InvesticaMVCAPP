@@ -68,28 +68,16 @@
     // Ensure Create Ticket button reads the same persisted values when submitting
     const btn = document.getElementById('btnCreateTicket');
     if (btn) {
-        btn.addEventListener('click', () => {
-            // Build ticket payload from persisted keys
-            const payload = {
-                companyId: localStorage.getItem('wiz_companyId') || null,
-                companyName: read('sum_company', 'wiz_companyName'),
-                companyAddress: read('sum_address', 'wiz_address'),
-                phone: read('sum_phone', 'wiz_phone'),
-                email: read('sum_email', 'wiz_email'),
-                gstin: read('sum_gstin', 'wiz_gstin'),
-                pan: read('sum_pan', 'wiz_pan'),
-                entityType: read('sum_entity', 'wiz_entity'),
-                product: read('sum_product', 'wiz_product'),
-                location: read('sum_location', 'wiz_location'),
-                licenseId: localStorage.getItem('wiz_licenseId') || null,
-                licenseLabel: read('sum_license', 'wiz_license'),
-                statusId: localStorage.getItem('wiz_statusId') || null,
-                statusLabel: read('sum_status', 'wiz_status')
-            };
-            alert('Ticket Created Successfully ✅');
-            // Optionally clear wizard storage
-            // window.localStorage.removeItem('wiz_companyId'); // keep as needed
-            window.location.href = '/Home/Tickets';
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            // Prefer the centralized createTicket implementation (delegated handler)
+            if (typeof window.createTicketFromSummary === 'function') {
+                window.createTicketFromSummary();
+                return;
+            }
+            // Fallback: clear company flow flag so site.js shows default tabs, then redirect to Dashboard
+            try { sessionStorage.removeItem('companyFlowShown'); } catch (err) { /* ignore */ }
+            setTimeout(() => { window.location.href = '/Home/Dashboard'; }, 150);
         });
     }
     // Submits ticket using POST /tickets, clears wizard state and resets navigation to default, then navigates to Tickets.
@@ -154,7 +142,7 @@
                     try {
                         // clear session flag that unlocked company flow
                         sessionStorage.removeItem('companyFlowShown');
-                        // clear wizard keys (wiz_* and sum_*
+                        // clear wizard keys (wiz_* and sum_*)
                         Object.keys(localStorage).forEach(k => {
                             if (k.startsWith('wiz_') || k.startsWith('sum_')) {
                                 // keep createdTicketId
@@ -166,9 +154,9 @@
                         console.warn('Failed to clear wizard state', err);
                     }
 
-                    // Short delay so user sees toast then navigate to Tickets
+                    // Short delay so user sees toast then navigate to Dashboard (default tabs)
                     setTimeout(() => {
-                        window.location.href = '/Home/Tickets';
+                        window.location.href = '/Home/Dashboard';
                     }, 700);
                     return;
                 }
