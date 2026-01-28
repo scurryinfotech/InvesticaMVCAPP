@@ -7,14 +7,17 @@
             </div>
             <div class="mb-3">
                 <label class="form-label fw-bold">Company Name</label>
-                <input type="text" class="form-control" id="frontsheetCompany" placeholder="Enter company name">
+                <select class="form-select searchable-dropdown" id="frontsheetCompany">
+                    <option value="">Select company</option>
+                </select>
             </div>
             <div class="mb-3">
                 <label class="form-label fw-bold">Location</label>
-                <input type="text" class="form-control" id="frontsheetLocation" placeholder="Enter location">
+                <select class="form-select searchable-dropdown" id="frontsheetLocation">
+                    <option value="">Select location</option>
+                </select>
             </div>
         </div>
-
         <div id="invoiceFilters" style="display:none;">
             <div class="mb-3">
                 <label class="form-label fw-bold">Invoice Date</label>
@@ -25,7 +28,6 @@
                 <input type="text" class="form-control" id="invoiceNumber" placeholder="Enter invoice number">
             </div>
         </div>
-
         <div id="detailsFilters">
             <div class="mb-3">
                 <label class="form-label fw-bold">Start Date</label>
@@ -37,51 +39,42 @@
             </div>
             <div class="mb-3">
                 <label class="form-label fw-bold">Company Name</label>
-                <input type="text" class="form-control" id="companyName" placeholder="Enter company name">
+                <select class="form-select searchable-dropdown" id="companyName">
+                    <option value="">Select company</option>
+                </select>
             </div>
             <div class="mb-3">
                 <label class="form-label fw-bold">Location</label>
-                <input type="text" class="form-control" id="location" placeholder="Enter location">
+                <select class="form-select searchable-dropdown" id="location">
+                    <option value="">Select location</option>
+                </select>
             </div>
-
             <div class="mb-3">
                 <label class="form-label fw-bold">License Type</label>
-                <select class="form-select" id="licenseType">
+                <select class="form-select searchable-dropdown" id="licenseType">
                     <option value="">Select license type</option>
-                    <option value="A">Type A</option>
-                    <option value="B">Type B</option>
-                    <option value="C">Type C</option>
                 </select>
             </div>
-
             <div class="mb-3">
                 <label class="form-label fw-bold">Status</label>
-                <select class="form-select" id="status">
+                <select class="form-select searchable-dropdown" id="status">
                     <option value="">Select status</option>
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
-                    <option value="pending">Pending</option>
                 </select>
             </div>
-
             <div class="mb-3">
                 <label class="form-label fw-bold">Tracking Number</label>
                 <input type="text" class="form-control" id="trackingNumber" placeholder="Enter tracking number">
             </div>
         </div>
-
         <div id="applyResetFilters" class="d-flex gap-2 mt-4">
-            <button class="btn btn-primary flex-fill fw-bold" type="button"
+            <button class="btn btn-primary flex-fill fw-bold" type="button" id="submitBtn"
                     style="background:#0f1445; border:none;">
                 Submit
             </button>
-            <button class="btn btn-warning flex-fill fw-bold text-white" type="button"
+            <button class="btn btn-warning flex-fill fw-bold text-white" type="button" id="clearBtn"
                     style="background:#f78812; border:none;">
                 Clear
             </button>
         </div>
     </form>
 </div>
-@section scripts{
-    <script src="~/js/LeftPanel.js"></script>
-}

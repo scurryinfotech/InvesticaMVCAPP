@@ -239,15 +239,23 @@ namespace Investica.Repository
 
         public async Task<byte[]?> GetDocumentLogoAsync(int id)
         {
-            const string sql = @"SELECT Data FROM DocumentTable WHERE Id = @Id";
+            const string sql = "SELECT Data FROM DocumentTable WHERE Id = @Id";
             await using var con = Conn();
             await con.OpenAsync();
             await using var cmd = new SqlCommand(sql, con);
             cmd.Parameters.AddWithValue("@Id", id);
             var obj = await cmd.ExecuteScalarAsync();
-            if (obj == null || obj == DBNull.Value) return null;
-            return (byte[])obj;
+            if (obj == null || obj == DBNull.Value)
+                return null;
+
+            var dataUri = obj.ToString();
+
+            var base64Data = dataUri.Substring(dataUri.IndexOf(',') + 1);
+
+            return Convert.FromBase64String(base64Data);
         }
+
+
         #endregion
 
         #region CompanyMaster
