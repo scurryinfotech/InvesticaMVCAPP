@@ -95,12 +95,17 @@
             $dropdown.trigger('change');
         }
     }
+    function removeEmptyFilters(obj) {
+        return Object.fromEntries(
+            Object.entries(obj).filter(([_, v]) => v !== null && v !== '')
+        );
+    }
 
     // Submit button handler
     $('#submitBtn').on('click', function (e) {
         e.preventDefault();
 
-        const filters = {
+        let filters = {
             startDate: $('#startDate').val(),
             endDate: $('#endDate').val(),
             companyName: $('#companyName').val(),
@@ -114,9 +119,25 @@
             invoiceDate: $('#invoiceDate').val(),
             invoiceNumber: $('#invoiceNumber').val()
         };
+        filters = removeEmptyFilters(filters);
 
         applyFilters(filters);
     });
+
+    function applyFilters(filters) {
+        $.ajax({
+            url: '/',
+            type: 'POST',
+            data: filters,
+            success: function (response) {
+                console.log('Filtered data:', response);
+            },
+            error: function () {
+                showNotification('Failed to apply filters', 'error');
+            }
+        });
+    }
+
 
     $('#clearBtn').on('click', function (e) {
         e.preventDefault();
