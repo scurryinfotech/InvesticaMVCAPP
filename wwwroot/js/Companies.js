@@ -239,7 +239,7 @@
                     if (statusId) localStorage.setItem('wiz_statusId', statusId);
 
                     // Build destination URL: OtherDetails reads query params but we also persisted the values
-                    const dest = '/Home/OtherDetails';
+                    const dest = '/Home/Summary';
                     const params = new URLSearchParams();
                     if (selCompanyId) params.set('companyId', selCompanyId);
                     if (licenseId) params.set('licenseTypeId', licenseId);

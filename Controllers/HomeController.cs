@@ -25,6 +25,7 @@ namespace Investica.Controllers
         public IActionResult OtherDetails() => View();
         public IActionResult Summary() => View();
         public IActionResult Tickets() => View();
+
         public IActionResult Invoice() => View();
         public IActionResult Fontsheet() => View();
         public IActionResult Links() => View();

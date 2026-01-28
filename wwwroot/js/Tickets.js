@@ -1,9 +1,11 @@
-﻿// Tickets.js
-// Dynamically load tickets and master-data, render newest-first, wire note/edit/attachment handlers.
-
-(() => {
+﻿(() => {
     const qs = s => document.querySelector(s);
-    const qsa = s => Array.from(document.querySelectorAll(s));
+
+    function getTicketIdFromUrl() {
+        const params = new URLSearchParams(window.location.search);
+        const id = params.get('ticketId');
+        return id ? Number(id) : null;
+    }
 
     const api = {
         tickets: '/tickets',
@@ -16,7 +18,8 @@
     function escapeHtml(s) {
         if (s == null) return '';
         return String(s).replace(/[&<>"'`=\/]/g, c => ({
-            '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','/':'&#x2F;','`':'&#x60;','=':'&#x3D;'
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;',
+            "'": '&#39;', '/': '&#x2F;', '`': '&#x60;', '=': '&#x3D;'
         }[c]));
     }
 
@@ -28,10 +31,6 @@
 
     function buildTicketCard(t, maps, idx) {
         const { companiesMap, licensesMap, statusesMap, employeesMap } = maps;
-        const statusLabel = statusesMap[t.statusId] || t.statusId || '';
-        const licenseLabel = licensesMap[t.licenseId] || t.licenseId || '';
-        const companyLabel = companiesMap[t.companyId] || `#${t.companyId}`;
-        const employeeLabel = employeesMap[t.employeeId] || `#${t.employeeId}`;
 
         const cid = `ticket_${t.id || idx}`;
 
@@ -41,9 +40,15 @@
     <div class="row g-3">
       <div class="col-md-3 d-flex flex-column">
         <div>
-          <div id="${cid}_status" class="rounded border p-2 text-center fw-bold mb-3">${escapeHtml(statusLabel)}</div>
-          <div id="${cid}_license" class="rounded border p-2 text-center fw-bold mb-3">${escapeHtml(licenseLabel)}</div>
-          <div id="${cid}_tracking" class="rounded border p-2 text-center fw-bold mb-3">${escapeHtml(t.trackingNumber || '')}</div>
+          <div id="${cid}_status" class="rounded border p-2 text-center fw-bold mb-3">
+            ${escapeHtml(statusesMap[t.statusId] || t.statusId || '')}
+          </div>
+          <div id="${cid}_license" class="rounded border p-2 text-center fw-bold mb-3">
+            ${escapeHtml(licensesMap[t.licenseId] || t.licenseId || '')}
+          </div>
+          <div id="${cid}_tracking" class="rounded border p-2 text-center fw-bold mb-3">
+            ${escapeHtml(t.trackingNumber || '')}
+          </div>
         </div>
         <div class="mt-auto d-flex gap-2">
           <button class="btn btn-outline-dark btn-sm rounded-pill">More</button>
@@ -51,109 +56,74 @@
           <button class="btn btn-outline-dark btn-sm rounded-pill attach-btn" data-card="${cid}">Attachments</button>
         </div>
       </div>
+
       <div class="col-md-5">
-        <div id="${cid}_company" class="rounded border p-2 text-center fw-bold mb-3">${escapeHtml(companyLabel)}</div>
-        <div id="${cid}_address" class="rounded border p-3 fw-bold mb-3">${escapeHtml(t.companyAddress || t.address || 'Address not provided')}</div>
+        <div id="${cid}_company" class="rounded border p-2 text-center fw-bold mb-3">
+          ${escapeHtml(companiesMap[t.companyId] || `#${t.companyId}`)}
+        </div>
+        <div id="${cid}_address" class="rounded border p-3 fw-bold mb-3">
+          ${escapeHtml(t.companyAddress || 'Address not provided')}
+        </div>
 
         <label class="fw-bold mb-2" style="font-size:0.9em;">Add Note</label>
-        <textarea id="${cid}_noteInput" class="form-control mb-2" rows="2" placeholder="Enter your note here..."></textarea>
-        <button class="btn btn-sm btn-primary w-100 mb-2 note-btn" data-card="${cid}"
-                style="background:#0f1445;border:none;">Add Note</button>
-        <div id="${cid}_notes" class="rounded border p-2 bg-light" style="max-height:120px; overflow-y:auto;">
-          <small style="color:#666;">Notes will appear here</small>
+        <textarea id="${cid}_noteInput" class="form-control mb-2" rows="2"></textarea>
+        <button class="btn btn-sm btn-primary w-100 mb-2 note-btn" data-card="${cid}">
+          Add Note
+        </button>
+        <div id="${cid}_notes" class="rounded border p-2 bg-light">
+          <small>Notes will appear here</small>
         </div>
       </div>
+
       <div class="col-md-4 d-flex flex-column">
-        <div id="${cid}_employee" class="rounded border p-2 text-center fw-bold mb-3">${escapeHtml(employeeLabel)}</div>
-        <div id="${cid}_validity" class="rounded border p-2 text-center fw-bold mb-3">${t.validTill || ''}</div>
-        <div id="${cid}_desc" class="rounded border p-3 fw-bold bg-light" style="flex:1; min-height:245px; white-space:pre-line; overflow-y:auto;">
+        <div id="${cid}_employee" class="rounded border p-2 text-center fw-bold mb-3">
+          ${escapeHtml(employeesMap[t.employeeId] || `#${t.employeeId}`)}
+        </div>
+        <div id="${cid}_validity" class="rounded border p-2 text-center fw-bold mb-3">
+          ${t.validTill || ''}
+        </div>
+        <div id="${cid}_desc" class="rounded border p-3 fw-bold bg-light" style="flex:1;">
           ${escapeHtml(t.description || '')}
         </div>
       </div>
     </div>
   </div>
-</div>
-`;
+</div>`;
     }
 
     function wireDelegatedHandlers(container) {
-        // edit/save buttons
-        container.addEventListener('click', (e) => {
+        container.addEventListener('click', e => {
             const editBtn = e.target.closest('.edit-btn');
-            if (editBtn) {
-                const cid = editBtn.getAttribute('data-card');
-                const isEditing = editBtn.textContent.trim().toLowerCase() === 'save';
-                const fields = [
-                    `${cid}_status`, `${cid}_license`, `${cid}_tracking`,
-                    `${cid}_company`, `${cid}_address`, `${cid}_employee`,
-                    `${cid}_validity`, `${cid}_desc`
-                ];
+            if (!editBtn) return;
 
-                if (!isEditing) {
-                    fields.forEach(id => {
-                        const el = document.getElementById(id);
-                        if (!el) return;
-                        const val = el.innerText.trim();
-                        if (id.endsWith('_desc') || id.endsWith('_address')) {
-                            el.innerHTML = `<textarea class="form-control" rows="3">${escapeHtml(val === 'Address not provided' ? '' : val)}</textarea>`;
-                        } else {
-                            el.innerHTML = `<input class="form-control" value="${escapeHtml(val)}" />`;
-                        }
-                    });
-                    editBtn.textContent = 'Save';
+            const cid = editBtn.dataset.card;
+            const isSave = editBtn.textContent === 'Save';
+
+            const ids = [
+                `${cid}_status`, `${cid}_license`, `${cid}_tracking`,
+                `${cid}_company`, `${cid}_address`, `${cid}_employee`,
+                `${cid}_validity`, `${cid}_desc`
+            ];
+
+            ids.forEach(id => {
+                const el = document.getElementById(id);
+                if (!el) return;
+
+                if (!isSave) {
+                    el.innerHTML = `<input class="form-control" value="${escapeHtml(el.innerText)}">`;
                 } else {
-                    fields.forEach(id => {
-                        const el = document.getElementById(id);
-                        if (!el) return;
-                        if (id.endsWith('_desc') || id.endsWith('_address')) {
-                            const v = el.querySelector('textarea')?.value || '';
-                            el.innerHTML = v ? escapeHtml(v) : '';
-                        } else {
-                            const v = el.querySelector('input')?.value || '';
-                            el.innerHTML = v ? escapeHtml(v) : '';
-                        }
-                    });
-                    editBtn.textContent = 'Edit';
+                    el.innerHTML = escapeHtml(el.querySelector('input')?.value || '');
                 }
-                return;
-            }
+            });
 
-            const noteBtn = e.target.closest('.note-btn');
-            if (noteBtn) {
-                const cid = noteBtn.getAttribute('data-card');
-                const input = document.getElementById(`${cid}_noteInput`);
-                const notesContainer = document.getElementById(`${cid}_notes`);
-                const noteText = input?.value.trim();
-                if (!noteText) return;
-                const now = new Date().toLocaleString();
-                const div = document.createElement('div');
-                div.style.cssText = "border-bottom:1px solid #ddd; padding:6px 0; font-size:0.85em;";
-                div.innerHTML = `<strong style="color:#0f1445">${now}</strong><br>${escapeHtml(noteText)}`;
-                if (notesContainer && notesContainer.innerHTML.includes('Notes will appear here')) notesContainer.innerHTML = '';
-                notesContainer?.insertBefore(div, notesContainer.firstChild);
-                if (input) input.value = '';
-                return;
-            }
-
-            const attachBtn = e.target.closest('.attach-btn');
-            if (attachBtn) {
-                const modalEl = document.getElementById('attachmentsModal');
-                if (modalEl && window.bootstrap) {
-                    const attachmentsList = document.getElementById('attachmentsList');
-                    if (attachmentsList) {
-                        attachmentsList.innerHTML = `<li class="list-group-item">(no attachments)</li>`;
-                    }
-                    const modal = new bootstrap.Modal(modalEl);
-                    modal.show();
-                }
-                return;
-            }
+            editBtn.textContent = isSave ? 'Edit' : 'Save';
         });
     }
 
     async function loadAndRender() {
         try {
-            // parallel fetch master-data and tickets
+            const selectedTicketId = getTicketIdFromUrl();
+
             const [tickets, companies, licenses, statuses, employees] = await Promise.all([
                 fetchJson(api.tickets),
                 fetchJson(api.companies),
@@ -162,43 +132,44 @@
                 fetchJson(api.employees)
             ]);
 
-            // build maps
-            const companiesMap = {};
-            (companies || []).forEach(c => companiesMap[c.id] = c.companyName || c.unikey || `#${c.id}`);
-            const licensesMap = {};
-            (licenses || []).forEach(l => licensesMap[l.id] = l.appTypeName || l.unikey || `#${l.id}`);
-            const statusesMap = {};
-            (statuses || []).forEach(s => statusesMap[s.id] = s.statusName || s.unikey || `#${s.id}`);
-            const employeesMap = {};
-            (employees || []).forEach(e => employeesMap[e.id] = e.name || `#${e.id}`);
+            const maps = {
+                companiesMap: Object.fromEntries(companies.map(c => [c.id, c.companyName])),
+                licensesMap: Object.fromEntries(licenses.map(l => [l.id, l.appTypeName])),
+                statusesMap: Object.fromEntries(statuses.map(s => [s.id, s.statusName])),
+                employeesMap: Object.fromEntries(employees.map(e => [e.id, e.name]))
+            };
 
-            const maps = { companiesMap, licensesMap, statusesMap, employeesMap };
+            const sorted = tickets.sort((a, b) =>
+                Date.parse(b.createdDate || 0) - Date.parse(a.createdDate || 0)
+            );
 
-            // sort tickets newest first by CreatedDate if present; fallback to server order
-            const sorted = (tickets || []).slice().sort((a, b) => {
-                const da = a.createdDate ? Date.parse(a.createdDate) : 0;
-                const db = b.createdDate ? Date.parse(b.createdDate) : 0;
-                return db - da;
-            });
-
-            // Render into #dashboard (replace static content)
             const container = qs('#dashboard');
-            if (!container) return;
             container.innerHTML = '';
+
             sorted.forEach((t, idx) => {
-                const html = buildTicketCard(t, maps, idx);
-                container.insertAdjacentHTML('beforeend', html);
+                container.insertAdjacentHTML(
+                    'beforeend',
+                    buildTicketCard(t, maps, idx)
+                );
             });
 
-            // wire delegated handlers on the new container
             wireDelegatedHandlers(container);
+
+            // 🔥 AUTO-FOCUS SELECTED TICKET
+            if (selectedTicketId) {
+                const el = container.querySelector(
+                    `[data-ticket-id="${selectedTicketId}"]`
+                );
+                if (el) {
+                    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    el.classList.add('border', 'border-primary');
+                }
+            }
 
         } catch (err) {
             console.error('Failed to load tickets', err);
         }
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
-        loadAndRender();
-    });
+    document.addEventListener('DOMContentLoaded', loadAndRender);
 })();
