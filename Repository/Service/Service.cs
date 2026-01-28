@@ -546,7 +546,7 @@ namespace Investica.Repository
 
         public async Task<Ticket?> GetTicketByIdAsync(int id)
         {
-            const string sql = @"SELECT Id, CompanyId, EmployeeId, LicenseId, StatusId, CompanyAddress, Description, TrackingNumber, ValidTill, CreatedDate, CreatedBy, ModifiedDate, ModifiedBy FROM Tickets WHERE Id=@Id";
+            const string sql = @"SELECT Id, CompanyId, EmployeeId, LicenseId, StatusId, CompanyAddress, Description, TrackingNumber, ValidTill, CreatedDate, CreatedBy, ModifiedDate, ModifiedBy FROM Tickets WHERE TrackingNumber=@Id";
             await using var con = Conn();
             await con.OpenAsync();
             await using var cmd = new SqlCommand(sql, con);

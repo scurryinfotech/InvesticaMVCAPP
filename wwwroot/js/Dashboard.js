@@ -76,6 +76,7 @@
             out.innerHTML = '<div class="alert alert-info">Enter a ticket number to search.</div>';
             return;
         }
+        debugger
         const id = parseInt(raw, 10);
         if (Number.isNaN(id) || id <= 0) {
             out.innerHTML = '<div class="alert alert-danger">Ticket number must be a positive integer.</div>';
