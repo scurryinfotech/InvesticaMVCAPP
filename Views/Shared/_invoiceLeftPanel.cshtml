@@ -1,0 +1,35 @@
+﻿<div class="container">
+    <div class="left-panel mx-auto">
+        <h4 class="mb-4">Filters</h4>
+        <form id="filterForm" autocomplete="off">
+
+            <!-- Invoice Filters -->
+            <div id="invoiceFilters" style="display:none;">
+                <div class="mb-3">
+                    <label for="invoiceDate" class="form-label fw-bold">Invoice Date</label>
+                    <input type="date" class="form-control" id="invoiceDate" name="InvoiceDate">
+                </div>
+
+                <div class="mb-3">
+                    <label for="invoiceNumber" class="form-label fw-bold">Invoice Number</label>
+                    <input type="text" class="form-control" id="invoiceNumber" name="InvoiceNumber"
+                           placeholder="Enter invoice number">
+                </div>
+            </div>
+            <!-- Actions -->
+            <div id="applyResetFilters" class="d-flex gap-2 mt-4">
+                <button type="button" id="submitBtn"
+                        class="btn btn-primary flex-fill fw-bold"
+                        style="background:#0f1445; border:none;">
+                    Submit
+                </button>
+
+                <button type="button" id="clearBtn"
+                        class="btn btn-warning flex-fill fw-bold text-white"
+                        style="background:#f78812; border:none;">
+                    Clear
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

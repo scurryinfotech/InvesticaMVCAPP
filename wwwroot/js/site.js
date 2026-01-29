@@ -4,7 +4,6 @@
     if (!tabsBar) return;
     const tabs = Array.from(tabsBar.querySelectorAll(".tab"));
 
-    // Normalize path (strip trailing slashes, lowercase)
     const normalize = p => {
         if (!p) return "/";
         try {
@@ -18,9 +17,8 @@
     };
     const normalizeText = t => (t || "").trim().toLowerCase();
 
-    // Flow definitions (keywords matched against tab text or href)
     const defaultFlowKeywords = ['dashboard', 'tickets', 'invoice', 'fontsheet', 'links', 'renewals','admin panel'];
-    const companyFlowKeywords = ['dashboard','companies','other details','summary','admin panel'];
+    const companyFlowKeywords = ['dashboard','companies','summary'];
 
     // Helper: does tab belong to a flow?
     function tabMatchesKeywords(tab, keywords) {
@@ -76,12 +74,8 @@
         tabs[0].setAttribute("aria-current", "page");
     }
 
-    // Flow persistence: when Dashboard Next clicked, show company flow.
     const persistedCompany = sessionStorage.getItem("companyFlowShown") === "1";
 
-    // Decide initial flow:
-    // - If persistedCompany true -> company flow
-    // - Else -> default flow
     setFlow(persistedCompany);
 
     // Expose API to change flow programmatically
@@ -94,8 +88,6 @@
         setFlow(false);
     };
 
-    // Click handlers: detect Dashboard "Next" buttons and other triggers
-    // Accept selectors: data-action="company-next", .company-next, #companyNext, #btnNext
     document.addEventListener('click', (e) => {
         const btn = e.target.closest('[data-action="company-next"], .company-next, #companyNext, #btnNext');
         if (btn) {
@@ -120,14 +112,12 @@
             this.classList.add("active");
             this.setAttribute("aria-current", "page");
 
-            // If user clicked the Dashboard tab, reset to default flow and clear persistence
             if (normalizeText(this.textContent).includes('dashboard')) {
                 window.showDefaultFlow();
             }
         });
     });
 
-    // handle popstate (back/forward) and re-evaluate active tab
     window.addEventListener('popstate', () => {
         const path = normalize(location.pathname);
         tabs.forEach(t => {

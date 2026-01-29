@@ -5,7 +5,6 @@ body {
 }
 
 .dashboard {
-    padding: 20px;
     overflow-y: auto;
     flex: 1;
 }
@@ -100,11 +99,10 @@ header {
 }
 
 .left-panel {
-
     background: #fff;
     padding: 15px;
     border-right: 1px solid #ddd;
-    height: 100%;
+    height: auto;
     width: 260px;
     min-width: 260px;
     max-width: 100vw;
@@ -309,7 +307,7 @@ header {
     .searchable-dropdown-list li {
         padding: 8px 12px;
         cursor: pointer;
-        border-bottom: 1px solid #f0f0f0;
+        border-bottom: 1px solid #1a53ff;
         display: flex;
         align-items: center;
     }
@@ -325,7 +323,7 @@ header {
 
         /* Selected Items (Multi-select) */
         .searchable-dropdown-list li.selected {
-            background: #d1e7ff;
+            background: #1a53ff;
             font-weight: 500;
         }
 
@@ -334,11 +332,11 @@ header {
             }
 
     /* Checkbox */
-    .searchable-dropdown-list input[type="checkbox"] {
+/*    .searchable-dropdown-list input[type="checkbox"] {
         pointer-events: none;
         margin-right: 8px;
         accent-color: #0d6efd;
-    }
+    }*/
 
     /* No Results */
     .searchable-dropdown-list li.no-results {

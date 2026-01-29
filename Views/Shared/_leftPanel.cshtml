@@ -1,55 +1,7 @@
-﻿<div class="container mt-4">
+﻿<div class="container">
     <div class="left-panel mx-auto">
         <h4 class="mb-4">Filters</h4>
         <form id="filterForm" autocomplete="off">
-
-            <!-- Frontsheet Filters -->
-            <div id="frontsheetFilters" style="display:none;">
-                <div class="mb-3">
-                    <label for="frontsheetDate" class="form-label fw-bold">Date</label>
-                    <input type="date" class="form-control" id="frontsheetDate" name="FrontsheetDate">
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Company Name</label>
-                    <div class="searchable-dropdown-wrapper">
-                        <input type="text"
-                               class="searchable-input multi-select"
-                               id="frontsheetCompany"
-                               placeholder="Select company"
-                               autocomplete="off">
-                        <input type="hidden" id="frontsheetCompanyValue" name="FrontsheetCompany">
-                        <ul class="searchable-dropdown-list" id="frontsheetCompanyList"></ul>
-                    </div>
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Location</label>
-                    <div class="searchable-dropdown-wrapper">
-                        <input type="text"
-                               class="searchable-input multi-select"
-                               id="frontsheetLocation"
-                               placeholder="Select location"
-                               autocomplete="off">
-                        <input type="hidden" id="frontsheetLocationValue" name="FrontsheetLocation">
-                        <ul class="searchable-dropdown-list" id="frontsheetLocationList"></ul>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Invoice Filters -->
-            <div id="invoiceFilters" style="display:none;">
-                <div class="mb-3">
-                    <label for="invoiceDate" class="form-label fw-bold">Invoice Date</label>
-                    <input type="date" class="form-control" id="invoiceDate" name="InvoiceDate">
-                </div>
-
-                <div class="mb-3">
-                    <label for="invoiceNumber" class="form-label fw-bold">Invoice Number</label>
-                    <input type="text" class="form-control" id="invoiceNumber" name="InvoiceNumber"
-                           placeholder="Enter invoice number">
-                </div>
-            </div>
 
             <!-- Details Filters -->
             <div id="detailsFilters">
