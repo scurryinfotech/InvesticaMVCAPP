@@ -16,8 +16,13 @@
     function escapeHtml(s) {
         if (s == null) return '';
         return String(s).replace(/[&<>"'`=\/]/g, c => ({
-            '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','/':'&#x2F;','`':'&#x60;','=':'&#x3D;'
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;', '/': '&#x2F;', '`': '&#x60;', '=': '&#x3D;'
         }[c]));
+    }
+
+    function getQueryParam(name) {
+        const params = new URLSearchParams(window.location.search);
+        return params.get(name);
     }
 
     async function fetchJson(url) {
@@ -36,7 +41,7 @@
         const cid = `ticket_${t.id || idx}`;
 
         return `
-<div class="card p-4 mb-3" data-ticket-id="${t.id}">
+<div class="card p-4 mb-3" data-ticket-id="${t.id}" id="card_${t.id}">
   <div class="container-fluid">
     <div class="row g-3">
       <div class="col-md-3 d-flex flex-column">
@@ -84,8 +89,8 @@
                 const cid = editBtn.getAttribute('data-card');
                 const isEditing = editBtn.textContent.trim().toLowerCase() === 'save';
                 const fields = [
-                    `${cid}_status`, `${cid}_license`, `${cid}_tracking`,
-                    `${cid}_company`, `${cid}_address`, `${cid}_employee`,
+                    `${cid}_status`, /*`${cid}_license`, `${cid}_tracking`,
+                    `${cid}_company`,*/ `${cid}_address`, /* `${cid}_employee`,*/
                     `${cid}_validity`, `${cid}_desc`
                 ];
 
@@ -151,6 +156,21 @@
         });
     }
 
+    function highlightAndScrollToTicket(ticketId) {
+        if (!ticketId) return;
+
+        setTimeout(() => {
+            const card = document.getElementById(`card_${ticketId}`);
+            if (card) {
+                card.style.border = '3px solid #0f1445';
+                card.style.boxShadow = '0 0 20px rgba(15, 20, 69, 0.5)';
+                card.style.backgroundColor = '#f8f9fa';
+
+                card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }, 100);
+    }
+
     async function loadAndRender() {
         try {
             // parallel fetch master-data and tickets
@@ -192,6 +212,12 @@
 
             // wire delegated handlers on the new container
             wireDelegatedHandlers(container);
+
+            // Check for ticketId in query params and highlight it
+            const ticketId = getQueryParam('ticketId');
+            if (ticketId) {
+                highlightAndScrollToTicket(ticketId);
+            }
 
         } catch (err) {
             console.error('Failed to load tickets', err);
