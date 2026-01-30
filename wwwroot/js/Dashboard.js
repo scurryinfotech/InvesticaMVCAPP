@@ -37,13 +37,15 @@
         const select = qs('#selectCompany');
         select.innerHTML = '';
 
-        if (companies.length === 0) {
+        const activecompanies = companies.filter(c => c.isActive === true)
+
+        if (activecompanies.length === 0) {
             const opt = document.createElement('option');
             opt.value = '';
             opt.textContent = 'No companies found';
             select.appendChild(opt);
         } else {
-            companies.forEach(c => {
+            activecompanies.forEach(c => {
                 const opt = document.createElement('option');
                 opt.value = c.id;
                 opt.textContent = c.companyName || `#${c.id}`;
@@ -56,10 +58,12 @@
         const searchInput = qs('#companySearch');
         const searchTerm = (searchInput.value || '').toLowerCase().trim();
 
+        const  activecompanies = allCompanies.filter(c => c.isActive === true);
+
         if (!searchTerm) {
-            populateDropdown(allCompanies);
+            populateDropdown(activecompanies);
         } else {
-            const filtered = allCompanies.filter(c =>
+            const filtered = activecompanies.filter(c =>
                 (c.companyName || '').toLowerCase().includes(searchTerm) ||
                 String(c.id).includes(searchTerm)
             );
