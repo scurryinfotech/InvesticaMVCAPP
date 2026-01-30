@@ -594,7 +594,7 @@ namespace Investica.Repository
                     CompanyAddress, Description, TrackingNumber,
                     ValidTill, CreatedDate, CreatedBy, ModifiedDate, ModifiedBy
                 )
-                OUTPUT INSERTED.Id
+                OUTPUT INSERTED.TrackingNumber
                 SELECT
                     @CompanyId, @EmployeeId, @LicenseId, @StatusId,
                     @CompanyAddress, @Description,
@@ -615,8 +615,8 @@ namespace Investica.Repository
                 cmd.Parameters.AddWithValue("@CreatedBy", t.CreatedBy ?? (object)DBNull.Value);
                 cmd.Parameters.AddWithValue("@ModifiedDate", t.ModifiedDate ?? (object)DBNull.Value);
                 cmd.Parameters.AddWithValue("@ModifiedBy", t.ModifiedBy ?? (object)DBNull.Value);
-                var id = await cmd.ExecuteScalarAsync();
-                return id == null ? 0 : Convert.ToInt32(id);
+                var TrackingNumber = await cmd.ExecuteScalarAsync();
+                return TrackingNumber == null ? 0 : Convert.ToInt32(TrackingNumber);
             }
             catch (Exception e)
             {
