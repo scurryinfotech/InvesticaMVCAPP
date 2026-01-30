@@ -1,208 +1,218 @@
-﻿/* MasterData.js
-   Shows role names in the UI while backend works with role IDs.
-   Uses /roles to populate a role dropdown and a role-id -> name map.
-*/
+﻿/* MasterData.js - jQuery/AJAX version */
 
-(() => {
-    const qs = (sel, root = document) => root.querySelector(sel);
-    const qsa = (sel, root = document) => Array.from(root.querySelectorAll(sel));
-    const showAlert = (msg, type = 'success') => {
-        const el = document.createElement('div');
-        el.className = `alert alert-${type} position-fixed top-0 end-0 m-3`;
-        el.style.zIndex = 1080;
-        el.textContent = msg;
-        document.body.appendChild(el);
-        setTimeout(() => el.remove(), 3500);
-    };
+$(document).ready(function () {
+    'use strict';
 
-    const API = {
-        employees: '/employees',
-        companies: '/companies',
-        licenses: '/licensetypes',
-        statuses: '/statuses',
-        roles: '/roles' // NEW
-    };
-
-    const tblEmployees = qs('#tblEmployees tbody');
-    const tblCompanies = qs('#tblCompanies tbody');
-    const tblLicenses = qs('#tblLicenses tbody');
-    const tblStatuses = qs('#tblStatuses tbody');
-
-    const counts = {
-        employees: qs('#count-employees'),
-        companies: qs('#count-companies'),
-        licenses: qs('#count-licenses'),
-        statuses: qs('#count-statuses')
-    };
-
-    const modalEl = qs('#masterModal');
-    let modal;
-    document.addEventListener('DOMContentLoaded', () => {
-        if (!window.bootstrap) {
-            console.warn('Bootstrap not found. Modal functionality may not work.');
-        } else {
-            modal = new bootstrap.Modal(modalEl);
-        }
-    });
-
-    const modalTitle = qs('#modalTitle');
-    const modalBodyContent = qs('#modalBodyContent');
-    const masterForm = qs('#masterForm');
-
-    // Roles cache
     let roles = [];
-    let rolesMap = {}; // id -> name
+    let rolesMap = {};
+    let modal;
 
-    async function loadRoles() {
-        const res = await fetch(API.roles);
-        const data = await res.json();
-        roles = Array.isArray(data) ? data : [];
-        rolesMap = {};
-        roles.forEach(r => rolesMap[r.id] = r.name);
+    // Initialize
+    modal = new bootstrap.Modal('#masterModal');
+    bindEvents();
+    reloadAll();
+
+    // Event bindings
+    function bindEvents() {
+        $('#btnAddEmployee').on('click', function () {
+            openCreate('employee');
+        });
+        $('#btnAddCompany').on('click', function () {
+            openCreate('company');
+        });
+        $('#btnAddLicense').on('click', function () {
+            openCreate('license');
+        });
+        $('#btnAddStatus').on('click', function () {
+            openCreate('status');
+        });
+
+        $('#searchEmployees').on('input', function () {
+            filterTable('#tblEmployees tbody', $(this).val());
+        });
+        $('#searchCompanies').on('input', function () {
+            filterTable('#tblCompanies tbody', $(this).val());
+        });
+        $('#searchLicenses').on('input', function () {
+            filterTable('#tblLicenses tbody', $(this).val());
+        });
+        $('#searchStatuses').on('input', function () {
+            filterTable('#tblStatuses tbody', $(this).val());
+        });
+
+        $('#masterForm').on('submit', handleFormSubmit);
     }
 
-    async function loadEmployees() {
-        const res = await fetch(API.employees);
-        const data = await res.json();
-        renderTable(tblEmployees, data, 'employee');
-        counts.employees.textContent = data.length;
+    // Load functions
+    function loadRoles() {
+        return $.ajax({
+            url: '/roles',
+            method: 'GET',
+            success: function (data) {
+                roles = Array.isArray(data) ? data : [];
+                rolesMap = {};
+                $.each(roles, function (index, role) {
+                    rolesMap[role.id] = role.name;
+                });
+            },
+            error: function () {
+                showAlert('Failed to load roles', 'danger');
+            }
+        });
     }
 
-    async function loadCompanies() {
-        const res = await fetch(API.companies);
-        const data = await res.json();
-        renderTable(tblCompanies, data, 'company');
-        counts.companies.textContent = data.length;
+    function loadEmployees() {
+        $.ajax({
+            url: '/employees',
+            method: 'GET',
+            success: function (data) {
+                renderTable('#tblEmployees tbody', data, 'employee');
+                $('#count-employees').text(data.length);
+            },
+            error: function () {
+                showAlert('Failed to load employees', 'danger');
+            }
+        });
     }
 
-    async function loadLicenses() {
-        const res = await fetch(API.licenses);
-        const data = await res.json();
-        renderTable(tblLicenses, data, 'license');
-        counts.licenses.textContent = data.length;
+    function loadCompanies() {
+        $.ajax({
+            url: '/companies',
+            method: 'GET',
+            success: function (data) {
+                renderTable('#tblCompanies tbody', data, 'company');
+                $('#count-companies').text(data.length);
+            },
+            error: function () {
+                showAlert('Failed to load companies', 'danger');
+            }
+        });
     }
 
-    async function loadStatuses() {
-        const res = await fetch(API.statuses);
-        const data = await res.json();
-        renderTable(tblStatuses, data, 'status');
-        counts.statuses.textContent = data.length;
+    function loadLicenses() {
+        $.ajax({
+            url: '/licensetypes',
+            method: 'GET',
+            success: function (data) {
+                renderTable('#tblLicenses tbody', data, 'license');
+                $('#count-licenses').text(data.length);
+            },
+            error: function () {
+                showAlert('Failed to load licenses', 'danger');
+            }
+        });
     }
 
-    function renderTable(tbody, items, type) {
-        tbody.innerHTML = '';
-        items.forEach((it, idx) => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = getRowHtml(it, idx + 1, type);
-            tbody.appendChild(tr);
+    function loadStatuses() {
+        $.ajax({
+            url: '/statuses',
+            method: 'GET',
+            success: function (data) {
+                renderTable('#tblStatuses tbody', data, 'status');
+                $('#count-statuses').text(data.length);
+            },
+            error: function () {
+                showAlert('Failed to load statuses', 'danger');
+            }
+        });
+    }
 
-            const btnEdit = tr.querySelector('.btn-edit');
-            const btnDel = tr.querySelector('.btn-delete');
-            if (btnEdit) btnEdit.addEventListener('click', () => openEdit(type, it.id));
-            if (btnDel) btnDel.addEventListener('click', () => confirmDelete(type, it.id));
+    // Render table
+    function renderTable(selector, items, type) {
+        var $tbody = $(selector);
+        $tbody.empty();
+
+        $.each(items, function (idx, item) {
+            var html = getRowHtml(item, idx + 1, type);
+            var $tr = $('<tr>').html(html);
+
+            $tr.find('.btn-edit').on('click', function () {
+                openEdit(type, item.id);
+            });
+            $tr.find('.btn-delete').on('click', function () {
+                confirmDelete(type, item.id);
+            });
+
+            $tbody.append($tr);
         });
     }
 
     function getRowHtml(item, index, type) {
-        switch (type) {
-            case 'employee':
-                // show role name via rolesMap, fall back to id if missing
-                const roleLabel = rolesMap[item.role] ?? item.role ?? '';
-                return `
-                    <td>${index}</td>
-                    <td>${escapeHtml(item.name || '')}</td>
-                    <td>${escapeHtml(item.email || '')}</td>
-                    <td>${escapeHtml(roleLabel)}</td>
-                    <td>${item.isActive ? 'Yes' : 'No'}</td>
-                    <td>
-                        <button class="btn btn-sm btn-primary btn-edit">Edit</button>
-                        <button class="btn btn-sm btn-danger btn-delete ms-1">Delete</button>
-                    </td>`;
-            case 'company':
-                return `
-                    <td>${index}</td>
-                    <td>${escapeHtml(item.companyName || '')}</td>
-                    <td>${item.isActive ? 'Yes' : 'No'}</td>
-                    <td>
-                        <button class="btn btn-sm btn-primary btn-edit">Edit</button>
-                        <button class="btn btn-sm btn-danger btn-delete ms-1">Delete</button>
-                    </td>`;
-            case 'license':
-                return `
-                    <td>${index}</td>
-                    <td>${escapeHtml(item.appTypeName || '')}</td>
-                    <td>${item.isActive ? 'Yes' : 'No'}</td>
-                    <td>
-                        <button class="btn btn-sm btn-primary btn-edit">Edit</button>
-                        <button class="btn btn-sm btn-danger btn-delete ms-1">Delete</button>
-                    </td>`;
-            case 'status':
-                return `
-                    <td>${index}</td>
-                    <td>${escapeHtml(item.statusName || '')}</td>
-                    <td>${item.isActive ? 'Yes' : 'No'}</td>
-                    <td>
-                        <button class="btn btn-sm btn-primary btn-edit">Edit</button>
-                        <button class="btn btn-sm btn-danger btn-delete ms-1">Delete</button>
-                    </td>`;
+        var actions = '<button class="btn btn-sm btn-primary btn-edit">Edit</button>' +
+            '<button class="btn btn-sm btn-danger btn-delete ms-1">Delete</button>';
+
+        if (type === 'employee') {
+            var roleLabel = rolesMap[item.role] || item.role || '';
+            return '<td>' + index + '</td>' +
+                '<td>' + escapeHtml(item.name || '') + '</td>' +
+                '<td>' + escapeHtml(item.email || '') + '</td>' +
+                '<td>' + escapeHtml(roleLabel) + '</td>' +
+                '<td>' + (item.isActive ? 'Yes' : 'No') + '</td>' +
+                '<td>' + actions + '</td>';
+        }
+        else if (type === 'company') {
+            return '<td>' + index + '</td>' +
+                '<td>' + escapeHtml(item.companyName || '') + '</td>' +
+                '<td>' + (item.isActive ? 'Yes' : 'No') + '</td>' +
+                '<td>' + actions + '</td>';
+        }
+        else if (type === 'license') {
+            return '<td>' + index + '</td>' +
+                '<td>' + escapeHtml(item.appTypeName || '') + '</td>' +
+                '<td>' + (item.isActive ? 'Yes' : 'No') + '</td>' +
+                '<td>' + actions + '</td>';
+        }
+        else if (type === 'status') {
+            return '<td>' + index + '</td>' +
+                '<td>' + escapeHtml(item.statusName || '') + '</td>' +
+                '<td>' + (item.isActive ? 'Yes' : 'No') + '</td>' +
+                '<td>' + actions + '</td>';
         }
     }
 
-    function escapeHtml(s) {
-        if (!s) return '';
-        return s.toString().replace(/[&<>"'`=\/]/g, function (c) {
-            return {
-                '&': '&amp;',
-                '<': '&lt;',
-                '>': '&gt;',
-                '"': '&quot;',
-                "'": '&#39;',
-                '/': '&#x2F;',
-                '`': '&#x60;',
-                '=': '&#x3D;'
-            }[c];
-        });
-    }
-
-    qs('#btnAddEmployee').addEventListener('click', () => openCreate('employee'));
-    qs('#btnAddCompany').addEventListener('click', () => openCreate('company'));
-    qs('#btnAddLicense').addEventListener('click', () => openCreate('license'));
-    qs('#btnAddStatus').addEventListener('click', () => openCreate('status'));
-
-    qs('#searchEmployees').addEventListener('input', e => filterTable(tblEmployees, e.target.value));
-    qs('#searchCompanies').addEventListener('input', e => filterTable(tblCompanies, e.target.value));
-    qs('#searchLicenses').addEventListener('input', e => filterTable(tblLicenses, e.target.value));
-    qs('#searchStatuses').addEventListener('input', e => filterTable(tblStatuses, e.target.value));
-
-    function filterTable(tbody, term) {
+    // Filter table
+    function filterTable(selector, term) {
         term = (term || '').toLowerCase();
-        qsa('tr', tbody).forEach(tr => {
-            const text = tr.textContent.toLowerCase();
-            tr.style.display = text.indexOf(term) >= 0 ? '' : 'none';
+        $(selector).find('tr').each(function () {
+            var text = $(this).text().toLowerCase();
+            if (text.indexOf(term) >= 0) {
+                $(this).show();
+            } else {
+                $(this).hide();
+            }
         });
     }
 
+    // Modal operations
     function openCreate(type) {
-        qs('#entityType').value = type;
-        qs('#entityId').value = '';
-        modalTitle.textContent = `Add ${capitalize(type)}`;
-        modalBodyContent.innerHTML = getFormHtml(type, {});
-        modal?.show();
+        $('#entityType').val(type);
+        $('#entityId').val('');
+        $('#modalTitle').text('Add ' + capitalize(type));
+        $('#modalBodyContent').html(getFormHtml(type, {}));
+        modal.show();
     }
 
-    async function openEdit(type, id) {
-        try {
-            const res = await fetch(getApiForType(type) + '/' + id);
-            if (!res.ok) throw new Error('Failed to load item');
-            const data = await res.json();
-            qs('#entityType').value = type;
-            qs('#entityId').value = data.id;
-            modalTitle.textContent = `Edit ${capitalize(type)}`;
-            modalBodyContent.innerHTML = getFormHtml(type, data);
-            modal?.show();
-        } catch (err) {
-            showAlert(err.message, 'danger');
-        }
+    function openEdit(type, id) {
+        var url = '';
+        if (type === 'employee') url = '/employees/' + id;
+        else if (type === 'company') url = '/companies/' + id;
+        else if (type === 'license') url = '/licensetypes/' + id;
+        else if (type === 'status') url = '/statuses/' + id;
+
+        $.ajax({
+            url: url,
+            method: 'GET',
+            success: function (data) {
+                $('#entityType').val(type);
+                $('#entityId').val(data.id);
+                $('#modalTitle').text('Edit ' + capitalize(type));
+                $('#modalBodyContent').html(getFormHtml(type, data));
+                modal.show();
+            },
+            error: function () {
+                showAlert('Failed to load item', 'danger');
+            }
+        });
     }
 
     function confirmDelete(type, id) {
@@ -210,143 +220,198 @@
         deleteEntity(type, id);
     }
 
-    async function deleteEntity(type, id) {
-        try {
-            const url = getApiForType(type) + '/' + id;
-            const res = await fetch(url, { method: 'DELETE' });
-            if (!res.ok) throw new Error('Delete failed');
-            showAlert('Deleted', 'success');
-            await reloadAll();
-        } catch (err) {
-            showAlert(err.message, 'danger');
-        }
-    }
+    function deleteEntity(type, id) {
+        var url = '';
+        if (type === 'employee') url = '/employees/' + id;
+        else if (type === 'company') url = '/companies/' + id;
+        else if (type === 'license') url = '/licensetypes/' + id;
+        else if (type === 'status') url = '/statuses/' + id;
 
-    masterForm.addEventListener('submit', async (ev) => {
-        ev.preventDefault();
-        const type = qs('#entityType').value;
-        const id = qs('#entityId').value;
-        const formData = new FormData(masterForm);
-        const obj = {};
-        for (const [k, v] of formData.entries()) obj[k] = v === 'on' ? true : v;
-
-        // convert checkbox and numeric role
-        if (formData.has('isActive')) obj.isActive = (formData.get('isActive') === 'on' || formData.get('isActive') === 'true');
-        if (obj.role !== undefined) obj.role = parseInt(obj.role, 10) || 0;
-
-        try {
-            if (id) {
-                const res = await fetch(getApiForType(type) + '/' + id, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(obj)
-                });
-                if (!res.ok) throw new Error('Update failed');
-                showAlert('Updated', 'success');
-            } else {
-                const res = await fetch(getApiForType(type), {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(obj)
-                });
-                if (!res.ok) throw new Error('Create failed');
-                showAlert('Created', 'success');
+        $.ajax({
+            url: url,
+            method: 'DELETE',
+            success: function () {
+                showAlert('Deleted successfully', 'success');
+                reloadAll();
+            },
+            error: function () {
+                showAlert('Delete failed', 'danger');
             }
-            modal?.hide();
-            await reloadAll();
-        } catch (err) {
-            showAlert(err.message, 'danger');
-        }
-    });
-
-    function getApiForType(type) {
-        switch (type) {
-            case 'employee': return API.employees;
-            case 'company': return API.companies;
-            case 'license': return API.licenses;
-            case 'status': return API.statuses;
-            default: throw new Error('Unknown type');
-        }
+        });
     }
 
+    // Form submit
+    function handleFormSubmit(e) {
+        e.preventDefault();
+
+        var type = $('#entityType').val();
+        var id = $('#entityId').val();
+        var formData = $('#masterForm').serializeArray();
+        var obj = {};
+
+        $.each(formData, function (index, field) {
+            obj[field.name] = field.value;
+        });
+
+        if ($('input[name="isActive"]').length) {
+            obj.isActive = $('input[name="isActive"]').is(':checked');
+        }
+
+        if (obj.role !== undefined && obj.role !== '') {
+            obj.role = parseInt(obj.role, 10);
+        }
+
+        if (obj.documentId !== undefined && obj.documentId !== '') {
+            obj.documentId = parseInt(obj.documentId, 10);
+        }
+
+        var url = '';
+        var method = '';
+
+        if (id) {
+            method = 'PUT';
+            if (type === 'employee') url = '/employees/' + id;
+            else if (type === 'company') url = '/companies/' + id;
+            else if (type === 'license') url = '/licensetypes/' + id;
+            else if (type === 'status') url = '/statuses/' + id;
+        } else {
+            method = 'POST';
+            if (type === 'employee') url = '/employees';
+            else if (type === 'company') url = '/companies';
+            else if (type === 'license') url = '/licensetypes';
+            else if (type === 'status') url = '/statuses';
+        }
+
+        $.ajax({
+            url: url,
+            method: method,
+            contentType: 'application/json',
+            data: JSON.stringify(obj),
+            success: function () {
+                showAlert(id ? 'Updated successfully' : 'Created successfully', 'success');
+                modal.hide();
+                reloadAll();
+            },
+            error: function () {
+                showAlert(id ? 'Update failed' : 'Create failed', 'danger');
+            }
+        });
+    }
+
+    // Form HTML generation
     function getFormHtml(type, data) {
         data = data || {};
-        switch (type) {
-            case 'employee':
-                // build role select using roles[]; value is role id but UI shows role name
-                const roleOptions = roles.map(r => `<option value="${r.id}" ${r.id === data.role ? 'selected' : ''}>${escapeHtml(r.name)}</option>`).join('');
-                return `
-                <input type="hidden" name="unikey" value="${escapeHtml(data.unikey || '')}" />
-                <div class="mb-3">
-                    <label class="form-label">Name</label>
-                    <input name="name" class="form-control" value="${escapeHtml(data.name || '')}" required />
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Email</label>
-                    <input name="email" type="email" class="form-control" value="${escapeHtml(data.email || '')}" />
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Role</label>
-                    <select name="role" class="form-select">
-                        <option value="">-- Select role --</option>
-                        ${roleOptions}
-                    </select>
-                </div>
-                <div class="form-check">
-                    <input name="isActive" class="form-check-input" type="checkbox" id="isActive" ${data.isActive ? 'checked' : ''}>
-                    <label class="form-check-label" for="isActive">Is Active</label>
-                </div>`;
-            case 'company':
-                return `
-                <input type="hidden" name="unikey" value="${escapeHtml(data.unikey || '')}" />
-                <div class="mb-3">
-                    <label class="form-label">Company Name</label>
-                    <input name="companyName" class="form-control" value="${escapeHtml(data.companyName || '')}" required />
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Document Id</label>
-                    <input name="documentId" type="number" class="form-control" value="${data.documentId ?? ''}" />
-                </div>
-                <div class="form-check">
-                    <input name="isActive" class="form-check-input" type="checkbox" ${data.isActive ? 'checked' : ''}>
-                    <label class="form-check-label">Is Active</label>
-                </div>`;
-            case 'license':
-                return `
-                <input type="hidden" name="unikey" value="${escapeHtml(data.unikey || '')}" />
-                <div class="mb-3">
-                    <label class="form-label">App Type Name</label>
-                    <input name="appTypeName" class="form-control" value="${escapeHtml(data.appTypeName || '')}" required />
-                </div>
-                <div class="form-check">
-                    <input name="isActive" class="form-check-input" type="checkbox" ${data.isActive ? 'checked' : ''}>
-                    <label class="form-check-label">Is Active</label>
-                </div>`;
-            case 'status':
-                return `
-                <input type="hidden" name="unikey" value="${escapeHtml(data.unikey || '')}" />
-                <div class="mb-3">
-                    <label class="form-label">Status Name</label>
-                    <input name="statusName" class="form-control" value="${escapeHtml(data.statusName || '')}" required />
-                </div>
-                <div class="form-check">
-                    <input name="isActive" class="form-check-input" type="checkbox" ${data.isActive ? 'checked' : ''}>
-                    <label class="form-check-label">Is Active</label>
-                </div>`;
-            default:
-                return '<div>Unknown form</div>';
+
+        if (type === 'employee') {
+            var roleOptions = '';
+            $.each(roles, function (index, role) {
+                var selected = role.id === data.role ? 'selected' : '';
+                roleOptions += '<option value="' + role.id + '" ' + selected + '>' + escapeHtml(role.name) + '</option>';
+            });
+
+            return '<input type="hidden" name="unikey" value="' + escapeHtml(data.unikey || '') + '" />' +
+                '<div class="mb-3">' +
+                '<label class="form-label">Name</label>' +
+                '<input name="name" class="form-control" value="' + escapeHtml(data.name || '') + '" required />' +
+                '</div>' +
+                '<div class="mb-3">' +
+                '<label class="form-label">Email</label>' +
+                '<input name="email" type="email" class="form-control" value="' + escapeHtml(data.email || '') + '" />' +
+                '</div>' +
+                '<div class="mb-3">' +
+                '<label class="form-label">Role</label>' +
+                '<select name="role" class="form-select">' +
+                '<option value="">-- Select role --</option>' +
+                roleOptions +
+                '</select>' +
+                '</div>' +
+                '<div class="form-check">' +
+                '<input name="isActive" class="form-check-input" type="checkbox" id="isActive" ' + (data.isActive ? 'checked' : '') + '>' +
+                '<label class="form-check-label" for="isActive">Is Active</label>' +
+                '</div>';
+        }
+        else if (type === 'company') {
+            return '<input type="hidden" name="unikey" value="' + escapeHtml(data.unikey || '') + '" />' +
+                '<div class="mb-3">' +
+                '<label class="form-label">Company Name</label>' +
+                '<input name="companyName" class="form-control" value="' + escapeHtml(data.companyName || '') + '" required />' +
+                '</div>' +
+                '<div class="mb-3">' +
+                '<label class="form-label">Document Id</label>' +
+                '<input name="documentId" type="number" class="form-control" value="' + (data.documentId || '') + '" />' +
+                '</div>' +
+                '<div class="form-check">' +
+                '<input name="isActive" class="form-check-input" type="checkbox" ' + (data.isActive ? 'checked' : '') + '>' +
+                '<label class="form-check-label">Is Active</label>' +
+                '</div>';
+        }
+        else if (type === 'license') {
+            return '<input type="hidden" name="unikey" value="' + escapeHtml(data.unikey || '') + '" />' +
+                '<div class="mb-3">' +
+                '<label class="form-label">App Type Name</label>' +
+                '<input name="appTypeName" class="form-control" value="' + escapeHtml(data.appTypeName || '') + '" required />' +
+                '</div>' +
+                '<div class="form-check">' +
+                '<input name="isActive" class="form-check-input" type="checkbox" ' + (data.isActive ? 'checked' : '') + '>' +
+                '<label class="form-check-label">Is Active</label>' +
+                '</div>';
+        }
+        else if (type === 'status') {
+            return '<input type="hidden" name="unikey" value="' + escapeHtml(data.unikey || '') + '" />' +
+                '<div class="mb-3">' +
+                '<label class="form-label">Status Name</label>' +
+                '<input name="statusName" class="form-control" value="' + escapeHtml(data.statusName || '') + '" required />' +
+                '</div>' +
+                '<div class="form-check">' +
+                '<input name="isActive" class="form-check-input" type="checkbox" ' + (data.isActive ? 'checked' : '') + '>' +
+                '<label class="form-check-label">Is Active</label>' +
+                '</div>';
+        }
+        else {
+            return '<div>Unknown form</div>';
         }
     }
 
+    // Utilities
+    function escapeHtml(s) {
+        if (!s) return '';
+        var map = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#39;',
+            '/': '&#x2F;',
+            '`': '&#x60;',
+            '=': '&#x3D;'
+        };
+        return String(s).replace(/[&<>"'`=\/]/g, function (c) {
+            return map[c];
+        });
+    }
     function capitalize(s) {
         return s.charAt(0).toUpperCase() + s.slice(1);
     }
 
-    async function reloadAll() {
-        // roles must be loaded before employees so we can map role id -> name
-        await loadRoles();
-        await Promise.all([loadEmployees(), loadCompanies(), loadLicenses(), loadStatuses()]);
+    function showAlert(msg, type) {
+        var $alert = $('<div>')
+            .addClass('alert alert-' + type + ' position-fixed top-0 end-0 m-3')
+            .css('z-index', 1080)
+            .text(msg);
+
+        $('body').append($alert);
+        setTimeout(function () {
+            $alert.remove();
+        }, 3500);
     }
 
-    document.addEventListener('DOMContentLoaded', reloadAll);
-})();
+    function reloadAll() {
+        loadRoles().done(function () {
+            loadEmployees();
+            loadCompanies();
+            loadLicenses();
+            loadStatuses();
+        });
+    }
+
+});

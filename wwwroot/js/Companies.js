@@ -35,13 +35,15 @@
             const select = qs('#licenseTypeSelect');
             select.innerHTML = '';
 
-            if (licenses.length === 0) {
+            const activelicenses = licenses.filter(l  => l.isActive === true)
+
+            if (activelicenses.length === 0) {
                 const opt = document.createElement('option');
                 opt.value = '';
                 opt.textContent = 'No license types found';
                 select.appendChild(opt);
             } else {
-                licenses.forEach(l => {
+                activelicenses.forEach(l => {
                     const opt = document.createElement('option');
                     opt.value = l.id;
                     opt.textContent = l.appTypeName || l.unikey || `#${l.id}`;
@@ -54,13 +56,16 @@
             const select = qs('#statusSelect');
             select.innerHTML = '';
 
-            if (statuses.length === 0) {
+            
+            const activeStatuses = statuses.filter(s => s.isActive === true);
+
+            if (activeStatuses.length === 0) {
                 const opt = document.createElement('option');
                 opt.value = '';
-                opt.textContent = 'No statuses found';
+                opt.textContent = 'No active statuses found';
                 select.appendChild(opt);
             } else {
-                statuses.forEach(s => {
+                activeStatuses.forEach(s => {
                     const opt = document.createElement('option');
                     opt.value = s.id;
                     opt.textContent = s.statusName || s.unikey || `#${s.id}`;
@@ -73,10 +78,12 @@
             const searchInput = qs('#licenseSearch');
             const searchTerm = (searchInput.value || '').toLowerCase().trim();
 
+            const activelicenses = allLicenseTypes.filter(l => l.isActive === true);
+
             if (!searchTerm) {
-                populateLicenseDropdown(allLicenseTypes);
+                populateLicenseDropdown(activelicenses);
             } else {
-                const filtered = allLicenseTypes.filter(l =>
+                const filtered = activelicenses.filter(l =>
                     (l.appTypeName || '').toLowerCase().includes(searchTerm) ||
                     (l.unikey || '').toLowerCase().includes(searchTerm) ||
                     String(l.id).includes(searchTerm)
@@ -89,10 +96,12 @@
             const searchInput = qs('#statusSearch');
             const searchTerm = (searchInput.value || '').toLowerCase().trim();
 
+            const activeStatuses = allStatuses.filter(s => s.isActive === true);
+
             if (!searchTerm) {
-                populateStatusDropdown(allStatuses);
+                populateStatusDropdown(activeStatuses);
             } else {
-                const filtered = allStatuses.filter(s =>
+                const filtered = activeStatuses.filter(s =>
                     (s.statusName || '').toLowerCase().includes(searchTerm) ||
                     (s.unikey || '').toLowerCase().includes(searchTerm) ||
                     String(s.id).includes(searchTerm)
