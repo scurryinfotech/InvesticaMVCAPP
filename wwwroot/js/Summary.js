@@ -22,6 +22,11 @@
         sStatus: ['sum_status', 'wiz_status']
     };
 
+    $(document).on('click', '#btnclose', () => {
+        sessionStorage.removeItem('companyFlowShown');
+
+        window.location.href = '/Home/Dashboard';
+    });
     // populate UI
     Object.keys(map).forEach(id => {
         const el = document.getElementById(id);
@@ -150,6 +155,7 @@
                         <p>Your Ticket ID:</p>
                         <h2 class="text-primary">${createdId}</h2>
                     </div>
+                    <button type="button" id="btnclose" class="btn btn-primary" data-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>
@@ -159,9 +165,6 @@
                         showAlert('Ticket created', 'success');
                     }
 
-                    setTimeout(() => {
-                        window.location.href = '/Home/Dashboard';
-                    }, 15000);
                     return;
                 }
 
@@ -172,6 +175,8 @@
                 showAlert('Error creating ticket', 'danger');
             }
         }
+
+
 
         // Delegate clicks so handler works regardless of load order
         document.addEventListener('click', (e) => {

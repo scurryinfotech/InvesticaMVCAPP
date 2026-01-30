@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Net.NetworkInformation;
 using System.Threading.Tasks;
 
 namespace Investica.Repository
@@ -396,6 +397,34 @@ namespace Investica.Repository
             return list;
         }
 
+        public async Task<LicenseTypeMaster?> GetLicenseTypeByIdAsync(int id)
+        {
+            const string sql = @"SELECT Id, AppTypeName, IsActive 
+                         FROM LicenseTypeMaster 
+                         WHERE Id = @Id";
+
+            await using var con = Conn();
+            await con.OpenAsync();
+
+            await using var cmd = new SqlCommand(sql, con);
+            cmd.Parameters.AddWithValue("@Id", id);
+
+            await using var rdr = await cmd.ExecuteReaderAsync();
+
+            if (await rdr.ReadAsync())
+            {
+                return new LicenseTypeMaster
+                {
+                    Id = rdr.GetInt32(0),
+                    AppTypeName = rdr.GetString(1),
+                    IsActive = !rdr.IsDBNull(2) && rdr.GetBoolean(2)
+                };
+            }
+
+            return null;
+        }
+
+
         public async Task<int> CreateLicenseTypeAsync(LicenseTypeMaster t)
         {
             const string sql = @"INSERT INTO LicenseTypeMaster (Unikey, AppTypeName, CreatedDate, CreatedBy, ModifiedDate, ModifiedBy, IsActive)
@@ -470,6 +499,34 @@ namespace Investica.Repository
             }
             return list;
         }
+
+        public async Task<StatusMaster?> GetStatusByIdAsync(int id)
+        {
+            const string sql = @"SELECT Id, StatusName, IsActive
+                         FROM StatusMaster
+                         WHERE Id = @Id";
+
+            await using var con = Conn();
+            await con.OpenAsync();
+
+            await using var cmd = new SqlCommand(sql, con);
+            cmd.Parameters.AddWithValue("@Id", id);
+
+            await using var rdr = await cmd.ExecuteReaderAsync();
+
+            if (await rdr.ReadAsync())
+            {
+                return new StatusMaster
+                {
+                    Id = rdr.GetInt32(0),
+                    StatusName = rdr.GetString(1),
+                    IsActive = !rdr.IsDBNull(2) && rdr.GetBoolean(2)
+                };
+            }
+
+            return null;
+        }
+
 
         public async Task<int> CreateStatusAsync(StatusMaster s)
         {
