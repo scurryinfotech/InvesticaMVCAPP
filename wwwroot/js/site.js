@@ -38,6 +38,7 @@
 
     // Show/Hide tabs for a selected flow. Always keep Dashboard visible.
     function setFlow(showCompanyFlow) {
+            debugger
         tabs.forEach(tab => {
             const isDashboard = normalizeText(tab.textContent).includes('dashboard') || (normalize(tab.getAttribute('href') || '').includes('/home') && normalize(tab.getAttribute('href') || '').endsWith('/dashboard'));
             const inCompanyFlow = tabMatchesKeywords(tab, companyFlowKeywords);

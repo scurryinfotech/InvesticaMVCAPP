@@ -127,10 +127,12 @@ $(document).ready(function () {
             var $tr = $('<tr>').html(html);
 
             $tr.find('.btn-edit').on('click', function () {
-                openEdit(type, item.id);
+                const eid = item.id ?? item.Id;
+                openEdit(type, eid);
             });
             $tr.find('.btn-delete').on('click', function () {
-                confirmDelete(type, item.id);
+                const eid = item.id ?? item.Id;
+                confirmDelete(type, eid);
             });
 
             $tbody.append($tr);
@@ -203,6 +205,7 @@ $(document).ready(function () {
             url: url,
             method: 'GET',
             success: function (data) {
+                debugger
                 $('#entityType').val(type);
                 $('#entityId').val(data.id);
                 $('#modalTitle').text('Edit ' + capitalize(type));

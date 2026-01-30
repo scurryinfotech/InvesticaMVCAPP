@@ -46,7 +46,7 @@
         items.forEach(it => {
             const tr = document.createElement('tr');
             const urlCell = (it.url && it.url.trim())
-                ? `<a href="${escapeHtml(it.url)}" target="_blank" rel="noopener">${escapeHtml(it.url)}</a>`
+                ? `<a id ="urllinks" href="${escapeHtml(it.url)}" target="_blank" rel="noopener">${escapeHtml(it.url)}</a>`
                 : `<b style="color:red;">OFFLINE</b>`;
             tr.innerHTML = `<td>${escapeHtml(it.stateName)}</td><td>${urlCell}</td>`;
             tbody.appendChild(tr);
@@ -63,7 +63,7 @@
         items.forEach((it, idx) => {
             const tr = document.createElement('tr');
             const website = (it.website && it.website.trim())
-                ? `<a href="${escapeHtml(it.website)}" target="_blank" rel="noopener">${escapeHtml(it.website)}</a>`
+                ? `<a  id ="urllinks" href="${escapeHtml(it.website)}" target="_blank" rel="noopener">${escapeHtml(it.website)}</a>`
                 : `<b style="color:red;">OFFLINE</b>`;
             tr.innerHTML = `<td>${idx + 1}</td><td>${escapeHtml(it.corporationName)}</td><td>${website}</td>`;
             tbody.appendChild(tr);

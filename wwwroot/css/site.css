@@ -123,9 +123,13 @@ header {
         text-decoration:none;
         color:black;
     }
-    
-/*    fontsheet invoice*/
 
+#urllinks
+{
+    text-decoration:auto;
+    color:blue;
+}
+/*    fontsheet invoice*/
 .wizard-wrap {
     padding: 20px;
 }
