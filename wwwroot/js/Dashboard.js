@@ -94,30 +94,26 @@
             }
             if (!res.ok) throw new Error('Failed to fetch ticket');
             const t = await res.json();
-            out.innerHTML = `
-                <div class="card border-secondary">
-                    <div class="card-body">
-                        <h5 class="card-title">Ticket #${escapeHtml(String(t.id))}</h5>
-                        <p class="mb-1"><strong>Company:</strong> ${escapeHtml(String(t.companyId))}</p>
-                        <p class="mb-1"><strong>Employee:</strong> ${escapeHtml(String(t.employeeId))}</p>
-                        <p class="mb-1"><strong>License:</strong> ${escapeHtml(String(t.licenseId))}</p>
-                        <p class="mb-1"><strong>Status:</strong> ${escapeHtml(String(t.statusId))}</p>
-                        <p class="mb-1"><strong>TrackingNumber:</strong> ${escapeHtml(t.trackingNumber || '')}</p>
-                        <p class="mb-1"><strong>Description:</strong> ${escapeHtml(t.description || '')}</p>
-                        <div class="mt-2">
-                            <a class="btn btn-sm btn-outline-primary" href="/Home/Tickets">Open Tickets</a>
-                        </div>
-                    </div>
-                </div>`;
-            if (t.companyId) {
-                const company = allCompanies.find(c => c.id == t.companyId);
-                if (company) {
-                    const searchInput = qs('#companySearch');
-                    const hiddenInput = qs('#selectedCompanyId');
-                    if (searchInput) searchInput.value = company.companyName || `#${company.id}`;
-                    if (hiddenInput) hiddenInput.value = company.id;
-                }
-            }
+
+            localStorage.setItem('wiz_ticketId', t.id);
+            if (t.companyId) localStorage.setItem('wiz_companyId', t.companyId);
+            if (t.employeeId) localStorage.setItem('wiz_employeeId', t.employeeId);
+            if (t.licenseId) localStorage.setItem('wiz_licenseId', t.licenseId);
+            if (t.statusId) localStorage.setItem('wiz_statusId', t.statusId);
+            if (t.trackingNumber) localStorage.setItem('wiz_trackingNumber', t.trackingNumber);
+            if (t.description) localStorage.setItem('wiz_description', t.description);
+
+            const params = new URLSearchParams();
+            params.set('ticketId', t.id);
+            if (t.companyId) params.set('companyId', t.companyId);
+            if (t.employeeId) params.set('employeeId', t.employeeId);
+            if (t.licenseId) params.set('licenseTypeId', t.licenseId);
+            if (t.statusId) params.set('statusId', t.statusId);
+            if (t.trackingNumber) params.set('trackingNumber', t.trackingNumber);
+
+            // Redirect to Tickets page
+            window.location.href = `/Home/Tickets?${params.toString()}`;
+
         } catch (err) {
             out.innerHTML = `<div class="alert alert-danger">Error: ${escapeHtml(err.message)}</div>`;
         }

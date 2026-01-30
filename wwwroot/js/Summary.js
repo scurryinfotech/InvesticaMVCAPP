@@ -138,11 +138,8 @@
                     // Persist created ticket id
                     if (createdId) localStorage.setItem('createdTicketId', createdId);
 
-                    // CLEAR wizard/session state so nav resets to default
                     try {
-                        // clear session flag that unlocked company flow
                         sessionStorage.removeItem('companyFlowShown');
-                        // clear wizard keys (wiz_* and sum_*)
                         Object.keys(localStorage).forEach(k => {
                             if (k.startsWith('wiz_') || k.startsWith('sum_')) {
                                 // keep createdTicketId
