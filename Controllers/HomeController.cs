@@ -294,9 +294,12 @@ namespace Investica.Controllers
         [HttpGet("licensetypes/{id:int}")]
         public async Task<IActionResult> GetLicenseTypeById(int id)
         {
-            // Service does not expose Get by id for license types; if you need it add a service method.
-            // For now return NotImplemented if client requests single item.
-            return StatusCode(501);
+            var licenseType = await _service.GetLicenseTypeByIdAsync(id);
+
+            if (licenseType == null)
+                return NotFound($"LicenseType with Id {id} not found.");
+
+            return Ok(licenseType);
         }
 
         [HttpPost("licensetypes")]
@@ -338,8 +341,12 @@ namespace Investica.Controllers
         [HttpGet("statuses/{id:int}")]
         public async Task<IActionResult> GetStatusById(int id)
         {
-            // Service does not expose Get by id for statuses; return 501 unless you add service method
-            return StatusCode(501);
+            var item = await _service.GetStatusByIdAsync(id);
+
+            if (item == null)
+                return NotFound($"Status with Id {id} not found.");
+
+            return Ok(item);
         }
 
         [HttpPost("statuses")]

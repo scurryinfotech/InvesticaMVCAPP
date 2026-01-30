@@ -34,12 +34,14 @@ namespace Investica.Repository.Interface
 
         // LicenseTypeMaster
         Task<List<LicenseTypeMaster>> GetLicenseTypesAsync();
+        Task<LicenseTypeMaster?> GetLicenseTypeByIdAsync(int id);
         Task<int> CreateLicenseTypeAsync(LicenseTypeMaster t);
         Task<bool> UpdateLicenseTypeAsync(LicenseTypeMaster t);
         Task<bool> SoftDeleteLicenseTypeAsync(int id, int modifiedBy);
 
         // StatusMaster
         Task<List<StatusMaster>> GetStatusesAsync();
+        Task<StatusMaster?> GetStatusByIdAsync(int id);
         Task<int> CreateStatusAsync(StatusMaster s);
         Task<bool> UpdateStatusAsync(StatusMaster s);
         Task<bool> SoftDeleteStatusAsync(int id, int modifiedBy);
@@ -76,5 +78,6 @@ namespace Investica.Repository.Interface
         Task<List<InvoiceModel>> GetInvoicesAsync();
         Task<int> CreateInvoiceAsync(InvoiceModel inv);
         Task<bool> UpdateInvoiceAsync(InvoiceModel inv);
+        
     }
 }
