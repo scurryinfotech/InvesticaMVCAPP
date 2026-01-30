@@ -112,7 +112,7 @@
                 EmployeeId: toIntOrNull(localStorage.getItem('wiz_employeeId')) || 1,
                 LicenseId: toIntOrNull(localStorage.getItem('wiz_licenseId')),
                 StatusId: toIntOrNull(localStorage.getItem('wiz_statusId')),
-                CompanyAddress: (localStorage.getItem('sum_address') || localStorage.getItem('wiz_address') || '') ,
+                CompanyAddress: (localStorage.getItem('sum_address') || localStorage.getItem('wiz_address') || ''),
                 Description: read('sum_description', 'wiz_description') || '',
                 TrackingNumber: read('sum_tracking', 'wiz_tracking') || null,
                 ValidTill: null,
@@ -133,28 +133,35 @@
                     let data = null;
                     try { data = await res.json(); } catch { /* ignore */ }
                     const createdId = data && (data.id || data.Id) ? (data.id || data.Id) : null;
-                    showAlert('Ticket created', 'success');
 
-                    // Persist created ticket id
-                    if (createdId) localStorage.setItem('createdTicketId', createdId);
+                    if (createdId) {
+                        localStorage.setItem('createdTicketId', createdId);
 
-                    try {
-                        sessionStorage.removeItem('companyFlowShown');
-                        Object.keys(localStorage).forEach(k => {
-                            if (k.startsWith('wiz_') || k.startsWith('sum_')) {
-                                // keep createdTicketId
-                                if (k === 'createdTicketId') return;
-                                localStorage.removeItem(k);
-                            }
-                        });
-                    } catch (err) {
-                        console.warn('Failed to clear wizard state', err);
+                        // Simple modal
+                        const modal = document.createElement('div');
+                        modal.innerHTML = `
+        <div class="modal fade show d-block" style="background: rgba(0,0,0,0.5);">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-success text-white">
+                        <h5 class="modal-title">Ticket Created</h5>
+                    </div>
+                    <div class="modal-body text-center p-4">
+                        <p>Your Ticket ID:</p>
+                        <h2 class="text-primary">${createdId}</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+                        document.body.appendChild(modal);
+                    } else {
+                        showAlert('Ticket created', 'success');
                     }
 
-                    // Short delay so user sees toast then navigate to Dashboard (default tabs)
                     setTimeout(() => {
                         window.location.href = '/Home/Dashboard';
-                    }, 700);
+                    }, 15000);
                     return;
                 }
 
