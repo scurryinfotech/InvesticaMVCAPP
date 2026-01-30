@@ -1,103 +1,94 @@
-﻿<div class="left-panel">
-    <form id="filterForm" autocomplete="off">
+﻿<div class="container">
+    <div class="left-panel mx-auto">
+        <h4 class="mb-4">Filters</h4>
+        <form id="filterForm" autocomplete="off">
 
-        <!-- Frontsheet Filters -->
-        <div id="frontsheetFilters" style="display:none;">
-            <div class="mb-3">
-                <label for="frontsheetDate" class="form-label fw-bold">Date</label>
-                <input type="date" class="form-control" id="frontsheetDate" name="FrontsheetDate">
+            <!-- Details Filters -->
+            <div id="detailsFilters">
+                <div class="mb-3">
+                    <label for="startDate" class="form-label fw-bold">Start Date</label>
+                    <input type="date" class="form-control" id="startDate" name="StartDate">
+                </div>
+
+                <div class="mb-3">
+                    <label for="endDate" class="form-label fw-bold">End Date</label>
+                    <input type="date" class="form-control" id="endDate" name="EndDate">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Company Name</label>
+                    <div class="searchable-dropdown-wrapper">
+                        <input type="text"
+                               class="searchable-input multi-select"
+                               id="companyName"
+                               placeholder="Select company"
+                               autocomplete="off">
+                        <input type="hidden" id="companyNameValue" name="CompanyId">
+                        <ul class="searchable-dropdown-list" id="companyNameList"></ul>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Location</label>
+                    <div class="searchable-dropdown-wrapper">
+                        <input type="text"
+                               class="searchable-input multi-select"
+                               id="location"
+                               placeholder="Select location"
+                               autocomplete="off">
+                        <input type="hidden" id="locationValue" name="LocationId">
+                        <ul class="searchable-dropdown-list" id="locationList"></ul>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">License Type</label>
+                    <div class="searchable-dropdown-wrapper">
+                        <input type="text"
+                               class="searchable-input multi-select"
+                               id="licenseType"
+                               placeholder="Select license type"
+                               autocomplete="off">
+                        <input type="hidden" id="licenseTypeValue" name="LicenseId">
+                        <ul class="searchable-dropdown-list" id="licenseTypeList"></ul>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Status</label>
+                    <div class="searchable-dropdown-wrapper">
+                        <input type="text"
+                               class="searchable-input multi-select"
+                               id="status"
+                               placeholder="Select status"
+                               autocomplete="off">
+                        <input type="hidden" id="statusValue" name="StatusId">
+                        <ul class="searchable-dropdown-list" id="statusList"></ul>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="trackingNumber" class="form-label fw-bold">Tracking Number</label>
+                    <input type="text" class="form-control" id="trackingNumber" name="TrackingNumber"
+                           placeholder="Enter tracking number">
+                </div>
             </div>
 
-            <div class="mb-3">
-                <label for="frontsheetCompany" class="form-label fw-bold">Company Name</label>
-                <select class="form-select searchable-dropdown" id="frontsheetCompany" name="FrontsheetCompany">
-                    <option value="">Select company</option>
-                </select>
+            <!-- Actions -->
+            <div id="applyResetFilters" class="d-flex gap-2 mt-4">
+                <button type="button" id="submitBtn"
+                        class="btn btn-primary flex-fill fw-bold"
+                        style="background:#0f1445; border:none;">
+                    Submit
+                </button>
+
+                <button type="button" id="clearBtn"
+                        class="btn btn-warning flex-fill fw-bold text-white"
+                        style="background:#f78812; border:none;">
+                    Clear
+                </button>
             </div>
 
-            <div class="mb-3">
-                <label for="frontsheetLocation" class="form-label fw-bold">Location</label>
-                <select class="form-select searchable-dropdown" id="frontsheetLocation" name="FrontsheetLocation">
-                    <option value="">Select location</option>
-                </select>
-            </div>
-        </div>
-
-        <!-- Invoice Filters -->
-        <div id="invoiceFilters" style="display:none;">
-            <div class="mb-3">
-                <label for="invoiceDate" class="form-label fw-bold">Invoice Date</label>
-                <input type="date" class="form-control" id="invoiceDate" name="InvoiceDate">
-            </div>
-
-            <div class="mb-3">
-                <label for="invoiceNumber" class="form-label fw-bold">Invoice Number</label>
-                <input type="text" class="form-control" id="invoiceNumber" name="InvoiceNumber"
-                       placeholder="Enter invoice number">
-            </div>
-        </div>
-
-        <!-- Details Filters -->
-        <div id="detailsFilters">
-            <div class="mb-3">
-                <label for="startDate" class="form-label fw-bold">Start Date</label>
-                <input type="date" class="form-control" id="startDate" name="StartDate">
-            </div>
-
-            <div class="mb-3">
-                <label for="endDate" class="form-label fw-bold">End Date</label>
-                <input type="date" class="form-control" id="endDate" name="EndDate">
-            </div>
-
-            <div class="mb-3">
-                <label for="companyName" class="form-label fw-bold">Company Name</label>
-                <select class="form-select searchable-dropdown" id="companyName" name="CompanyId">
-                    <option value="">Select company</option>
-                </select>
-            </div>
-
-            <div class="mb-3">
-                <label for="location" class="form-label fw-bold">Location</label>
-                <select class="form-select searchable-dropdown" id="location" name="LocationId">
-                    <option value="">Select location</option>
-                </select>
-            </div>
-
-            <div class="mb-3">
-                <label for="licenseType" class="form-label fw-bold">License Type</label>
-                <select class="form-select searchable-dropdown" id="licenseType" name="LicenseId">
-                    <option value="">Select license type</option>
-                </select>
-            </div>
-
-            <div class="mb-3">
-                <label for="status" class="form-label fw-bold">Status</label>
-                <select class="form-select searchable-dropdown" id="status" name="StatusId">
-                    <option value="">Select status</option>
-                </select>
-            </div>
-
-            <div class="mb-3">
-                <label for="trackingNumber" class="form-label fw-bold">Tracking Number</label>
-                <input type="text" class="form-control" id="trackingNumber" name="TrackingNumber"
-                       placeholder="Enter tracking number">
-            </div>
-        </div>
-
-        <!-- Actions -->
-        <div id="applyResetFilters" class="d-flex gap-2 mt-4">
-            <button type="button" id="submitBtn"
-                    class="btn btn-primary flex-fill fw-bold"
-                    style="background:#0f1445; border:none;">
-                Submit
-            </button>
-
-            <button type="button" id="clearBtn"
-                    class="btn btn-warning flex-fill fw-bold text-white"
-                    style="background:#f78812; border:none;">
-                Clear
-            </button>
-        </div>
-
-    </form>
+        </form>
+    </div>
 </div>

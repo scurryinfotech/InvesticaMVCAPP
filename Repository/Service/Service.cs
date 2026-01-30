@@ -1,11 +1,12 @@
-﻿using System;
+﻿using Investica.Models;
+using Investica.Repository.Interface;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Configuration;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Threading.Tasks;
-using Microsoft.Data.SqlClient;
-using Microsoft.Extensions.Configuration;
-using Investica.Models;
-using Investica.Repository.Interface;
 
 namespace Investica.Repository
 {
@@ -654,6 +655,90 @@ namespace Investica.Repository
             cmd.Parameters.AddWithValue("@Id", id);
             var rows = await cmd.ExecuteNonQueryAsync();
             return rows > 0;
+        }
+
+        // Add this method inside the Tickets region (e.g. after GetTicketsAsync and before GetTicketByIdAsync)
+        public async Task<List<Ticket>> GetTicketsByFilterAsync(TicketFilterRequest? filter)
+        {
+            filter ??= new Investica.Models.TicketFilterRequest();
+
+            var list = new List<Ticket>();
+            var sb = new System.Text.StringBuilder();
+            sb.Append(@"SELECT Id, CompanyId, EmployeeId, LicenseId, StatusId, CompanyAddress, Description, TrackingNumber, ValidTill, CreatedDate, CreatedBy, ModifiedDate, ModifiedBy
+                FROM Tickets
+                WHERE 1=1");
+
+            var parameters = new List<SqlParameter>();
+
+            if (filter.CompanyId.HasValue)
+            {
+                sb.Append(" AND CompanyId = @CompanyId");
+                parameters.Add(new SqlParameter("@CompanyId", filter.CompanyId.Value));
+            }
+
+            if (filter.LicenseType.HasValue)
+            {
+                sb.Append(" AND LicenseId = @LicenseId");
+                parameters.Add(new SqlParameter("@LicenseId", filter.LicenseType.Value));
+            }
+
+            if (filter.Status.HasValue)
+            {
+                sb.Append(" AND StatusId = @StatusId");
+                parameters.Add(new SqlParameter("@StatusId", filter.Status.Value));
+            }
+
+            if (!string.IsNullOrWhiteSpace(filter.TrackingNumber))
+            {
+                sb.Append(" AND CAST(TrackingNumber AS VARCHAR(100)) LIKE @TrackingPattern");
+                parameters.Add(new SqlParameter("@TrackingPattern", "%" + filter.TrackingNumber + "%"));
+            }
+
+            if (filter.StartDate.HasValue)
+            {
+                sb.Append(" AND CreatedDate >= @StartDate");
+                parameters.Add(new SqlParameter("@StartDate", filter.StartDate.Value));
+            }
+
+            if (filter.EndDate.HasValue)
+            {
+                // treat EndDate as inclusive end-of-day
+                var endOfDay = filter.EndDate.Value.Date.AddDays(1).AddTicks(-1);
+                sb.Append(" AND CreatedDate <= @EndDate");
+                parameters.Add(new SqlParameter("@EndDate", endOfDay));
+            }
+
+            sb.Append(" ORDER BY CreatedDate DESC");
+
+            await using var con = Conn();
+            await con.OpenAsync();
+            await using var cmd = new SqlCommand(sb.ToString(), con);
+
+            if (parameters.Count > 0)
+                cmd.Parameters.AddRange(parameters.ToArray());
+
+            await using var rdr = await cmd.ExecuteReaderAsync();
+            while (await rdr.ReadAsync())
+            {
+                list.Add(new Ticket
+                {
+                    Id = rdr.GetInt32(0),
+                    CompanyId = rdr.GetInt32(1),
+                    EmployeeId = rdr.GetInt32(2),
+                    LicenseId = rdr.GetInt32(3),
+                    StatusId = rdr.GetInt32(4),
+                    CompanyAddress = rdr.IsDBNull(5) ? null : rdr.GetString(5),
+                    Description = rdr.IsDBNull(6) ? null : rdr.GetString(6),
+                    TrackingNumber = rdr.IsDBNull(7) ? null : (int?)rdr.GetInt32(7),
+                    ValidTill = rdr.IsDBNull(8) ? null : (DateTime?)rdr.GetDateTime(8),
+                    CreatedDate = rdr.IsDBNull(9) ? null : (DateTime?)rdr.GetDateTime(9),
+                    CreatedBy = rdr.IsDBNull(10) ? null : (int?)rdr.GetInt32(10),
+                    ModifiedDate = rdr.IsDBNull(11) ? null : (DateTime?)rdr.GetDateTime(11),
+                    ModifiedBy = rdr.IsDBNull(12) ? null : (int?)rdr.GetInt32(12)
+                });
+            }
+
+            return list;
         }
         #endregion
 

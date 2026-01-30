@@ -20,3 +20,8 @@
         this.style.background = "#0f1445";
     }
 });
+
+document.addEventListener('DOMContentLoaded', function () {
+    var f = document.getElementById('invoiceFilters');
+    if (f) f.style.display = 'block';
+});

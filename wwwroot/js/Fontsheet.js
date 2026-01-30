@@ -57,7 +57,11 @@ document.getElementById("frontsheetEditBtn").addEventListener("click", function 
     }
 });
 
-
+document.addEventListener('DOMContentLoaded', function () {
+    var f = document.getElementById('frontsheetFilters');
+    if (f) f.style.display = 'block';
+});
 
 document.addEventListener("DOMContentLoaded", loadFrontsheetData);
+
 

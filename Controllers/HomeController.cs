@@ -125,6 +125,16 @@ namespace Investica.Controllers
             }
         }
 
+        // Add this action in the controller (place near the other ticket endpoints)
+        [HttpGet("tickets/filter")]
+        public async Task<IActionResult> FilterTickets([FromQuery] TicketFilterRequest filter)
+        {
+            filter ??= new TicketFilterRequest();
+
+            var tickets = await _service.GetTicketsByFilterAsync(filter);
+
+            return Ok(tickets);
+        }
         // Shop category links (GET)
         [HttpGet("shoplinks")]
         public async Task<IActionResult> GetShopLinks()
