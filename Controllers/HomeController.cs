@@ -378,5 +378,105 @@ namespace Investica.Controllers
         }
 
         #endregion
+
+
+        #region  Invoce Management
+
+        [HttpGet("invoice/filter")]
+        public async Task<IActionResult> FilterInvoice([FromQuery] InvoiceFilterRequest filter)
+        {
+            filter ??= new InvoiceFilterRequest();
+
+            var Invoice = await _service.GetInvoiceByFilterAsync(filter);
+
+            return Ok(Invoice);
+        }
+
+        [HttpGet("invoice")]
+        public async Task<IActionResult> GetInvoicesApi()
+        {
+            try
+            {
+                var list = await _service.GetInvoicesAsync();
+                return Ok(list);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error retrieving invoices", error = ex.Message });
+            }
+        }
+
+        //[HttpGet("invoice/{id:int}")]
+        //public async Task<IActionResult> GetInvoiceByIdApi(int id)
+        //{
+        //    try
+        //    {
+        //        var invoice = await _service.GetInvoiceByIdAsync(id);
+
+        //        return Ok(invoice);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(500, new { message = "Error retrieving invoice", error = ex.Message });
+        //    }
+        //}
+
+        [HttpPost("invoice")]
+        public async Task<IActionResult> CreateInvoiceAsync([FromBody] InvoiceModel invoice)
+        {
+            try
+            {
+                var invoiceId = await _service.CreateInvoiceAsync(invoice);
+
+                return Ok(invoiceId);
+
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error creating invoice", error = ex.Message });
+            }
+        }
+
+        [HttpPut("invoice/{id:int}")]
+        public async Task<IActionResult> UpdateInvoiceAsync(int id, [FromBody] InvoiceModel invoice)
+        {
+            try
+            {
+                var result = await _service.UpdateInvoiceAsync(invoice);
+
+                if (result)
+                {
+                    return Ok(new { message = "Invoice updated successfully" });
+                }
+
+                return NotFound(new { message = $"Invoice with ID {id} not found" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error updating invoice", error = ex.Message });
+            }
+        }
+
+        //[HttpDelete("invoice/{id:int}")]
+        //public async Task<IActionResult> DeleteInvoiceAsync(int id)
+        //{
+        //    try
+        //    {
+        //        var result = await _service.DeleteInvoiceAsync(id);
+
+        //        if (result)
+        //        {
+        //            return Ok(new { message = "Invoice deleted successfully" });
+        //        }
+
+        //        return NotFound(new { message = $"Invoice with ID {id} not found" });
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(500, new { message = "Error deleting invoice", error = ex.Message });
+        //    }
+        //}
+
+        #endregion
     }
 }

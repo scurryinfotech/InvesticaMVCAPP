@@ -1119,6 +1119,85 @@ namespace Investica.Repository
         #endregion
 
         #region Invoice
+
+        public async Task<List<InvoiceModel>> GetInvoiceByFilterAsync(InvoiceFilterRequest? filter)
+        {
+            filter ??= new Investica.Models.InvoiceFilterRequest();
+
+            var list = new List<InvoiceModel>();
+            var sb = new System.Text.StringBuilder();
+            sb.Append(@"
+SELECT
+    Id,
+    InvoiceNumber,
+    InvoiceTo,
+    GstNoTo,
+    InvoiceFrom,
+    GstNoFrom,
+    Particulars,
+    GrossAmoutRs,
+    NetAmoutRsm,
+    SubTotal,
+    IGST,
+    NetTotal,
+    CreatedDate,
+    CreatedBy,
+    ModifiedDate,
+    ModifiedBy,
+    IsActive
+FROM Invoice
+WHERE 1=1
+");
+
+            var parameters = new List<SqlParameter>();
+            if (!string.IsNullOrEmpty(filter.InvoiceNumber))
+            {
+                sb.Append(" AND InvoiceNumber = @InvoiceNumber");
+                parameters.Add(new SqlParameter("@InvoiceNumber", filter.InvoiceNumber));
+            }
+
+            if (filter.StartDate.HasValue)
+            {
+                sb.Append(" AND CreatedDate >= @StartDate");
+                parameters.Add(new SqlParameter("@StartDate", filter.StartDate.Value));
+            }
+
+            sb.Append(" ORDER BY CreatedDate DESC");
+
+            await using var con = Conn();
+            await con.OpenAsync();
+            await using var cmd = new SqlCommand(sb.ToString(), con);
+
+            if (parameters.Count > 0)
+                cmd.Parameters.AddRange(parameters.ToArray());
+
+            await using var rdr = await cmd.ExecuteReaderAsync();
+            while (await rdr.ReadAsync())
+            {
+                list.Add(new InvoiceModel
+                {
+                    Id = rdr.GetInt32(0),
+                    InvoiceNumber = rdr.IsDBNull(1) ? string.Empty : rdr.GetString(1),
+                    InvoiceTo = rdr.IsDBNull(2) ? null : rdr.GetString(2),
+                    GstNoTo = rdr.IsDBNull(3) ? string.Empty : rdr.GetString(3),
+                    InvoiceFrom = rdr.IsDBNull(4) ? null : rdr.GetString(4),
+                    GstNoFrom = rdr.IsDBNull(5) ? string.Empty : rdr.GetString(5),
+                    Particulars = rdr.IsDBNull(6) ? null : rdr.GetString(6),
+                    GrossAmoutRs = rdr.IsDBNull(7) ? string.Empty : rdr.GetString(7),
+                    NetAmoutRsm = rdr.IsDBNull(8) ? string.Empty : rdr.GetString(8),
+                    SubTotal = rdr.IsDBNull(9) ? string.Empty : rdr.GetString(9),
+                    IGST = rdr.IsDBNull(10) ? 0 : rdr.GetInt32(10),
+                    NetTotal = rdr.IsDBNull(11) ? string.Empty : rdr.GetString(11),
+                    CreatedDate = rdr.IsDBNull(12) ? null : rdr.GetDateTime(12),
+                    CreatedBy = rdr.IsDBNull(13) ? null : rdr.GetInt32(13),
+                    ModifiedDate = rdr.IsDBNull(14) ? null : rdr.GetDateTime(14),
+                    ModifiedBy = rdr.IsDBNull(15) ? null : rdr.GetInt32(15),
+                    IsActive = rdr.IsDBNull(16) ? true : rdr.GetBoolean(16)
+                });
+            }
+
+            return list;
+        }
         public async Task<List<InvoiceModel>> GetInvoicesAsync()
         {
             var list = new List<InvoiceModel>();
@@ -1181,9 +1260,12 @@ namespace Investica.Repository
             return id == null ? 0 : Convert.ToInt32(id);
         }
 
-        public async Task<bool> UpdateInvoiceAsync(InvoiceModel inv)
+        public async Task<bool> UpdateInvoiceAsync(InvoiceModel inv )
         {
-            const string sql = @"UPDATE Invoice SET InvoiceNumber=@InvoiceNumber, InvoiceTo=@InvoiceTo, GstNoTo=@GstNoTo, InvoiceFrom=@InvoiceFrom, GstNoFrom=@GstNoFrom, Particulars=@Particulars, GrossAmoutRs=@GrossAmoutRs, NetAmoutRsm=@NetAmoutRsm, SubTotal=@SubTotal, IGST=@IGST, NetTotal=@NetTotal, ModifiedDate=@ModifiedDate, ModifiedBy=@ModifiedBy, IsActive=@IsActive WHERE Id=@Id";
+            const string sql = @"UPDATE Invoice SET InvoiceNumber=@InvoiceNumber, InvoiceTo=@InvoiceTo, GstNoTo=@GstNoTo,
+InvoiceFrom=@InvoiceFrom, GstNoFrom=@GstNoFrom, Particulars=@Particulars, GrossAmoutRs=@GrossAmoutRs, 
+NetAmoutRsm=@NetAmoutRsm, SubTotal=@SubTotal, IGST=@IGST, NetTotal=@NetTotal, ModifiedDate=@ModifiedDate, 
+ModifiedBy=@ModifiedBy, IsActive=@IsActive WHERE Id=@Id";
             await using var con = Conn();
             await con.OpenAsync();
             await using var cmd = new SqlCommand(sql, con);
