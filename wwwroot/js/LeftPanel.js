@@ -314,7 +314,6 @@
     }
 
     $('#submitBtn').on('click', function (e) {
-        debugger
         e.preventDefault();
 
         let filters = {

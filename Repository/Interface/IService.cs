@@ -75,9 +75,11 @@ namespace Investica.Repository.Interface
         Task<bool> UpdateTradeLinkAsync(TradeCategoryLink t);
 
         // Invoice
+        Task<List<InvoiceModel>> GetInvoiceByFilterAsync(InvoiceFilterRequest filter);
         Task<List<InvoiceModel>> GetInvoicesAsync();
         Task<int> CreateInvoiceAsync(InvoiceModel inv);
         Task<bool> UpdateInvoiceAsync(InvoiceModel inv);
-        
+        //Task<List<InvoiceModel>> GetInvoiceByIdAsync(int id);
+        //Task<bool> GetInvoiceByIdAsync(int id);
     }
 }

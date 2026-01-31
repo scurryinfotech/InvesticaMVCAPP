@@ -35,7 +35,6 @@ $(document).ready(function () {
     }
 
     function buildTicketCard(t, maps, idx) {
-        debugger
         const { companiesMap, licensesMap, statusesMap, employeesMap } = maps;
         const statusLabel = statusesMap[t.statusId] || t.statusId || '';
         const licenseLabel = licensesMap[t.licenseId] || t.licenseId || '';
