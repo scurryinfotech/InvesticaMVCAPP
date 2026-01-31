@@ -25,10 +25,11 @@ header {
     padding: 12px 20px;
     background: #ff3399;
     color: #fff;
-    position: sticky;
+    position: fixed;
     top: 0;
     z-index: 10;
     border-bottom: 3px double #f78812;
+    width :100%;
 }
 
 .logo {
@@ -58,9 +59,10 @@ header {
     display: grid;
     grid-template-columns: 320px 1fr;
     height: calc(100vh - 60px);
-    width: 100vw;
-    max-width: 100vw;
+    width: 100%;
+    max-width: 100%;
     margin: 0;
+    padding-top:100px;
 }
 
 .right-panel {
@@ -74,6 +76,7 @@ header {
     gap: 10px;
     padding: 10px;
     border-bottom: 1px solid #ddd;
+    justify-content: space-between;
 }
 
 .tab {
@@ -92,13 +95,17 @@ header {
 .card {
     background: #fff;
     border-radius: 10px;
-    padding: 15px;
+/*    padding-top:100px;*/
     margin-bottom: 12px;
     box-shadow: 0 4px 10px rgba(0,0,0,0.08);
     width: 100%;
-    box-sizing: border-box;
 }
 
+#linkCard {
+   
+    margin-top: 100px;
+    width:100%;
+}
 /* small form styles in left panel */
 .left-panel label {
     font-size: 13px;
@@ -367,3 +374,48 @@ a {
         .searchable-dropdown-list::-webkit-scrollbar-thumb:hover {
             background: #555;
         }
+
+#ticketCard {
+    display: flex;
+    height: 120vh;
+    overflow: hidden;
+}
+
+    #ticketCard > :first-child {
+        flex: 0 0 auto;
+        width: 300px; /* Adjust width as needed */
+        height: 100%;
+        overflow-y: auto;
+        overflow-x: hidden;
+        position: sticky;
+        top: 0;
+        background: #fff;
+        border-right: 1px solid #ddd;
+    }
+
+/* Right panel - Scrollable */
+.right-panel {
+    flex: 1;
+    height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 10px;
+}
+
+.dashboard {
+    width: 100%;
+}
+
+.card-body{
+    width:100%;
+}
+
+.container.full-width-container {
+    max-width: 100% !important;
+    width: 100% !important;
+    margin: 0 auto !important;
+    padding: 20px;
+    margin-top: 80px !important;
+}
+
+
