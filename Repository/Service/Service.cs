@@ -612,7 +612,7 @@ namespace Investica.Repository
 
         public async Task<Ticket?> GetTicketByIdAsync(int id)
         {
-            const string sql = @"SELECT Id, CompanyId, EmployeeId, LicenseId, StatusId, CompanyAddress, Description, TrackingNumber, ValidTill, CreatedDate, CreatedBy, ModifiedDate, ModifiedBy FROM Tickets WHERE TrackingNumber=@Id";
+            const string sql = @"SELECT Id, CompanyId, EmployeeId, LicenseId, StatusId, CompanyAddress, Description, TrackingNumber, ValidTill, CreatedDate, CreatedBy, ModifiedDate, ModifiedBy FROM Tickets WHERE TrackingNumber=@Id or Id=@Id";
             await using var con = Conn();
             await con.OpenAsync();
             await using var cmd = new SqlCommand(sql, con);
@@ -701,6 +701,7 @@ namespace Investica.Repository
             var rows = await cmd.ExecuteNonQueryAsync();
             return rows > 0;
         }
+
 
         public async Task<bool> SoftDeleteTicketAsync(int id, int modifiedBy)
         {

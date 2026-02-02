@@ -125,6 +125,70 @@ namespace Investica.Controllers
             }
         }
 
+        [HttpPut("tickets/{id:int}")]
+        public async Task<IActionResult> UpdateTicketApi(int id, [FromBody] TicketUpdateRequest request)
+        {
+            if (request == null)
+            {
+                _logger.LogWarning("UpdateTicketApi called with empty body for Id={Id}", id);
+                return BadRequest("No data is changed.");
+            }
+
+            try
+            {
+                // Fetch existing ticket
+                var existingTicket = await _service.GetTicketByIdAsync(id);
+                if (existingTicket == null)
+                {
+                    _logger.LogWarning("Ticket not found. Id={Id}", id);
+                    return NotFound($"Ticket with Id {id} not found.");
+                }
+
+                _logger.LogInformation("UpdateTicketApi called for Id={Id}. StatusId={StatusId}",
+                    id, request.StatusId);
+
+                // Update only the fields that are provided
+                if (request.StatusId.HasValue)
+                    existingTicket.StatusId = request.StatusId.Value;
+
+                if (request.CompanyAddress != null)
+                    existingTicket.CompanyAddress = request.CompanyAddress;
+
+                if (request.ValidTill.HasValue)
+                    existingTicket.ValidTill = request.ValidTill;
+
+                if (request.Description != null)
+                    existingTicket.Description = request.Description;
+
+                // Set modification metadata
+                existingTicket.ModifiedDate = DateTime.UtcNow;
+                existingTicket.ModifiedBy = 1; // TODO: Get from authenticated user
+
+                // Save changes
+                var success = await _service.UpdateTicketAsync(existingTicket);
+
+                if (!success)
+                {
+                    _logger.LogError("UpdateTicketAsync failed for Id={Id}", id);
+                    return StatusCode(500, "Failed to update ticket.");
+                }
+
+                _logger.LogInformation("Ticket updated successfully. Id={Id}", id);
+
+                return Ok(new
+                {
+                    id,
+                    message = "Ticket updated successfully",
+                    modifiedDate = existingTicket.ModifiedDate
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in UpdateTicketApi for Id={Id}", id);
+                return StatusCode(500, "Server error updating ticket.");
+            }
+        }
+
         // Add this action in the controller (place near the other ticket endpoints)
         [HttpGet("tickets/filter")]
         public async Task<IActionResult> FilterTickets([FromQuery] TicketFilterRequest filter)
