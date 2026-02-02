@@ -53,6 +53,9 @@ namespace Investica.Repository.Interface
         Task<bool> UpdateTicketAsync(Ticket t);
         Task<bool> SoftDeleteTicketAsync(int id, int modifiedBy);
         Task<List<Ticket>> GetTicketsByFilterAsync(TicketFilterRequest filter);
+        Task<int> CreateNoteAsync(int ticketId, string noteText, int userId);
+        Task<List<Log>> GetNotesByTicketIdAsync(int ticketId);
+        Task<Log> GetNoteByIdAsync(int id);
 
         // UpcomingRenewals
         Task<List<UpcomingRenewal>> GetUpcomingRenewalsAsync();

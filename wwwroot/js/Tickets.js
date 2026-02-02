@@ -7,7 +7,8 @@ $(document).ready(function () {
         companies: '/companies',
         licenses: '/licensetypes',
         statuses: '/statuses',
-        employees: '/employees'
+        employees: '/employees',
+        notes:'/notes'
     };
 
     let statusesData = [];
@@ -65,10 +66,10 @@ $(document).ready(function () {
 
         <label class="fw-bold mb-2" style="font-size:0.9em;">Add Note</label>
         <textarea id="${cid}_noteInput" class="form-control mb-2" rows="2" placeholder="Enter your note here..."></textarea>
-        <button class="btn btn-sm btn-primary w-100 mb-2 note-btn" data-card="${cid}"
+        <button class="btn btn-sm btn-primary w-100 mb-2 note-btn" data-card="${t.trackingNumber}"
                 style="background:#0f1445;border:none;">Add Note</button>
         <div id="${cid}_notes" class="rounded border p-2 bg-light" style="max-height:120px; overflow-y:auto;">
-          <small style="color:#666;">Notes will appear here</small>
+          <small style="color:#666;">Loading notes...</small>
         </div>
       </div>
       <div class="col-md-4 d-flex flex-column">
@@ -181,26 +182,51 @@ $(document).ready(function () {
         });
 
         // Add Note button
+        // Add Note button
         container.on('click', '.note-btn', function () {
             const noteBtn = $(this);
-            const cid = noteBtn.attr('data-card');
-            const input = $('#' + cid + '_noteInput');
+            const trackingNumber = noteBtn.attr('data-card'); 
+            const cardElement = noteBtn.closest('.card');
+            const ticketId = cardElement.attr('data-ticket-id'); 
+            const cid = cardElement.attr('id').replace('card_', 'ticket_'); 
+
+            const input = $('#' + cid + '_noteInput');  
             const notesContainer = $('#' + cid + '_notes');
             const noteText = input.val().trim();
 
             if (!noteText) return;
 
-            const now = new Date().toLocaleString();
-            const noteHtml = '<div style="border-bottom:1px solid #ddd; padding:6px 0; font-size:0.85em;">' +
-                '<strong style="color:#0f1445">' + now + '</strong><br>' +
-                escapeHtml(noteText) + '</div>';
+            noteBtn.prop('disabled', true);
 
-            if (notesContainer.html().includes('Notes will appear here')) {
-                notesContainer.html('');
-            }
+            $.ajax({
+                url: api.notes,
+                method: 'POST',
+                data: JSON.stringify({
+                    ticketId: parseInt(ticketId),  
+                    noteText: noteText
+                }),
+                contentType: 'application/json',
+                success: function (response) {
+                    const timestamp = response.timestamp || new Date().toLocaleString();
 
-            notesContainer.prepend(noteHtml);
-            input.val('');
+                    const noteHtml = '<div style="border-bottom:1px solid #ddd; padding:6px 0; font-size:0.85em;">' +
+                        '<strong style="color:#0f1445">' + timestamp + '</strong><br>' +
+                        escapeHtml(noteText) + '</div>';
+
+                    if (notesContainer.html().includes('Notes will appear here')) {
+                        notesContainer.html('');
+                    }
+
+                    notesContainer.prepend(noteHtml);
+                    input.val('');
+                    noteBtn.prop('disabled', false);
+                },
+                error: function (xhr, status, error) {
+                    console.error('Error details:', xhr.responseText);
+                    alert('Failed to save note: ' + error);
+                    noteBtn.prop('disabled', false);
+                }
+            });
         });
 
         // Attachments button
@@ -234,9 +260,34 @@ $(document).ready(function () {
             }
         }, 100);
     }
+    function loadNotesForTicket(ticketId, cid) {
+        debugger
+        const notesContainer = $('#' + cid + '_notes');
 
+        $.ajax({
+            url: `/note/${ticketId}`,
+            method: 'GET',
+            dataType: 'json',
+            success: function (notes) {
+                if (notes && notes.length > 0) {
+                    notesContainer.html('');
+                    notes.forEach(function (note) {
+                        const noteHtml = '<div style="border-bottom:1px solid #ddd; padding:6px 0; font-size:0.85em;">' +
+                            '<strong style="color:#0f1445">' + note.timestamp + '</strong><br>' +
+                            escapeHtml(note.noteText) + '</div>';
+                        notesContainer.append(noteHtml);
+                    });
+                } else {
+                    notesContainer.html('<small style="color:#666;">Notes will appear here</small>');
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error('Error loading notes:', error);
+                notesContainer.html('<small style="color:#666;">Notes will appear here</small>');
+            }
+        });
+    }
     function loadAndRender() {
-        // Show loading indicator (optional)
         $('#dashboard').html('<div class="text-center p-5"><div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div></div>');
 
         // Fetch all data using jQuery AJAX
@@ -293,6 +344,10 @@ $(document).ready(function () {
             $.each(sorted, function (idx, t) {
                 const html = buildTicketCard(t, maps, idx);
                 container.append(html);
+
+                // Load notes for each ticket after rendering
+                const cid = 'ticket_' + t.id;
+                loadNotesForTicket(t.id, cid);
             });
 
             // Wire delegated handlers
