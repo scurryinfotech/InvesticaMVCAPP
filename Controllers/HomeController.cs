@@ -125,6 +125,70 @@ namespace Investica.Controllers
             }
         }
 
+        [HttpPut("tickets/{id:int}")]
+        public async Task<IActionResult> UpdateTicketApi(int id, [FromBody] TicketUpdateRequest request)
+        {
+            if (request == null)
+            {
+                _logger.LogWarning("UpdateTicketApi called with empty body for Id={Id}", id);
+                return BadRequest("No data is changed.");
+            }
+
+            try
+            {
+                // Fetch existing ticket
+                var existingTicket = await _service.GetTicketByIdAsync(id);
+                if (existingTicket == null)
+                {
+                    _logger.LogWarning("Ticket not found. Id={Id}", id);
+                    return NotFound($"Ticket with Id {id} not found.");
+                }
+
+                _logger.LogInformation("UpdateTicketApi called for Id={Id}. StatusId={StatusId}",
+                    id, request.StatusId);
+
+                // Update only the fields that are provided
+                if (request.StatusId.HasValue)
+                    existingTicket.StatusId = request.StatusId.Value;
+
+                if (request.CompanyAddress != null)
+                    existingTicket.CompanyAddress = request.CompanyAddress;
+
+                if (request.ValidTill.HasValue)
+                    existingTicket.ValidTill = request.ValidTill;
+
+                if (request.Description != null)
+                    existingTicket.Description = request.Description;
+
+                // Set modification metadata
+                existingTicket.ModifiedDate = DateTime.UtcNow;
+                existingTicket.ModifiedBy = 1; // TODO: Get from authenticated user
+
+                // Save changes
+                var success = await _service.UpdateTicketAsync(existingTicket);
+
+                if (!success)
+                {
+                    _logger.LogError("UpdateTicketAsync failed for Id={Id}", id);
+                    return StatusCode(500, "Failed to update ticket.");
+                }
+
+                _logger.LogInformation("Ticket updated successfully. Id={Id}", id);
+
+                return Ok(new
+                {
+                    id,
+                    message = "Ticket updated successfully",
+                    modifiedDate = existingTicket.ModifiedDate
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in UpdateTicketApi for Id={Id}", id);
+                return StatusCode(500, "Server error updating ticket.");
+            }
+        }
+
         // Add this action in the controller (place near the other ticket endpoints)
         [HttpGet("tickets/filter")]
         public async Task<IActionResult> FilterTickets([FromQuery] TicketFilterRequest filter)
@@ -134,6 +198,101 @@ namespace Investica.Controllers
             var tickets = await _service.GetTicketsByFilterAsync(filter);
 
             return Ok(tickets);
+        }
+
+
+        // this is the note section
+        [HttpPost("notes")]
+        public async Task<IActionResult> CreateNoteApi([FromBody] NoteRequest request)
+        {
+            if (request == null || string.IsNullOrWhiteSpace(request.NoteText))
+            {
+                _logger.LogWarning("CreateNoteApi called with invalid payload.");
+                return BadRequest("Note text is required.");
+            }
+
+            try
+            {
+                // Get userId from claims or session
+                var userId = 1; // Implement this based on your auth
+
+                var id = await _service.CreateNoteAsync(request.TicketId, request.NoteText, userId);
+
+                if (id <= 0)
+                {
+                    _logger.LogError("CreateNoteAsync returned 0 for TicketId={TicketId}", request.TicketId);
+                    return StatusCode(500, "Failed to create note.");
+                }
+
+                var result = new
+                {
+                    id,
+                    ticketId = request.TicketId,
+                    timestamp = DateTime.UtcNow.ToString("g"),
+                    noteText = request.NoteText
+                };
+
+                _logger.LogInformation("Note created. Id={Id}, TicketId={TicketId}", id, request.TicketId);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in CreateNoteApi. TicketId={TicketId}", request.TicketId);
+                return StatusCode(500, "Server error creating note.");
+            }
+        }
+
+        public class NoteRequest
+        {
+            public int TicketId { get; set; }
+            public string NoteText { get; set; }
+        }
+        //GetNotByID
+        [HttpGet("notes/{id}")]
+        public async Task<IActionResult> GetNoteByIdApi(int id)
+        {
+            try
+            {
+                var note = await _service.GetNoteByIdAsync(id);
+                if (note == null)
+                {
+                    return NotFound();
+                }
+                return Ok(note);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving note {Id}", id);
+                return StatusCode(500, "Server error retrieving note.");
+            }
+        }
+
+        // GetNoteTicketNotes By ID
+
+        [HttpGet("note/{ticketId}")]
+        public async Task<IActionResult> GetNotesByTicketId(int ticketId )
+        {
+            try
+            {
+                var notes = await _service.GetNotesByTicketIdAsync(ticketId);
+                if (notes == null)
+                    return Ok(new List<object>());
+                var result = notes.Select(n => new
+                {
+                    id = n.Id,
+                    ticketId = n.RecordId,
+                    noteText = n.NewValue,
+                    timestamp = n.CreatedDate,
+                    createdBy = n.CreatedBy
+                }).ToList();
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving notes for TicketId={TicketId}", ticketId);
+                return StatusCode(500, "Server error retrieving notes.");
+            }
         }
         // Shop category links (GET)
         [HttpGet("shoplinks")]

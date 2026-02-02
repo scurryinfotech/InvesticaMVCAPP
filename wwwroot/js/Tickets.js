@@ -1,5 +1,6 @@
 ﻿// Tickets.js
 // jQuery version with AJAX and searchable status dropdown using Select2
+// Enhanced with save functionality and change tracking
 
 $(document).ready(function () {
     const api = {
@@ -7,11 +8,13 @@ $(document).ready(function () {
         companies: '/companies',
         licenses: '/licensetypes',
         statuses: '/statuses',
-        employees: '/employees'
+        employees: '/employees',
+        notes: '/notes'
     };
 
     let statusesData = [];
     let statusesMap = {};
+    let originalTicketData = {}; // Store original data for comparison
 
     function escapeHtml(s) {
         if (s == null) return '';
@@ -35,6 +38,7 @@ $(document).ready(function () {
     }
 
     function buildTicketCard(t, maps, idx) {
+        debugger
         const { companiesMap, licensesMap, statusesMap, employeesMap } = maps;
         const statusLabel = statusesMap[t.statusId] || t.statusId || '';
         const licenseLabel = licensesMap[t.licenseId] || t.licenseId || '';
@@ -65,19 +69,19 @@ $(document).ready(function () {
 
         <label class="fw-bold mb-2" style="font-size:0.9em;">Add Note</label>
         <textarea id="${cid}_noteInput" class="form-control mb-2" rows="2" placeholder="Enter your note here..."></textarea>
-        <button class="btn btn-sm btn-primary w-100 mb-2 note-btn" data-card="${cid}"
+        <button class="btn btn-sm btn-primary w-100 mb-2 note-btn" data-card="${t.trackingNumber}"
                 style="background:#0f1445;border:none;">Add Note</button>
         <div id="${cid}_notes" class="rounded border p-2 bg-light" style="max-height:120px; overflow-y:auto;">
-          <small style="color:#666;">Notes will appear here</small>
+          <small style="color:#666;">Loading notes...</small>
         </div>
       </div>
       <div class="col-md-4 d-flex flex-column">
-        <div id="${cid}_employee" class="rounded border p-2 text-center fw-bold mb-3"> Created By:${escapeHtml(employeeLabel)}</div>
-          <div class="rounded border p-2 text-center mb-3 fw-bold"  style="font-size:0.85em; color:#666;">
-        <small>Created: ${t.createdDate ? new Date(t.createdDate).toLocaleString() : 'N/A'}</small>
-         </div>
-        <div id="${cid}_validity" class="rounded border p-2 text-center fw-bold mb-3">${t.validTill || ''}</div>
-        <div id="${cid}_desc" class="rounded border p-3 fw-bold bg-light" style="flex:1; min-height:245px; white-space:pre-line; overflow-y:auto;">
+        <div id="${cid}_employee" class="rounded border p-2 text-center fw-bold mb-3">Created By: ${escapeHtml(employeeLabel)}</div>
+        <div class="rounded border p-2 text-center mb-3 fw-bold" style="font-size:0.85em; color:#666;">
+          <small>Created: ${t.createdDate ? new Date(t.createdDate).toLocaleString() : 'N/A'}</small>
+        </div>
+        <div id="${cid}_validity" class="rounded border p-2 text-center fw-bold mb-3"> ${t.validTill ? t.validTill.split('T')[0] : ''}</div>
+        <div id="${cid}_desc" class="rounded border p-2 bg-light" style="flex:1; max-height:245px; white-space:pre-line; overflow-y:auto;">
           ${escapeHtml(t.description || '')}
         </div>
       </div>
@@ -87,11 +91,9 @@ $(document).ready(function () {
 `;
     }
 
-
     function initializeStatusDropdown(cid, currentStatusId) {
         const statusDiv = $('#' + cid + '_status');
 
-        // Build options HTML
         let optionsHtml = '';
         statusesData.forEach(function (status) {
             const selected = status.id == currentStatusId ? 'selected' : '';
@@ -99,11 +101,9 @@ $(document).ready(function () {
             optionsHtml += `<option value="${status.id}" ${selected}>${escapeHtml(label)}</option>`;
         });
 
-        // Replace div with select
         const selectHtml = `<select class="form-select status-dropdown" id="${cid}_status_select" style="width: 100%;">${optionsHtml}</select>`;
         statusDiv.html(selectHtml);
 
-        // Initialize Select2 for searchable dropdown without clear button
         $('#' + cid + '_status_select').select2({
             placeholder: 'Select Status',
             allowClear: false,
@@ -111,7 +111,7 @@ $(document).ready(function () {
             minimumResultsForSearch: 0,
             dropdownParent: statusDiv,
             templateSelection: function (state) {
-                return '';  // Hide selected value display
+                return '';
             }
         });
     }
@@ -123,15 +123,172 @@ $(document).ready(function () {
         const selectedStatusId = selectElement.val();
         const selectedStatusLabel = selectedStatusId ? (statusesMap[selectedStatusId] || selectedStatusId) : '';
 
-        // Destroy Select2 instance
         if (selectElement.data('select2')) {
             selectElement.select2('destroy');
         }
 
-        // Revert to display div
         const statusDiv = $('#' + cid + '_status');
         statusDiv.html(escapeHtml(selectedStatusLabel));
         statusDiv.attr('data-status-id', selectedStatusId);
+    }
+
+    function captureOriginalData(cid, ticketId) {
+        originalTicketData[ticketId] = {
+            statusId: $('#' + cid + '_status').attr('data-status-id'),
+            address: $('#' + cid + '_address').text().trim(),
+            validTill: $('#' + cid + '_validity').text().trim(),
+            description: $('#' + cid + '_desc').text().trim()
+        };
+    }
+
+    function getChangedFields(ticketId, cid) {
+        const original = originalTicketData[ticketId];
+        if (!original) return [];
+
+        const changes = [];
+        const currentStatusId = $('#' + cid + '_status_select').length > 0
+            ? $('#' + cid + '_status_select').val()
+            : $('#' + cid + '_status').attr('data-status-id');
+
+        const currentAddress = $('#' + cid + '_address').find('textarea').length > 0
+            ? $('#' + cid + '_address').find('textarea').val().trim()
+            : $('#' + cid + '_address').text().trim();
+
+        const currentValidity = $('#' + cid + '_validity').find('input').length > 0
+            ? $('#' + cid + '_validity').find('input').val().trim()
+            : $('#' + cid + '_validity').text().trim();
+
+        const currentDescription = $('#' + cid + '_desc').find('textarea').length > 0
+            ? $('#' + cid + '_desc').find('textarea').val().trim()
+            : $('#' + cid + '_desc').text().trim();
+
+        // Check for changes
+        if (currentStatusId != original.statusId) {
+            const oldStatusLabel = statusesMap[original.statusId] || original.statusId;
+            const newStatusLabel = statusesMap[currentStatusId] || currentStatusId;
+            changes.push(`Status changed from "${oldStatusLabel}" to "${newStatusLabel}"`);
+        }
+
+        if (currentAddress !== original.address &&
+            !(currentAddress === '' && original.address === 'Address not provided')) {
+            changes.push(`Address changed from "${original.address}" to "${currentAddress}"`);
+        }
+
+        if (currentValidity !== original.validTill) {
+            changes.push(`Validity changed from "${original.validTill}" to "${currentValidity}"`);
+        }
+
+        if (currentDescription !== original.description) {
+            changes.push(`Description updated`);
+        }
+
+        return changes;
+    }
+
+    function saveTicketChanges(ticketId, cid, callback) {
+        const changes = getChangedFields(ticketId, cid);
+
+        // Check if there are any changes
+        if (changes.length === 0) {
+            alert('No changes detected. Nothing to save.');
+            revertStatusToDisplay(cid);
+
+            const addressField = $('#' + cid + '_address');
+            const addressVal = addressField.find('textarea').val() || '';
+            addressField.html(addressVal ? escapeHtml(addressVal) : 'Address not provided');
+
+            const validityField = $('#' + cid + '_validity');
+            const validityVal = validityField.find('input').val() || '';
+            validityField.html(validityVal ? escapeHtml(validityVal) : '');
+
+            const descField = $('#' + cid + '_desc');
+            const descVal = descField.find('textarea').val() || '';
+            descField.html(descVal ? escapeHtml(descVal) : '');
+            
+
+            if (callback) callback(true);
+            return; // Exit early without making AJAX call
+        }
+            
+
+        const statusId = $('#' + cid + '_status_select').length > 0
+            ? $('#' + cid + '_status_select').val()
+            : $('#' + cid + '_status').attr('data-status-id');
+
+        const address = $('#' + cid + '_address').find('textarea').length > 0
+            ? $('#' + cid + '_address').find('textarea').val().trim()
+            : $('#' + cid + '_address').text().trim();
+
+        let validTill = $('#' + cid + '_validity').find('input').length > 0
+            ? $('#' + cid + '_validity').find('input').val().trim()
+            : $('#' + cid + '_validity').text().trim();
+
+        const description = $('#' + cid + '_desc').find('textarea').length > 0
+            ? $('#' + cid + '_desc').find('textarea').val().trim()
+            : $('#' + cid + '_desc').text().trim();
+
+        // Convert validTill to ISO format if it exists
+        let validTillFormatted = null;
+        if (validTill) {
+            try {
+                const dateObj = new Date(validTill);
+                if (!isNaN(dateObj.getTime())) {
+                    validTillFormatted = dateObj.toISOString();
+                }
+            } catch (e) {
+                console.warn('Invalid date format for ValidTill:', validTill);
+            }
+        }
+
+        // Build updated description with change log
+        let updatedDescription = description;
+        const changeLog = changes.join('; ');
+        const timestamp = new Date().toLocaleString();
+        const changeEntry = `[${timestamp}] ${changeLog}`;
+
+        // Check if description already has change history section
+        if (updatedDescription.includes('--- Change History ---')) {
+            // Append to existing change history
+            updatedDescription = updatedDescription + '\n' + changeEntry;
+        } else {
+            // Create new change history section
+            updatedDescription = updatedDescription + '\n\n--- Change History ---\n' + changeEntry;
+        }
+
+        const updateData = {
+            Id: ticketId,
+            StatusId: parseInt(statusId),
+            CompanyAddress: address || '',
+            ValidTill: validTillFormatted,
+            Description: updatedDescription
+        };
+
+        $.ajax({
+            url: api.tickets + '/' + ticketId,
+            method: 'PUT',
+            data: JSON.stringify(updateData),
+            contentType: 'application/json',
+            success: function (response) {
+
+                originalTicketData[ticketId] = {
+                    statusId: statusId,
+                    address: address,
+                    validTill: validTill,
+                    description: updatedDescription
+                };
+
+                $('#' + cid + '_desc').html(escapeHtml(updatedDescription));
+                loadAndRender();
+
+                if (callback) callback(true);
+            },
+            error: function (xhr, status, error) {
+                console.error('Error saving ticket:', error);
+                console.error('Response:', xhr.responseText);
+                alert('Failed to save changes: ' + error);
+                if (callback) callback(false);
+            }
+        });
     }
 
     function wireDelegatedHandlers(container) {
@@ -139,68 +296,108 @@ $(document).ready(function () {
         container.on('click', '.edit-btn', function () {
             const editBtn = $(this);
             const cid = editBtn.attr('data-card');
+            const cardElement = editBtn.closest('.card');
+            const ticketId = cardElement.attr('data-ticket-id');
             const isEditing = editBtn.text().trim().toLowerCase() === 'save';
 
             if (!isEditing) {
-                // Enter edit mode
+                // Enter edit mode - capture original data first
+                captureOriginalData(cid, ticketId);
+
                 const currentStatusId = $('#' + cid + '_status').attr('data-status-id');
                 initializeStatusDropdown(cid, currentStatusId);
 
-                // Make other fields editable
                 const addressField = $('#' + cid + '_address');
                 const addressVal = addressField.text().trim();
                 addressField.html('<textarea class="form-control" rows="3">' + escapeHtml(addressVal === 'Address not provided' ? '' : addressVal) + '</textarea>');
 
                 const validityField = $('#' + cid + '_validity');
                 const validityVal = validityField.text().trim();
-                validityField.html('<input class="form-control" value="' + escapeHtml(validityVal) + '" />');
+                validityField.html(
+                    '<input class="form-control" type="date" value="' +
+                    escapeHtml(validityVal) +
+                    '" />'
+                );
+
 
                 const descField = $('#' + cid + '_desc');
                 const descVal = descField.text().trim();
-                descField.html('<textarea class="form-control" rows="3">' + escapeHtml(descVal) + '</textarea>');
+                descField.html('<textarea class="form-control" rows="8">' + escapeHtml(descVal) + '</textarea>');
 
                 editBtn.text('Save');
             } else {
                 // Save mode
-                revertStatusToDisplay(cid);
+                editBtn.prop('disabled', true);
 
-                const addressField = $('#' + cid + '_address');
-                const addressVal = addressField.find('textarea').val() || '';
-                addressField.html(addressVal ? escapeHtml(addressVal) : 'Address not provided');
+                saveTicketChanges(ticketId, cid, function (success) {
+                    if (success) {
+                        revertStatusToDisplay(cid);
 
-                const validityField = $('#' + cid + '_validity');
-                const validityVal = validityField.find('input').val() || '';
-                validityField.html(validityVal ? escapeHtml(validityVal) : '');
+                        const addressField = $('#' + cid + '_address');
+                        const addressVal = addressField.find('textarea').val() || '';
+                        addressField.html(addressVal ? escapeHtml(addressVal) : 'Address not provided');
 
-                const descField = $('#' + cid + '_desc');
-                const descVal = descField.find('textarea').val() || '';
-                descField.html(descVal ? escapeHtml(descVal) : '');
+                        const validityField = $('#' + cid + '_validity');
+                        const validityVal = validityField.find('input').val() || '';
+                        validityField.html(validityVal ? escapeHtml(validityVal) : '');
 
-                editBtn.text('Edit');
+                        const descField = $('#' + cid + '_desc');
+                        const descVal = descField.find('textarea').val() || '';
+                        descField.html(descVal ? escapeHtml(descVal) : '');
+
+                        editBtn.text('Edit');
+                    }
+                    editBtn.prop('disabled', false);
+                });
             }
         });
 
         // Add Note button
         container.on('click', '.note-btn', function () {
             const noteBtn = $(this);
-            const cid = noteBtn.attr('data-card');
+            const trackingNumber = noteBtn.attr('data-card');
+            const cardElement = noteBtn.closest('.card');
+            const ticketId = cardElement.attr('data-ticket-id');
+            const cid = cardElement.attr('id').replace('card_', 'ticket_');
+
             const input = $('#' + cid + '_noteInput');
             const notesContainer = $('#' + cid + '_notes');
             const noteText = input.val().trim();
 
             if (!noteText) return;
 
-            const now = new Date().toLocaleString();
-            const noteHtml = '<div style="border-bottom:1px solid #ddd; padding:6px 0; font-size:0.85em;">' +
-                '<strong style="color:#0f1445">' + now + '</strong><br>' +
-                escapeHtml(noteText) + '</div>';
+            noteBtn.prop('disabled', true);
 
-            if (notesContainer.html().includes('Notes will appear here')) {
-                notesContainer.html('');
-            }
+            $.ajax({
+                url: api.notes,
+                method: 'POST',
+                data: JSON.stringify({
+                    ticketId: parseInt(ticketId),
+                    noteText: noteText
+                }),
+                contentType: 'application/json',
+                success: function (response) {
+                    const timestamp = response.timestamp || new Date().toLocaleString();
 
-            notesContainer.prepend(noteHtml);
-            input.val('');
+                    const noteHtml = '<div style="border-bottom:1px solid #ddd; padding:6px 0; font-size:0.85em;">' +
+                        '<strong style="color:#0f1445">' + timestamp + '</strong><br>' +
+                        escapeHtml(noteText) + '</div>';
+
+                    if (notesContainer.html().includes('Notes will appear here') ||
+                        notesContainer.html().includes('Loading notes')) {
+                        notesContainer.html('');
+                    }
+
+                    notesContainer.prepend(noteHtml);
+                    input.val('');
+                    noteBtn.prop('disabled', false);
+                },
+                error: function (xhr, status, error) {
+                    console.error('Error details:', xhr.responseText);
+                    alert('Failed to save note: ' + error);
+                    noteBtn.prop('disabled', false);
+                }
+            });
         });
 
         // Attachments button
@@ -235,11 +432,36 @@ $(document).ready(function () {
         }, 100);
     }
 
+    function loadNotesForTicket(ticketId, cid) {
+        const notesContainer = $('#' + cid + '_notes');
+
+        $.ajax({
+            url: `/note/${ticketId}`,
+            method: 'GET',
+            dataType: 'json',
+            success: function (notes) {
+                if (notes && notes.length > 0) {
+                    notesContainer.html('');
+                    notes.forEach(function (note) {
+                        const noteHtml = '<div style="border-bottom:1px solid #ddd; padding:6px 0; font-size:0.85em;">' +
+                            '<strong style="color:#0f1445">' + note.timestamp + '</strong><br>' +
+                            escapeHtml(note.noteText) + '</div>';
+                        notesContainer.append(noteHtml);
+                    });
+                } else {
+                    notesContainer.html('<small style="color:#666;">Notes will appear here</small>');
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error('Error loading notes:', error);
+                notesContainer.html('<small style="color:#666;">Notes will appear here</small>');
+            }
+        });
+    }
+
     function loadAndRender() {
-        // Show loading indicator (optional)
         $('#dashboard').html('<div class="text-center p-5"><div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div></div>');
 
-        // Fetch all data using jQuery AJAX
         $.when(
             $.ajax({ url: api.tickets, method: 'GET', dataType: 'json' }),
             $.ajax({ url: api.companies, method: 'GET', dataType: 'json' }),
@@ -253,10 +475,8 @@ $(document).ready(function () {
             const statuses = statusesRes[0] || [];
             const employees = employeesRes[0] || [];
 
-            // Store statuses globally for dropdown
             statusesData = statuses;
 
-            // Build maps
             const companiesMap = {};
             $.each(companies, function (i, c) {
                 companiesMap[c.id] = c.companyName || c.unikey || '#' + c.id;
@@ -279,26 +499,25 @@ $(document).ready(function () {
 
             const maps = { companiesMap, licensesMap, statusesMap, employeesMap };
 
-            // Sort tickets newest first by CreatedDate
             const sorted = tickets.slice().sort(function (a, b) {
                 const da = a.createdDate ? Date.parse(a.createdDate) : 0;
                 const db = b.createdDate ? Date.parse(b.createdDate) : 0;
                 return db - da;
             });
 
-            // Render into #dashboard
             const container = $('#dashboard');
             container.html('');
 
             $.each(sorted, function (idx, t) {
                 const html = buildTicketCard(t, maps, idx);
                 container.append(html);
+
+                const cid = 'ticket_' + t.id;
+                loadNotesForTicket(t.id, cid);
             });
 
-            // Wire delegated handlers
             wireDelegatedHandlers(container);
 
-            // Check for ticketId in query params and highlight it
             const ticketId = getQueryParam('ticketId');
             if (ticketId) {
                 highlightAndScrollToTicket(ticketId);
@@ -310,6 +529,5 @@ $(document).ready(function () {
         });
     }
 
-    // Initialize on document ready
     loadAndRender();
 });

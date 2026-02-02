@@ -612,7 +612,7 @@ namespace Investica.Repository
 
         public async Task<Ticket?> GetTicketByIdAsync(int id)
         {
-            const string sql = @"SELECT Id, CompanyId, EmployeeId, LicenseId, StatusId, CompanyAddress, Description, TrackingNumber, ValidTill, CreatedDate, CreatedBy, ModifiedDate, ModifiedBy FROM Tickets WHERE TrackingNumber=@Id";
+            const string sql = @"SELECT Id, CompanyId, EmployeeId, LicenseId, StatusId, CompanyAddress, Description, TrackingNumber, ValidTill, CreatedDate, CreatedBy, ModifiedDate, ModifiedBy FROM Tickets WHERE TrackingNumber=@Id or Id=@Id";
             await using var con = Conn();
             await con.OpenAsync();
             await using var cmd = new SqlCommand(sql, con);
@@ -701,6 +701,7 @@ namespace Investica.Repository
             var rows = await cmd.ExecuteNonQueryAsync();
             return rows > 0;
         }
+
 
         public async Task<bool> SoftDeleteTicketAsync(int id, int modifiedBy)
         {
@@ -797,6 +798,110 @@ namespace Investica.Repository
 
             return list;
         }
+
+        public async Task<int> CreateNoteAsync(int ticketId, string noteText, int userId)
+        {
+            var sql = @"
+        INSERT INTO Logs 
+        (TableName, ActionType, RecordId, OldValue, NewValue, ModifiedBy, ModifiedDate, CreatedBy, CreatedDate)
+        VALUES 
+        (@TableName, @ActionType, @RecordId, @OldValue, @NewValue, @ModifiedBy, @ModifiedDate, @CreatedBy, @CreatedDate);
+        SELECT CAST(SCOPE_IDENTITY() AS INT);";
+
+            await using var con = Conn();
+            await con.OpenAsync();
+            await using var cmd = new SqlCommand(sql, con);
+
+            cmd.Parameters.AddWithValue("@TableName", "Tickets");
+            cmd.Parameters.AddWithValue("@ActionType", "NOTE");
+            cmd.Parameters.AddWithValue("@RecordId", ticketId);
+            cmd.Parameters.AddWithValue("@OldValue", DBNull.Value);
+            cmd.Parameters.AddWithValue("@NewValue", noteText);
+            cmd.Parameters.AddWithValue("@ModifiedBy", userId);
+            cmd.Parameters.AddWithValue("@ModifiedDate", DateTime.UtcNow);
+            cmd.Parameters.AddWithValue("@CreatedBy", userId);
+            cmd.Parameters.AddWithValue("@CreatedDate", DateTime.UtcNow);
+
+            var id = (int)await cmd.ExecuteScalarAsync();
+            return id;
+        }
+
+        public async Task<List<Log>> GetNotesByTicketIdAsync(int ticketId)
+        {
+            var list = new List<Log>();
+            var sql = @"
+        SELECT Id, TableName, ActionType, RecordId, OldValue, NewValue, 
+               ModifiedBy, ModifiedDate, CreatedBy, CreatedDate
+        FROM Logs
+        WHERE TableName = @TableName 
+          AND ActionType = @ActionType 
+          AND RecordId = @RecordId
+        ORDER BY CreatedDate DESC";
+
+            await using var con = Conn();
+            await con.OpenAsync();
+            await using var cmd = new SqlCommand(sql, con);
+
+            cmd.Parameters.AddWithValue("@TableName", "Tickets");
+            cmd.Parameters.AddWithValue("@ActionType", "NOTE");
+            cmd.Parameters.AddWithValue("@RecordId", ticketId);
+
+            await using var rdr = await cmd.ExecuteReaderAsync();
+            while (await rdr.ReadAsync())
+            {
+                list.Add(new Log
+                {
+                    Id = rdr.GetInt32(0),
+                    TableName = rdr.IsDBNull(1) ? null : rdr.GetString(1),
+                    ActionType = rdr.IsDBNull(2) ? null : rdr.GetString(2),
+                    RecordId = (int)(rdr.IsDBNull(3) ? null : (int?)rdr.GetInt32(3)),
+                    OldValue = rdr.IsDBNull(4) ? null : rdr.GetString(4),
+                    NewValue = rdr.IsDBNull(5) ? null : rdr.GetString(5),
+                    ModifiedBy = rdr.IsDBNull(6) ? null : (int?)rdr.GetInt32(6),
+                    ModifiedDate = rdr.IsDBNull(7) ? null : (DateTime?)rdr.GetDateTime(7),
+                    CreatedBy = rdr.GetInt32(8),
+                    CreatedDate = rdr.IsDBNull(9) ? null : (DateTime?)rdr.GetDateTime(9)
+                });
+            }
+            return list;
+        }
+
+        public async Task<Log> GetNoteByIdAsync(int id)
+        {
+            var sql = @"
+        SELECT Id, TableName, ActionType, RecordId, OldValue, NewValue, 
+               ModifiedBy, ModifiedDate, CreatedBy, CreatedDate
+        FROM Logs
+        WHERE Id = @Id AND ActionType = @ActionType";
+
+            await using var con = Conn();
+            await con.OpenAsync();
+            await using var cmd = new SqlCommand(sql, con);
+
+            cmd.Parameters.AddWithValue("@Id", id);
+            cmd.Parameters.AddWithValue("@ActionType", "NOTE");
+
+            await using var rdr = await cmd.ExecuteReaderAsync();
+            if (await rdr.ReadAsync())
+            {
+                return new Log
+                {
+                    Id = rdr.GetInt32(0),
+                    TableName = rdr.IsDBNull(1) ? null : rdr.GetString(1),
+                    ActionType = rdr.IsDBNull(2) ? null : rdr.GetString(2),
+                    RecordId = (int)(rdr.IsDBNull(3) ? null : (int?)rdr.GetInt32(3)),
+                    OldValue = rdr.IsDBNull(4) ? null : rdr.GetString(4),
+                    NewValue = rdr.IsDBNull(5) ? null : rdr.GetString(5),
+                    ModifiedBy = rdr.IsDBNull(6) ? null : (int?)rdr.GetInt32(6),
+                    ModifiedDate = rdr.IsDBNull(7) ? null : (DateTime?)rdr.GetDateTime(7),
+                    CreatedBy = rdr.GetInt32(8),
+                    CreatedDate = rdr.IsDBNull(9) ? null : (DateTime?)rdr.GetDateTime(9)
+                };
+            }
+            return null;
+        }
+
+       
         #endregion
 
         #region UpcomingRenewals
