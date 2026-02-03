@@ -678,5 +678,128 @@ namespace Investica.Controllers
         //}
 
         #endregion
+
+        #region
+
+        [HttpGet("renewals")]
+        public async Task<IActionResult> GetAllRenewals()
+        {
+            try
+            {
+                var renewals = await _service.GetAllWithDetailsAsync();
+                return Ok(renewals);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error fetching renewals", error = ex.Message });
+            }
+        }
+
+        // GET: api/home/renewal/{id}
+        //[HttpGet("renewal/{id}")]
+        //public async Task<IActionResult> GetRenewalById(int id)
+        //{
+        //    try
+        //    {
+        //        var renewal = await _service.GetByIdWithDetailsAsync(id);
+        //        if (renewal == null)
+        //        {
+        //            return NotFound(new { message = "Renewal not found" });
+        //        }
+        //        return Ok(renewal);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(500, new { message = "Error fetching renewal", error = ex.Message });
+        //    }
+        //}
+
+        // POST: api/home/renewal
+        [HttpPost("renewal")]
+        public async Task<IActionResult> CreateRenewal([FromBody] LicenseRenewalRequest request)
+        {
+            try
+            {
+                var id = await _service.CreateAsync(request);
+                return Ok(new { id, message = "Renewal created successfully" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error creating renewal", error = ex.Message });
+            }
+        }
+
+        // PUT: api/home/renewal/{id}
+        [HttpPut("renewal/{id}")]
+        public async Task<IActionResult> UpdateRenewal(int id, [FromBody] LicenseRenewalRequest request)
+        {
+            try
+            {
+                var success = await _service.UpdateAsync(id, request);
+                if (success)
+                {
+                    return Ok(new { message = "Renewal updated successfully" });
+                }
+                return NotFound(new { message = "Renewal not found or update failed" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error updating renewal", error = ex.Message });
+            }
+        }
+
+        // DELETE: api/home/renewal/{id}
+        [HttpDelete("renewal/{id}")]
+        public async Task<IActionResult> DeleteRenewal(int id)
+        {
+            try
+            {
+                var success = await _service.DeleteAsync(id);
+                if (success)
+                {
+                    return Ok(new { message = "Renewal deleted successfully" });
+                }
+                return NotFound(new { message = "Renewal not found" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error deleting renewal", error = ex.Message });
+            }
+        }
+
+        // GET: api/home/renewals/dropdowns
+        [HttpGet("renewals/dropdowns")]
+        public async Task<IActionResult> GetDropdowns()
+        {
+            try
+            {
+                var data = await _service.GetDropdownDataAsync();
+                return Ok(data);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error fetching dropdown data", error = ex.Message });
+            }
+        }
+
+        //// GET: api/home/renewal/{id}
+        [HttpGet("renewal/{id}")]
+        public async Task<IActionResult> GetRenewalByIdAsync(int id)
+        {
+            try
+            {
+                var renewal = await _service.GetByIdWithDetailsAsync(id);
+                if (renewal == null)
+                    return NotFound(new { message = "Renewal not found" });
+
+                return Ok(renewal);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error fetching renewal", error = ex.Message });
+            }
+        }
+
+        #endregion
     }
 }

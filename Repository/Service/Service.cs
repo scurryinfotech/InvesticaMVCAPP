@@ -993,80 +993,347 @@ namespace Investica.Repository
 
             await cmd.ExecuteNonQueryAsync();
         }
-       
+
         #endregion
 
         #region UpcomingRenewals
-        public async Task<List<UpcomingRenewal>> GetUpcomingRenewalsAsync()
+        public async Task<List<UpcomingRenewalDto>> GetAllWithDetailsAsync()
         {
-            var list = new List<UpcomingRenewal>();
-            const string sql = @"SELECT Id, CompanyId, LicenseTypeId, Location, CurrentExpiryDate, RenewalDueDate, StatusId, CreatedDate, CreatedBy, ModifiedDate, ModifiedBy, IsActive FROM UpcomingRenewals ORDER BY RenewalDueDate";
+            var list = new List<UpcomingRenewalDto>();
+
+            const string sql = @"
+                SELECT
+                    lr.Id,
+                    lr.CompanyId,
+                    cm.CompanyName,
+                    cm.Unikey,
+                    lr.LicenseTypeId,
+                    lt.AppTypeName AS LicenseType,
+                    lr.CityState,
+                    lr.Address,
+                    lr.ExpiryDate,
+                    lr.ExpiryMonth,
+                    lr.ExpiryYear,
+                    lr.Remarks,
+                    lr.CreatedDate,
+                    lr.CreatedBy,
+                    lr.ModifiedDate,
+                    lr.ModifiedBy,
+                    lr.IsActive
+                FROM LicenseRenewal lr
+                INNER JOIN CompanyMaster cm ON lr.CompanyId = cm.Id
+                INNER JOIN LicenseTypeMaster lt ON lr.LicenseTypeId = lt.Id
+                WHERE lr.IsActive = 1
+                ORDER BY lr.ExpiryDate";
+
             await using var con = Conn();
             await con.OpenAsync();
+
             await using var cmd = new SqlCommand(sql, con);
             await using var rdr = await cmd.ExecuteReaderAsync();
+
             while (await rdr.ReadAsync())
             {
-                list.Add(new UpcomingRenewal
+                var dto = new UpcomingRenewalDto
                 {
                     Id = rdr.GetInt32(0),
                     CompanyId = rdr.GetInt32(1),
-                    LicenseTypeId = rdr.GetInt32(2),
-                    Location = rdr.IsDBNull(3) ? null : rdr.GetString(3),
-                    CurrentExpiryDate = rdr.IsDBNull(4) ? null : (DateTime?)rdr.GetDateTime(4),
-                    RenewalDueDate = rdr.IsDBNull(5) ? null : (DateTime?)rdr.GetDateTime(5),
-                    StatusId = rdr.GetInt32(6),
-                    CreatedDate = rdr.IsDBNull(7) ? null : (DateTime?)rdr.GetDateTime(7),
-                    CreatedBy = rdr.IsDBNull(8) ? null : (int?)rdr.GetInt32(8),
-                    ModifiedDate = rdr.IsDBNull(9) ? null : rdr.GetDateTime(9),
-                    ModifiedBy = rdr.IsDBNull(10) ? null : rdr.GetString(10),
-                    IsActive = !rdr.IsDBNull(11) && rdr.GetBoolean(11)
-                });
+                    CompanyName = rdr.GetString(2),
+                    Unikey = rdr.GetString(3),
+                    LicenseTypeId = rdr.GetInt32(4),
+                    LicenseType = rdr.GetString(5),
+                    CityState = rdr.GetString(6),
+                    Address = rdr.GetString(7),
+                    ExpiryDate = rdr.GetDateTime(8),
+                    ExpiryMonth = rdr.GetString(9),
+                    ExpiryYear = rdr.GetInt32(10),
+                    Remarks = rdr.IsDBNull(11) ? null : rdr.GetString(11),
+                    CreatedDate = rdr.IsDBNull(12) ? null : rdr.GetDateTime(12),
+                    CreatedBy = rdr.IsDBNull(13) ? null : rdr.GetInt32(13),
+                    ModifiedDate = rdr.IsDBNull(14) ? null : rdr.GetDateTime(14),
+                    ModifiedBy = rdr.IsDBNull(15) ? null : rdr.GetInt32(15),
+                    IsActive = rdr.GetBoolean(16)
+                };
+
+                // Calculate status and days
+                CalculateStatus(dto);
+
+                list.Add(dto);
             }
+
             return list;
         }
 
-        public async Task<int> CreateUpcomingRenewalAsync(UpcomingRenewal r)
+        // ═══════════════════════════════════════════════════════════
+        //  GET BY ID WITH JOINS
+        // ═══════════════════════════════════════════════════════════
+        public async Task<UpcomingRenewalDto?> GetByIdWithDetailsAsync(int id)
         {
-            const string sql = @"INSERT INTO UpcomingRenewals (CompanyId, LicenseTypeId, Location, CurrentExpiryDate, RenewalDueDate, StatusId, CreatedDate, CreatedBy, ModifiedDate, ModifiedBy, IsActive)
-                                 OUTPUT INSERTED.Id
-                                 VALUES(@CompanyId,@LicenseTypeId,@Location,@CurrentExpiryDate,@RenewalDueDate,@StatusId,@CreatedDate,@CreatedBy,@ModifiedDate,@ModifiedBy,@IsActive)";
+            const string sql = @"
+                SELECT
+                    lr.Id,
+                    lr.CompanyId,
+                    cm.CompanyName,
+                    cm.Unikey,
+                    lr.LicenseTypeId,
+                    lt.AppTypeName AS LicenseType,
+                    lr.CityState,
+                    lr.Address,
+                    lr.ExpiryDate,
+                    lr.ExpiryMonth,
+                    lr.ExpiryYear,
+                    lr.Remarks,
+                    lr.CreatedDate,
+                    lr.CreatedBy,
+                    lr.ModifiedDate,
+                    lr.ModifiedBy,
+                    lr.IsActive
+                FROM LicenseRenewal lr
+                INNER JOIN CompanyMaster cm ON lr.CompanyId = cm.Id
+                INNER JOIN LicenseTypeMaster lt ON lr.LicenseTypeId = lt.Id
+                WHERE lr.Id = @Id";
+
+            await using var con = Conn();
+            await con.OpenAsync();
+
+            await using var cmd = new SqlCommand(sql, con);
+            cmd.Parameters.AddWithValue("@Id", id);
+
+            await using var rdr = await cmd.ExecuteReaderAsync();
+
+            if (await rdr.ReadAsync())
+            {
+                var dto = new UpcomingRenewalDto
+                {
+                    Id = rdr.GetInt32(0),
+                    CompanyId = rdr.GetInt32(1),
+                    CompanyName = rdr.GetString(2),
+                    Unikey = rdr.GetString(3),
+                    LicenseTypeId = rdr.GetInt32(4),
+                    LicenseType = rdr.GetString(5),
+                    CityState = rdr.GetString(6),
+                    Address = rdr.GetString(7),
+                    ExpiryDate = rdr.GetDateTime(8),
+                    ExpiryMonth = rdr.GetString(9),
+                    ExpiryYear = rdr.GetInt32(10),
+                    Remarks = rdr.IsDBNull(11) ? null : rdr.GetString(11),
+                    CreatedDate = rdr.IsDBNull(12) ? null : rdr.GetDateTime(12),
+                    CreatedBy = rdr.IsDBNull(13) ? null : rdr.GetInt32(13),
+                    ModifiedDate = rdr.IsDBNull(14) ? null : rdr.GetDateTime(14),
+                    ModifiedBy = rdr.IsDBNull(15) ? null : rdr.GetInt32(15),
+                    IsActive = rdr.GetBoolean(16)
+                };
+
+                CalculateStatus(dto);
+                return dto;
+            }
+
+            return null;
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        //  CREATE
+        // ═══════════════════════════════════════════════════════════
+        public async Task<int> CreateAsync(LicenseRenewalRequest request)
+        {
+            const string sql = @"
+                INSERT INTO LicenseRenewal
+                (
+                    CompanyId,
+                    LicenseTypeId,
+                    CityState,
+                    Address,
+                    ExpiryDate,
+                    ExpiryMonth,
+                    ExpiryYear,
+                    Remarks,
+                    CreatedDate,
+                    CreatedBy,
+                    ModifiedDate,
+                    ModifiedBy,
+                    IsActive
+                )
+                OUTPUT INSERTED.Id
+                VALUES
+                (
+                    @CompanyId,
+                    @LicenseTypeId,
+                    @CityState,
+                    @Address,
+                    @ExpiryDate,
+                    @ExpiryMonth,
+                    @ExpiryYear,
+                    @Remarks,
+                    @CreatedDate,
+                    @CreatedBy,
+                    @ModifiedDate,
+                    @ModifiedBy,
+                    @IsActive
+                )";
+
             await using var con = Conn();
             await con.OpenAsync();
             await using var cmd = new SqlCommand(sql, con);
-            cmd.Parameters.AddWithValue("@CompanyId", r.CompanyId);
-            cmd.Parameters.AddWithValue("@LicenseTypeId", r.LicenseTypeId);
-            cmd.Parameters.AddWithValue("@Location", (object?)r.Location ?? DBNull.Value);
-            cmd.Parameters.AddWithValue("@CurrentExpiryDate", r.CurrentExpiryDate ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@RenewalDueDate", r.RenewalDueDate ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@StatusId", r.StatusId);
-            cmd.Parameters.AddWithValue("@CreatedDate", r.CreatedDate ?? DateTime.UtcNow);
-            cmd.Parameters.AddWithValue("@CreatedBy", r.CreatedBy ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@ModifiedDate", r.ModifiedDate ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@ModifiedBy", r.ModifiedBy ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@IsActive", r.IsActive);
+
+            // Auto-calculate month and year from ExpiryDate
+            var expiryMonth = request.ExpiryDate.ToString("MMMM");
+            var expiryYear = request.ExpiryDate.Year;
+
+            cmd.Parameters.AddWithValue("@CompanyId", request.CompanyId);
+            cmd.Parameters.AddWithValue("@LicenseTypeId", request.LicenseTypeId);
+            cmd.Parameters.AddWithValue("@CityState", request.CityState);
+            cmd.Parameters.AddWithValue("@Address", request.Address);
+            cmd.Parameters.AddWithValue("@ExpiryDate", request.ExpiryDate.Date);
+            cmd.Parameters.AddWithValue("@ExpiryMonth", expiryMonth);
+            cmd.Parameters.AddWithValue("@ExpiryYear", expiryYear);
+            cmd.Parameters.AddWithValue("@Remarks", (object?)request.Remarks ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@CreatedDate", DateTime.UtcNow);
+            cmd.Parameters.AddWithValue("@CreatedBy", DBNull.Value); // TODO: Add user tracking
+            cmd.Parameters.AddWithValue("@ModifiedDate", DBNull.Value);
+            cmd.Parameters.AddWithValue("@ModifiedBy", DBNull.Value);
+            cmd.Parameters.AddWithValue("@IsActive", request.IsActive);
+
             var id = await cmd.ExecuteScalarAsync();
             return id == null ? 0 : Convert.ToInt32(id);
         }
 
-        public async Task<bool> UpdateUpcomingRenewalAsync(UpcomingRenewal r)
+        // ═══════════════════════════════════════════════════════════
+        //  UPDATE
+        // ═══════════════════════════════════════════════════════════
+        public async Task<bool> UpdateAsync(int id, LicenseRenewalRequest request)
         {
-            const string sql = @"UPDATE UpcomingRenewals SET CompanyId=@CompanyId, LicenseTypeId=@LicenseTypeId, Location=@Location, CurrentExpiryDate=@CurrentExpiryDate, RenewalDueDate=@RenewalDueDate, StatusId=@StatusId, ModifiedDate=@ModifiedDate, ModifiedBy=@ModifiedBy, IsActive=@IsActive WHERE Id=@Id";
+            const string sql = @"
+                UPDATE LicenseRenewal
+                SET 
+                    CompanyId = @CompanyId,
+                    LicenseTypeId = @LicenseTypeId,
+                    CityState = @CityState,
+                    Address = @Address,
+                    ExpiryDate = @ExpiryDate,
+                    ExpiryMonth = @ExpiryMonth,
+                    ExpiryYear = @ExpiryYear,
+                    Remarks = @Remarks,
+                    ModifiedDate = @ModifiedDate,
+                    ModifiedBy = @ModifiedBy,
+                    IsActive = @IsActive
+                WHERE Id = @Id";
+
             await using var con = Conn();
             await con.OpenAsync();
             await using var cmd = new SqlCommand(sql, con);
-            cmd.Parameters.AddWithValue("@CompanyId", r.CompanyId);
-            cmd.Parameters.AddWithValue("@LicenseTypeId", r.LicenseTypeId);
-            cmd.Parameters.AddWithValue("@Location", (object?)r.Location ?? DBNull.Value);
-            cmd.Parameters.AddWithValue("@CurrentExpiryDate", r.CurrentExpiryDate ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@RenewalDueDate", r.RenewalDueDate ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@StatusId", r.StatusId);
-            cmd.Parameters.AddWithValue("@ModifiedDate", r.ModifiedDate ?? DateTime.UtcNow);
-            cmd.Parameters.AddWithValue("@ModifiedBy", r.ModifiedBy ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@IsActive", r.IsActive);
-            cmd.Parameters.AddWithValue("@Id", r.Id);
+
+            // Auto-calculate month and year from ExpiryDate
+            var expiryMonth = request.ExpiryDate.ToString("MMMM");
+            var expiryYear = request.ExpiryDate.Year;
+
+            cmd.Parameters.AddWithValue("@Id", id);
+            cmd.Parameters.AddWithValue("@CompanyId", request.CompanyId);
+            cmd.Parameters.AddWithValue("@LicenseTypeId", request.LicenseTypeId);
+            cmd.Parameters.AddWithValue("@CityState", request.CityState);
+            cmd.Parameters.AddWithValue("@Address", request.Address);
+            cmd.Parameters.AddWithValue("@ExpiryDate", request.ExpiryDate.Date);
+            cmd.Parameters.AddWithValue("@ExpiryMonth", expiryMonth);
+            cmd.Parameters.AddWithValue("@ExpiryYear", expiryYear);
+            cmd.Parameters.AddWithValue("@Remarks", (object?)request.Remarks ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@ModifiedDate", DateTime.UtcNow);
+            cmd.Parameters.AddWithValue("@ModifiedBy", DBNull.Value); // TODO: Add user tracking
+            cmd.Parameters.AddWithValue("@IsActive", request.IsActive);
+
             var rows = await cmd.ExecuteNonQueryAsync();
             return rows > 0;
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        //  DELETE (Soft delete - sets IsActive = false)
+        // ═══════════════════════════════════════════════════════════
+        public async Task<bool> DeleteAsync(int id)
+        {
+            const string sql = @"
+                UPDATE LicenseRenewal
+                SET 
+                    IsActive = 0,
+                    ModifiedDate = @ModifiedDate
+                WHERE Id = @Id";
+
+            await using var con = Conn();
+            await con.OpenAsync();
+            await using var cmd = new SqlCommand(sql, con);
+
+            cmd.Parameters.AddWithValue("@Id", id);
+            cmd.Parameters.AddWithValue("@ModifiedDate", DateTime.UtcNow);
+
+            var rows = await cmd.ExecuteNonQueryAsync();
+            return rows > 0;
+        }
+
+    
+        public async Task<DropdownData> GetDropdownDataAsync()
+        {
+            var data = new DropdownData();
+
+            await using var con = Conn();
+            await con.OpenAsync();
+
+            // Get Companies
+            const string companySql = "SELECT Id, CompanyName FROM CompanyMaster WHERE IsActive = 1 ORDER BY CompanyName";
+            await using var cmdCompany = new SqlCommand(companySql, con);
+            await using var rdrCompany = await cmdCompany.ExecuteReaderAsync();
+
+            while (await rdrCompany.ReadAsync())
+            {
+                data.Companies.Add(new DropdownItem
+                {
+                    Id = rdrCompany.GetInt32(0),
+                    Name = rdrCompany.GetString(1)
+                });
+            }
+            await rdrCompany.CloseAsync();
+
+            // Get License Types
+            const string licenseSql = "SELECT Id, AppTypeName FROM LicenseTypeMaster WHERE IsActive = 1 ORDER BY AppTypeName";
+            await using var cmdLicense = new SqlCommand(licenseSql, con);
+            await using var rdrLicense = await cmdLicense.ExecuteReaderAsync();
+
+            while (await rdrLicense.ReadAsync())
+            {
+                data.LicenseTypes.Add(new DropdownItem
+                {
+                    Id = rdrLicense.GetInt32(0),
+                    Name = rdrLicense.GetString(1)
+                });
+            }
+            await rdrLicense.CloseAsync();
+
+            // Get Unique Locations
+            const string locationSql = "SELECT DISTINCT CityState FROM LicenseRenewal WHERE IsActive = 1 AND CityState IS NOT NULL ORDER BY CityState";
+            await using var cmdLocation = new SqlCommand(locationSql, con);
+            await using var rdrLocation = await cmdLocation.ExecuteReaderAsync();
+
+            while (await rdrLocation.ReadAsync())
+            {
+                data.Locations.Add(rdrLocation.GetString(0));
+            }
+
+            return data;
+        }
+
+ 
+        private void CalculateStatus(UpcomingRenewalDto dto)
+        {
+            var today = DateTime.Today;
+            var daysUntilExpiry = (dto.ExpiryDate.Date - today).Days;
+
+            dto.DaysUntilExpiry = daysUntilExpiry;
+            dto.ExpiryDateFormatted = dto.ExpiryDate.ToString("dd-MMM-yyyy");
+
+            if (daysUntilExpiry < 0)
+                dto.Status = "EXPIRED";
+            else if (daysUntilExpiry <= 30)
+                dto.Status = "URGENT";
+            else if (daysUntilExpiry <= 60)
+                dto.Status = "DUE SOON";
+            else
+                dto.Status = "PENDING";
         }
         #endregion
 
@@ -1484,6 +1751,8 @@ ModifiedBy=@ModifiedBy, IsActive=@IsActive WHERE Id=@Id";
             var rows = await cmd.ExecuteNonQueryAsync();
             return rows > 0;
         }
+
+       
         #endregion
     }
 }
