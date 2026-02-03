@@ -65,9 +65,16 @@ namespace Investica.Repository.Interface
         Task DeleteAsync(int id, int modifiedBy);
 
         // UpcomingRenewals
-        Task<List<UpcomingRenewal>> GetUpcomingRenewalsAsync();
-        Task<int> CreateUpcomingRenewalAsync(UpcomingRenewal r);
-        Task<bool> UpdateUpcomingRenewalAsync(UpcomingRenewal r);
+        Task<List<UpcomingRenewalDto>> GetAllWithDetailsAsync();
+        Task<UpcomingRenewalDto?> GetByIdWithDetailsAsync(int id);
+        Task<int> CreateAsync(LicenseRenewalRequest request);
+        Task<bool> UpdateAsync(int id, LicenseRenewalRequest request);
+        Task<bool> DeleteAsync(int id);
+        Task<DropdownData> GetDropdownDataAsync();
+
+        // helper used in duplicate renewal endpoint
+        //Task<List<UpcomingRenewalDto>> GetUpcomingRenewalsAsync();
+
 
         // FontSheet
         Task<List<FontSheet>> GetFontSheetsAsync();
