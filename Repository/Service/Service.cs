@@ -966,9 +966,10 @@ namespace Investica.Repository
             await using var con = Conn();
             await con.OpenAsync();
             await using var cmd = new SqlCommand(sql, con);
+            cmd.CommandTimeout = 120;
             cmd.Parameters.AddWithValue("@Id", id);
             await using var rdr = await cmd.ExecuteReaderAsync();
-
+            
             if (await rdr.ReadAsync())
             {
                 return new TicketAttachmentDownload

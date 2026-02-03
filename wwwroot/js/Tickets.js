@@ -45,7 +45,7 @@ $(document).ready(function () {
     }
 
     function buildTicketCard(t, maps, idx) {
-        debugger
+
         const { companiesMap, licensesMap, statusesMap, employeesMap } = maps;
         const statusLabel = statusesMap[t.statusId] || t.statusId || '';
         const licenseLabel = licensesMap[t.licenseId] || t.licenseId || '';
@@ -211,12 +211,12 @@ $(document).ready(function () {
             const descField = $('#' + cid + '_desc');
             const descVal = descField.find('textarea').val() || '';
             descField.html(descVal ? escapeHtml(descVal) : '');
-            
+
 
             if (callback) callback(true);
             return; // Exit early without making AJAX call
         }
-            
+
 
         const statusId = $('#' + cid + '_status_select').length > 0
             ? $('#' + cid + '_status_select').val()
@@ -329,7 +329,7 @@ $(document).ready(function () {
 
                 const descField = $('#' + cid + '_desc');
                 const descVal = descField.text().trim();
-                descField.html('<textarea class="form-control" rows="8">' + escapeHtml(descVal) + '</textarea>');
+                //descField.html('<textarea class="form-control" rows="8">' + escapeHtml(descVal) + '</textarea>');
 
                 editBtn.text('Save');
             } else {
@@ -350,7 +350,6 @@ $(document).ready(function () {
 
                         const descField = $('#' + cid + '_desc');
                         const descVal = descField.find('textarea').val() || '';
-                        descField.html(descVal ? escapeHtml(descVal) : '');
 
                         editBtn.text('Edit');
                     }
@@ -449,8 +448,6 @@ $(document).ready(function () {
             const reader = new FileReader();
 
             reader.onload = function (e) {
-                // e.target.result  =  "data:image/png;base64,iVBOR..."
-                // strip the prefix so only the pure Base64 string is sent
                 const base64Data = e.target.result.split(',')[1];
 
                 // ── build the payload that matches your C# DTO ──
@@ -502,56 +499,63 @@ $(document).ready(function () {
         });
     });
     $(document).on('click', '.download-attachment-btn', function () {
-        const attId = $(this).data('att-id');
+        const $btn = $(this);
+        const attId = $btn.data('att-id');
 
         $.ajax({
             url: ATT_API.download,
             type: 'GET',
-            data: { id: attId },                   // ?id=101
+            data: { id: attId },
+            beforeSend: function () {
+                $btn.prop('disabled', true);
+                showDownloadLoader();
+            },
             success: function (response) {
-                // response = { fileName, contentType, base64Data }
-
-                // decode Base64  →  binary string  →  Uint8Array  →  Blob
-                const binary = atob(response.base64Data);
-                const array = new Uint8Array(binary.length);
-                for (let i = 0; i < binary.length; i++) {
-                    array[i] = binary.charCodeAt(i);
+                try {
+                    const cleanBase64 = (response.base64Data || '').replace(/[^A-Za-z0-9+/=]/g, '');
+                    const binary = atob(cleanBase64);
+                    const array = new Uint8Array(binary.length);
+                    for (let i = 0; i < binary.length; i++) {
+                        array[i] = binary.charCodeAt(i);
+                    }
+                    const blob = new Blob([array], { type: response.contentType || 'application/octet-stream' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = response.fileName || 'download';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                } catch (err) {
+                    console.error('Download decode failed:', err);
+                    alert('Download failed: ' + (err.message || err));
                 }
-                const blob = new Blob([array], { type: response.contentType });
-                const url = URL.createObjectURL(blob);
-
-                // trigger browser download
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = response.fileName;    // "invoice.pdf"
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);              // free memory
             },
             error: function (xhr, status, error) {
-                console.error('Download failed:', error);
+                console.error('Download failed:', xhr.status, xhr.responseText);
                 alert('Download failed. Please try again.');
+            },
+            complete: function () {
+                $btn.prop('disabled', false);
+                hideDownloadLoader();
             }
         });
     });
 
 
-    // ============================================================
-    // 5.  DELETE  →  soft delete in DB, remove row from list
-    // ============================================================
     $(document).on('click', '.delete-attachment-btn', function () {
         const attId = $(this).data('att-id');
         const $li = $(this).closest('li');
         const name = $li.find('.att-file-name').text().trim();
         const ticketId = $('#attachmentsModal').data('ticketId');
-
+        debugger
         if (!confirm('Delete "' + name + '"?\nThis cannot be undone.')) return;
 
         $.ajax({
-            url: ATT_API.delete,
+            url: ATT_API.delete + '?id=' + encodeURIComponent(attId),
             type: 'DELETE',
-            data: { id: attId },                   // ?id=101
+            data: { id: attId },
             success: function () {
                 $li.fadeOut(300, function () {
                     $(this).remove();
@@ -565,7 +569,6 @@ $(document).ready(function () {
                 });
             },
             error: function (xhr, status, error) {
-                console.error('Delete failed:', error);
                 alert('Delete failed. Please try again.');
             }
         });
@@ -604,16 +607,21 @@ $(document).ready(function () {
 
         let html = '';
         attachments.forEach(function (att) {
-            debugger
-            const isPdf = (att.ContentType || '').toLowerCase().includes('pdf');
+            // normalize property names (handle camelCase and PascalCase responses)
+            const attId = att.id || att.Id || att.ID || '';
+            const fileName = att.fileName || att.FileName || att.File || '';
+            const contentType = (att.contentType || att.ContentType || '').toLowerCase();
+            const fileSizeBytes = att.fileSizeBytes || att.FileSizeBytes || att.fileSize || att.FileSize || 0;
+
+            const isPdf = contentType.includes('pdf');
             const iconClass = isPdf ? 'bi-filetype-pdf' : 'bi-image';
             const badgeColor = isPdf ? '#fdecea' : '#e2f0fd';
             const iconColor = isPdf ? '#d63384' : '#0d6efd';
-            const sizeLabel = formatFileSize(att.FileSizeBytes);
+            const sizeLabel = formatFileSize(fileSizeBytes);
 
             html += `
         <li class="list-group-item d-flex justify-content-between align-items-center py-2"
-            data-att-id="${att.id}">
+            data-att-id="${attId}">
 
           <!-- left: icon + info -->
           <div class="d-flex align-items-center gap-2" style="min-width:0;">
@@ -624,19 +632,23 @@ $(document).ready(function () {
             </div>
             <div style="min-width:0;">
               <span class="att-file-name fw-semibold text-truncate d-block"
-                    style="max-width:260px;" title="${att.FileName}">${att.FileName}</span>
+                    style="max-width:260px;" title="${fileName}">${fileName}</span>
               <small class="text-muted">${sizeLabel}</small>
             </div>
           </div>
 
           <!-- right: Download + Delete buttons -->
           <div class="d-flex gap-1 flex-shrink-0">
+          <button class="btn btn-outline-primary btn-sm rounded-pill view-attachment-btn"
+          data-att-id="${attId}" data-content-type="${contentType}" title="View">
+          <i class="bi bi-eye"></i>
+            </button>
             <button class="btn btn-outline-secondary btn-sm rounded-pill download-attachment-btn"
-                    data-att-id="${att.id}" title="Download">
+                    data-att-id="${attId}" title="Download">
               <i class="bi bi-download"></i>
             </button>
             <button class="btn btn-outline-danger btn-sm rounded-pill delete-attachment-btn"
-                    data-att-id="${att.id}" title="Delete">
+                    data-att-id="${attId}" title="Delete">
               <i class="bi bi-trash"></i>
             </button>
           </div>
@@ -647,9 +659,6 @@ $(document).ready(function () {
     }
 
 
-    // ============================================================
-    // 7.  UTILITY  —  bytes → "245.3 KB"
-    // ============================================================
     function formatFileSize(bytes) {
         if (!bytes) return '';
         if (bytes < 1024) return bytes + ' B';
@@ -772,5 +781,83 @@ $(document).ready(function () {
         });
     }
 
+    function normalizeBase64(base64) {
+        base64 = base64.replace(/\s/g, '');
+
+        base64 = base64.replace(/-/g, '+').replace(/_/g, '/');
+
+        while (base64.length % 4 !== 0) {
+            base64 += '=';
+        }
+
+        return base64;
+    }
+
+    // VIEW button — preview PDF or Image inside the modal
+    $(document).on('click', '.view-attachment-btn', function () {
+        const attId = $(this).data('att-id');
+        const contentTypeHint = ($(this).data('content-type') || '').toLowerCase();
+        const fileName = $(this).closest('li').find('.att-file-name').text().trim();
+
+        $('#previewFileName').text(fileName || '');
+        const container = $('#previewContent');
+        container.html('<div class="text-center p-5"><div class="spinner-border" role="status"></div></div>');
+
+        $.ajax({
+            url: ATT_API.download,
+            type: 'GET',
+            data: { id: attId },
+            dataType: 'json',
+            success: function (response) {
+                try {
+                    const base64 = response && (response.base64Data || response.Base64Data || '');
+                    if (!base64) throw new Error('No base64 payload in response');
+
+                    const bytes = decodeBase64ToUint8Array(base64);
+                    const contentType = (response.contentType || contentTypeHint || 'application/octet-stream');
+                    const blob = new Blob([bytes], { type: contentType });
+                    const url = URL.createObjectURL(blob);
+
+                    container.empty();
+                    if (contentType.startsWith('image/')) {
+                        container.html(`<img src="${url}" style="max-width:100%;max-height:100%;display:block;margin:auto;" />`);
+                    } else if (contentType.includes('pdf')) {
+                        container.html(`<iframe src="${url}" style="width:100%;height:100%;border:none;"></iframe>`);
+                    } else {
+                        container.html(`<div class="alert alert-warning m-3">Preview not supported for this file type</div>`);
+                    }
+
+                    $('#attachmentPreview').show().data('blobUrl', url);
+                } catch (err) {
+                    console.error('Preview decode failed:', err);
+                    container.html('<div class="alert alert-danger m-3">Preview failed: ' + (err.message || '') + '</div>');
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error('Preview load failed:', xhr.status, xhr.responseText || error);
+                container.html('<div class="alert alert-danger m-3">Preview failed. Please try again.</div>');
+            }
+        });
+    });
+    // CLOSE preview X button
+    $(document).on('click', '#closePreviewBtn', function () {
+        const url = $('#attachmentPreview').data('blobUrl');
+        if (url) URL.revokeObjectURL(url);    // free memory
+
+        $('#previewContent').empty();
+        $('#attachmentPreview').hide();
+    });
+
     loadAndRender();
+    function showDownloadLoader() {
+        const el = document.getElementById('downloadLoader');
+        if (!el) { console.warn('downloadLoader element not found'); return; }
+        el.style.display = 'block';
+    }
+    function hideDownloadLoader() {
+        const el = document.getElementById('downloadLoader');
+        if (!el) return;
+        el.style.display = 'none';
+    }
+
 });
