@@ -901,6 +901,98 @@ namespace Investica.Repository
             return null;
         }
 
+
+        // Attachment Section in the tickets and tis is the code of the service 
+        public async Task<List<TicketAttachment>> GetByTicketIdAsync(int ticketId)
+        {
+            var list = new List<TicketAttachment>();
+            const string sql = @"SELECT Id, TicketId, FileTypeId, FileName, ContentType, FileSizeBytes, CreatedDate, CreatedBy, ModifiedDate, ModifiedBy, IsActive
+                             FROM dbo.TicketAttachments WHERE TicketId = @TicketId AND IsActive = 1 ORDER BY CreatedDate DESC";
+
+            await using var con = Conn();
+            await con.OpenAsync();
+            await using var cmd = new SqlCommand(sql, con);
+            cmd.Parameters.AddWithValue("@TicketId", ticketId);
+            await using var rdr = await cmd.ExecuteReaderAsync();
+
+            while (await rdr.ReadAsync())
+            {
+                list.Add(new TicketAttachment
+                {
+                    Id = rdr.GetInt32(0),
+                    TicketId = rdr.GetInt32(1),
+                    FileTypeId = rdr.GetInt32(2),
+                    FileName = rdr.IsDBNull(3) ? null : rdr.GetString(3),
+                    ContentType = rdr.IsDBNull(4) ? null : rdr.GetString(4),
+                    FileSizeBytes = rdr.IsDBNull(5) ? null : (long?)rdr.GetInt64(5),
+                    CreatedDate = rdr.IsDBNull(6) ? null : (DateTime?)rdr.GetDateTime(6),
+                    CreatedBy = rdr.IsDBNull(7) ? null : (int?)rdr.GetInt32(7),
+                    ModifiedDate = rdr.IsDBNull(8) ? null : (DateTime?)rdr.GetDateTime(8),
+                    ModifiedBy = rdr.IsDBNull(9) ? null : (int?)rdr.GetInt32(9),
+                    IsActive = rdr.GetBoolean(10)
+                });
+            }
+            return list;
+        }
+        public async Task<TicketAttachment> SaveAsync(TicketAttachment attachment)
+        {
+            const string sql = @"INSERT INTO dbo.TicketAttachments (TicketId, FileTypeId, FileName, ContentType, Base64Data, FileSizeBytes, CreatedDate, CreatedBy, IsActive)
+                             VALUES (@TicketId, @FileTypeId, @FileName, @ContentType, @Base64Data, @FileSizeBytes, GETDATE(), @CreatedBy, 1);
+                             SELECT SCOPE_IDENTITY();";
+
+            await using var con = Conn();
+            await con.OpenAsync();
+            await using var cmd = new SqlCommand(sql, con);
+
+            cmd.Parameters.AddWithValue("@TicketId", attachment.TicketId);
+            cmd.Parameters.AddWithValue("@FileTypeId", attachment.FileTypeId);
+            cmd.Parameters.AddWithValue("@FileName", attachment.FileName);
+            cmd.Parameters.AddWithValue("@ContentType", attachment.ContentType);
+            cmd.Parameters.AddWithValue("@Base64Data", attachment.Base64Data);
+            cmd.Parameters.AddWithValue("@FileSizeBytes", attachment.FileSizeBytes.HasValue ? (object)attachment.FileSizeBytes.Value : DBNull.Value);
+            cmd.Parameters.AddWithValue("@CreatedBy", attachment.CreatedBy.HasValue ? (object)attachment.CreatedBy.Value : DBNull.Value);
+
+            object result = await cmd.ExecuteScalarAsync();
+            attachment.Id = Convert.ToInt32(result);
+            attachment.IsActive = true;
+
+            return attachment;
+        }
+        public async Task<TicketAttachmentDownload> DownloadAsync(int id)
+        {
+            const string sql = @"SELECT FileName, ContentType, Base64Data
+                             FROM dbo.TicketAttachments WHERE Id = @Id AND IsActive = 1";
+
+            await using var con = Conn();
+            await con.OpenAsync();
+            await using var cmd = new SqlCommand(sql, con);
+            cmd.CommandTimeout = 120;
+            cmd.Parameters.AddWithValue("@Id", id);
+            await using var rdr = await cmd.ExecuteReaderAsync();
+            
+            if (await rdr.ReadAsync())
+            {
+                return new TicketAttachmentDownload
+                {
+                    FileName = rdr.GetString(0),
+                    ContentType = rdr.GetString(1),
+                    Base64Data = rdr.GetString(2)
+                };
+            }
+            return null;
+        }
+        public async Task DeleteAsync(int id, int modifiedBy)
+        {
+            const string sql = @"UPDATE dbo.TicketAttachments SET IsActive = 0, ModifiedDate = GETDATE(), ModifiedBy = @ModifiedBy WHERE Id = @Id";
+
+            await using var con = Conn();
+            await con.OpenAsync();
+            await using var cmd = new SqlCommand(sql, con);
+            cmd.Parameters.AddWithValue("@Id", id);
+            cmd.Parameters.AddWithValue("@ModifiedBy", modifiedBy);
+
+            await cmd.ExecuteNonQueryAsync();
+        }
        
         #endregion
 

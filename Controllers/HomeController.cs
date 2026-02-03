@@ -242,11 +242,6 @@ namespace Investica.Controllers
             }
         }
 
-        public class NoteRequest
-        {
-            public int TicketId { get; set; }
-            public string NoteText { get; set; }
-        }
         //GetNotByID
         [HttpGet("notes/{id}")]
         public async Task<IActionResult> GetNoteByIdApi(int id)
@@ -270,7 +265,7 @@ namespace Investica.Controllers
         // GetNoteTicketNotes By ID
 
         [HttpGet("note/{ticketId}")]
-        public async Task<IActionResult> GetNotesByTicketId(int ticketId )
+        public async Task<IActionResult> GetNotesByTicketId(int ticketId)
         {
             try
             {
@@ -294,6 +289,52 @@ namespace Investica.Controllers
                 return StatusCode(500, "Server error retrieving notes.");
             }
         }
+
+        // This section is for the Attachments from the ticket
+        [HttpGet("ticketattachments")]
+        public async Task<IActionResult> GetByTicketIdApi([FromQuery] int ticketId)
+        {
+            var list = await _service.GetByTicketIdAsync(ticketId);
+            return Ok(list);
+        }
+
+        // POST /api/ticketattachments
+        [HttpPost("ticketattachments")]
+        public async Task<IActionResult> SaveApi([FromBody] TicketAttachment attachment)
+        {
+            if (attachment == null || string.IsNullOrEmpty(attachment.Base64Data))
+                return BadRequest("Base64Data is required.");
+
+            if (attachment.TicketId <= 0)
+                return BadRequest("TicketId is required.");
+
+            // TODO: replace 1 with real UserId from auth
+            attachment.CreatedBy = 1;
+
+            var saved = await _service.SaveAsync(attachment);
+            return Ok(saved);
+        }
+
+        // GET  /api/ticketattachments/download?id=101
+        [HttpGet("ticketattachments/download")]
+        public async Task<IActionResult> DownloadApi([FromQuery] int id)
+        {
+            var file = await _service.DownloadAsync(id);
+            if (file == null)
+                return NotFound("Attachment not found.");
+
+            return Ok(file);
+        }
+
+        // DELETE /api/ticketattachments?id=101
+        [HttpDelete("ticketattachments")]
+        public async Task<IActionResult> DeleteApi([FromQuery] int id)
+        {
+            // TODO: replace 1 with real UserId from auth
+            await _service.DeleteAsync(id, modifiedBy: 1);
+            return Ok();
+        }
+
         // Shop category links (GET)
         [HttpGet("shoplinks")]
         public async Task<IActionResult> GetShopLinks()

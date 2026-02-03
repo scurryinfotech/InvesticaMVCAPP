@@ -2,6 +2,13 @@
 // jQuery version with AJAX and searchable status dropdown using Select2
 // Enhanced with save functionality and change tracking
 
+const ATT_API = {
+    getByTicket: '/ticketattachments',
+    save: '/ticketattachments',
+    download: '/ticketattachments/download',
+    delete: '/ticketattachments'
+};
+
 $(document).ready(function () {
     const api = {
         tickets: '/tickets',
@@ -38,7 +45,7 @@ $(document).ready(function () {
     }
 
     function buildTicketCard(t, maps, idx) {
-        debugger
+
         const { companiesMap, licensesMap, statusesMap, employeesMap } = maps;
         const statusLabel = statusesMap[t.statusId] || t.statusId || '';
         const licenseLabel = licensesMap[t.licenseId] || t.licenseId || '';
@@ -204,12 +211,12 @@ $(document).ready(function () {
             const descField = $('#' + cid + '_desc');
             const descVal = descField.find('textarea').val() || '';
             descField.html(descVal ? escapeHtml(descVal) : '');
-            
+
 
             if (callback) callback(true);
             return; // Exit early without making AJAX call
         }
-            
+
 
         const statusId = $('#' + cid + '_status_select').length > 0
             ? $('#' + cid + '_status_select').val()
@@ -322,7 +329,7 @@ $(document).ready(function () {
 
                 const descField = $('#' + cid + '_desc');
                 const descVal = descField.text().trim();
-                descField.html('<textarea class="form-control" rows="8">' + escapeHtml(descVal) + '</textarea>');
+                //descField.html('<textarea class="form-control" rows="8">' + escapeHtml(descVal) + '</textarea>');
 
                 editBtn.text('Save');
             } else {
@@ -343,7 +350,6 @@ $(document).ready(function () {
 
                         const descField = $('#' + cid + '_desc');
                         const descVal = descField.find('textarea').val() || '';
-                        descField.html(descVal ? escapeHtml(descVal) : '');
 
                         editBtn.text('Edit');
                     }
@@ -402,17 +408,263 @@ $(document).ready(function () {
 
         // Attachments button
         container.on('click', '.attach-btn', function () {
-            const modalEl = $('#attachmentsModal');
-            if (modalEl.length > 0) {
-                const attachmentsList = $('#attachmentsList');
-                if (attachmentsList.length > 0) {
-                    attachmentsList.html('<li class="list-group-item">(no attachments)</li>');
+            const cid = $(this).data('card');                  // "card_42"
+            const ticketId = cid.replace('ticket_', '');              // "42"
+
+            // store on modal for other handlers to read
+            $('#attachmentsModal').data('ticketId', ticketId);
+
+            // reset upload UI
+            $('#attachmentFileInput').val('');
+            $('#uploadProgress').hide();
+            $('#uploadProgressBar').css('width', '0%').text('0%');
+
+            // fetch from DB and render
+            loadAttachments(ticketId);
+
+            $('#attachmentsModal').modal('show');
+        });
+    }
+    $(document).on('click', '#uploadAttachmentBtn', function () {
+        const fileInput = $('#attachmentFileInput')[0];
+        const files = fileInput.files;
+
+        if (!files || files.length === 0) {
+            alert('Please select at least one file (PDF or Image).');
+            return;
+        }
+
+        const ticketId = $('#attachmentsModal').data('ticketId');
+        const totalFiles = files.length;
+        let uploaded = 0;
+
+        $('#uploadProgress').show();
+        $('#uploadProgressBar').css('width', '0%').text('0 / ' + totalFiles + ' uploaded');
+
+        // loop through every selected file
+        Array.from(files).forEach(function (file) {
+
+            // ── FileReader converts the file to Base64 in the browser ──
+            const reader = new FileReader();
+
+            reader.onload = function (e) {
+                const base64Data = e.target.result.split(',')[1];
+
+                // ── build the payload that matches your C# DTO ──
+                const payload = {
+                    TicketId: ticketId,
+                    FileName: file.name,                          // "invoice.pdf"
+                    ContentType: file.type || 'application/octet-stream', // "application/pdf"
+                    FileTypeId: file.type.includes('pdf') ? 1 : 2,  // 1=PDF, 2=IMAGE
+                    Base64Data: base64Data,                         // the actual Base64 string
+                    FileSizeBytes: file.size                           // original size in bytes
+                };
+
+                // ── AJAX POST to your controller ──
+                $.ajax({
+                    url: ATT_API.save,
+                    type: 'POST',
+                    contentType: 'application/json; charset=utf-8',
+                    data: JSON.stringify(payload),
+                    success: function (response) {
+                        // response = the saved attachment object (with new Id)
+                        uploaded++;
+                        const pct = Math.round((uploaded / totalFiles) * 100);
+                        $('#uploadProgressBar').css('width', pct + '%')
+                            .text(uploaded + ' / ' + totalFiles + ' uploaded');
+
+                        // if ALL files done → refresh the list
+                        if (uploaded === totalFiles) {
+                            $('#attachmentFileInput').val('');
+                            $('#uploadProgress').hide();
+                            $('#uploadProgressBar').css('width', '0%').text('0%');
+                            loadAttachments(ticketId);   // re-fetch from DB
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        console.error('Upload failed for ' + file.name, error);
+                        alert('Upload failed for: ' + file.name);
+                        uploaded++;
+                        if (uploaded === totalFiles) {
+                            $('#attachmentFileInput').val('');
+                            $('#uploadProgress').hide();
+                            loadAttachments(ticketId);
+                        }
+                    }
+                });
+            };
+
+            // ── start reading the file ──
+            reader.readAsDataURL(file);
+        });
+    });
+    $(document).on('click', '.download-attachment-btn', function () {
+        const $btn = $(this);
+        const attId = $btn.data('att-id');
+
+        $.ajax({
+            url: ATT_API.download,
+            type: 'GET',
+            data: { id: attId },
+            beforeSend: function () {
+                $btn.prop('disabled', true);
+                showDownloadLoader();
+            },
+            success: function (response) {
+                try {
+                    const cleanBase64 = (response.base64Data || '').replace(/[^A-Za-z0-9+/=]/g, '');
+                    const binary = atob(cleanBase64);
+                    const array = new Uint8Array(binary.length);
+                    for (let i = 0; i < binary.length; i++) {
+                        array[i] = binary.charCodeAt(i);
+                    }
+                    const blob = new Blob([array], { type: response.contentType || 'application/octet-stream' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = response.fileName || 'download';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                } catch (err) {
+                    console.error('Download decode failed:', err);
+                    alert('Download failed: ' + (err.message || err));
                 }
-                modalEl.modal('show');
+            },
+            error: function (xhr, status, error) {
+                console.error('Download failed:', xhr.status, xhr.responseText);
+                alert('Download failed. Please try again.');
+            },
+            complete: function () {
+                $btn.prop('disabled', false);
+                hideDownloadLoader();
+            }
+        });
+    });
+
+
+    $(document).on('click', '.delete-attachment-btn', function () {
+        const attId = $(this).data('att-id');
+        const $li = $(this).closest('li');
+        const name = $li.find('.att-file-name').text().trim();
+        const ticketId = $('#attachmentsModal').data('ticketId');
+        debugger
+        if (!confirm('Delete "' + name + '"?\nThis cannot be undone.')) return;
+
+        $.ajax({
+            url: ATT_API.delete + '?id=' + encodeURIComponent(attId),
+            type: 'DELETE',
+            data: { id: attId },
+            success: function () {
+                $li.fadeOut(300, function () {
+                    $(this).remove();
+                    // if list is now empty show placeholder
+                    if ($('#attachmentsList li').length === 0) {
+                        $('#attachmentsList').html(
+                            '<li class="list-group-item text-muted text-center py-3">' +
+                            '<i class="bi bi-paperclip me-1"></i>No attachments</li>'
+                        );
+                    }
+                });
+            },
+            error: function (xhr, status, error) {
+                alert('Delete failed. Please try again.');
+            }
+        });
+    });
+    // Clear button → resets file input only, does NOT touch the list
+    $(document).on('click', '#clearAttachmentBtn', function () {
+        $('#attachmentFileInput').val('');
+        $('#uploadProgress').hide();
+        $('#uploadProgressBar').css('width', '0%').text('0%');
+    });
+    function loadAttachments(ticketId) {
+        $.ajax({
+            url: ATT_API.getByTicket,
+            type: 'GET',
+            data: { ticketId: ticketId },          // ?ticketId=42
+            success: function (attachments) {
+                renderList(attachments);
+            },
+            error: function (xhr, status, error) {
+                console.error('Load attachments failed:', error);
+                renderList([]);                        // show empty state
             }
         });
     }
 
+    function renderList(attachments) {
+        const $list = $('#attachmentsList');
+
+        if (!attachments || attachments.length === 0) {
+            $list.html(
+                '<li class="list-group-item text-muted text-center py-3">' +
+                '<i class="bi bi-paperclip me-1"></i>No attachments</li>'
+            );
+            return;
+        }
+
+        let html = '';
+        attachments.forEach(function (att) {
+            // normalize property names (handle camelCase and PascalCase responses)
+            const attId = att.id || att.Id || att.ID || '';
+            const fileName = att.fileName || att.FileName || att.File || '';
+            const contentType = (att.contentType || att.ContentType || '').toLowerCase();
+            const fileSizeBytes = att.fileSizeBytes || att.FileSizeBytes || att.fileSize || att.FileSize || 0;
+
+            const isPdf = contentType.includes('pdf');
+            const iconClass = isPdf ? 'bi-filetype-pdf' : 'bi-image';
+            const badgeColor = isPdf ? '#fdecea' : '#e2f0fd';
+            const iconColor = isPdf ? '#d63384' : '#0d6efd';
+            const sizeLabel = formatFileSize(fileSizeBytes);
+
+            html += `
+        <li class="list-group-item d-flex justify-content-between align-items-center py-2"
+            data-att-id="${attId}">
+
+          <!-- left: icon + info -->
+          <div class="d-flex align-items-center gap-2" style="min-width:0;">
+            <div style="width:36px;height:36px;border-radius:8px;
+                        background:${badgeColor};display:flex;
+                        align-items:center;justify-content:center;flex-shrink:0;">
+              <i class="bi ${iconClass}" style="color:${iconColor};font-size:1.1rem;"></i>
+            </div>
+            <div style="min-width:0;">
+              <span class="att-file-name fw-semibold text-truncate d-block"
+                    style="max-width:260px;" title="${fileName}">${fileName}</span>
+              <small class="text-muted">${sizeLabel}</small>
+            </div>
+          </div>
+
+          <!-- right: Download + Delete buttons -->
+          <div class="d-flex gap-1 flex-shrink-0">
+          <button class="btn btn-outline-primary btn-sm rounded-pill view-attachment-btn"
+          data-att-id="${attId}" data-content-type="${contentType}" title="View">
+          <i class="bi bi-eye"></i>
+            </button>
+            <button class="btn btn-outline-secondary btn-sm rounded-pill download-attachment-btn"
+                    data-att-id="${attId}" title="Download">
+              <i class="bi bi-download"></i>
+            </button>
+            <button class="btn btn-outline-danger btn-sm rounded-pill delete-attachment-btn"
+                    data-att-id="${attId}" title="Delete">
+              <i class="bi bi-trash"></i>
+            </button>
+          </div>
+        </li>`;
+        });
+
+        $list.html(html);
+    }
+
+
+    function formatFileSize(bytes) {
+        if (!bytes) return '';
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+        return (bytes / 1048576).toFixed(2) + ' MB';
+    }
     function highlightAndScrollToTicket(ticketId) {
         if (!ticketId) return;
 
@@ -529,5 +781,83 @@ $(document).ready(function () {
         });
     }
 
+    function normalizeBase64(base64) {
+        base64 = base64.replace(/\s/g, '');
+
+        base64 = base64.replace(/-/g, '+').replace(/_/g, '/');
+
+        while (base64.length % 4 !== 0) {
+            base64 += '=';
+        }
+
+        return base64;
+    }
+
+    // VIEW button — preview PDF or Image inside the modal
+    $(document).on('click', '.view-attachment-btn', function () {
+        const attId = $(this).data('att-id');
+        const contentTypeHint = ($(this).data('content-type') || '').toLowerCase();
+        const fileName = $(this).closest('li').find('.att-file-name').text().trim();
+
+        $('#previewFileName').text(fileName || '');
+        const container = $('#previewContent');
+        container.html('<div class="text-center p-5"><div class="spinner-border" role="status"></div></div>');
+
+        $.ajax({
+            url: ATT_API.download,
+            type: 'GET',
+            data: { id: attId },
+            dataType: 'json',
+            success: function (response) {
+                try {
+                    const base64 = response && (response.base64Data || response.Base64Data || '');
+                    if (!base64) throw new Error('No base64 payload in response');
+
+                    const bytes = decodeBase64ToUint8Array(base64);
+                    const contentType = (response.contentType || contentTypeHint || 'application/octet-stream');
+                    const blob = new Blob([bytes], { type: contentType });
+                    const url = URL.createObjectURL(blob);
+
+                    container.empty();
+                    if (contentType.startsWith('image/')) {
+                        container.html(`<img src="${url}" style="max-width:100%;max-height:100%;display:block;margin:auto;" />`);
+                    } else if (contentType.includes('pdf')) {
+                        container.html(`<iframe src="${url}" style="width:100%;height:100%;border:none;"></iframe>`);
+                    } else {
+                        container.html(`<div class="alert alert-warning m-3">Preview not supported for this file type</div>`);
+                    }
+
+                    $('#attachmentPreview').show().data('blobUrl', url);
+                } catch (err) {
+                    console.error('Preview decode failed:', err);
+                    container.html('<div class="alert alert-danger m-3">Preview failed: ' + (err.message || '') + '</div>');
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error('Preview load failed:', xhr.status, xhr.responseText || error);
+                container.html('<div class="alert alert-danger m-3">Preview failed. Please try again.</div>');
+            }
+        });
+    });
+    // CLOSE preview X button
+    $(document).on('click', '#closePreviewBtn', function () {
+        const url = $('#attachmentPreview').data('blobUrl');
+        if (url) URL.revokeObjectURL(url);    // free memory
+
+        $('#previewContent').empty();
+        $('#attachmentPreview').hide();
+    });
+
     loadAndRender();
+    function showDownloadLoader() {
+        const el = document.getElementById('downloadLoader');
+        if (!el) { console.warn('downloadLoader element not found'); return; }
+        el.style.display = 'block';
+    }
+    function hideDownloadLoader() {
+        const el = document.getElementById('downloadLoader');
+        if (!el) return;
+        el.style.display = 'none';
+    }
+
 });
