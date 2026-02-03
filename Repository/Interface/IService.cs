@@ -57,6 +57,13 @@ namespace Investica.Repository.Interface
         Task<List<Log>> GetNotesByTicketIdAsync(int ticketId);
         Task<Log> GetNoteByIdAsync(int id);
         Task<bool> UpdateTicketAsync(Ticket ticket);
+
+        // This section is for the Attachments 
+        Task<List<TicketAttachment>> GetByTicketIdAsync(int ticketId);
+        Task<TicketAttachment> SaveAsync(TicketAttachment attachment);
+        Task<TicketAttachmentDownload> DownloadAsync(int id);
+        Task DeleteAsync(int id, int modifiedBy);
+
         // UpcomingRenewals
         Task<List<UpcomingRenewal>> GetUpcomingRenewalsAsync();
         Task<int> CreateUpcomingRenewalAsync(UpcomingRenewal r);
