@@ -5,7 +5,7 @@
         public int Id { get; set; }
         public int CompanyId { get; set; }
         public string CompanyName { get; set; } = string.Empty;
-        public string Unikey { get; set; } = string.Empty;
+        public string? Unikey { get; set; } = string.Empty;
 
         public int LicenseTypeId { get; set; }
         public string LicenseType { get; set; } = string.Empty;

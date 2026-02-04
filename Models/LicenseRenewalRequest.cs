@@ -1,8 +1,12 @@
-﻿namespace Investica.Models
+﻿using System.Text.Json.Serialization;
+
+namespace Investica.Models
 {
     public class LicenseRenewalRequest
     {
         public int Id { get; set; }
+        [JsonPropertyName("unikey")]
+        public string? Unique { get; set; }
         public int CompanyId { get; set; }
         public int LicenseTypeId { get; set; }
         public string CityState { get; set; } = string.Empty;

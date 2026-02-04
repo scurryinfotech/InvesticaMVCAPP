@@ -695,26 +695,7 @@ namespace Investica.Controllers
             }
         }
 
-        // GET: api/home/renewal/{id}
-        //[HttpGet("renewal/{id}")]
-        //public async Task<IActionResult> GetRenewalById(int id)
-        //{
-        //    try
-        //    {
-        //        var renewal = await _service.GetByIdWithDetailsAsync(id);
-        //        if (renewal == null)
-        //        {
-        //            return NotFound(new { message = "Renewal not found" });
-        //        }
-        //        return Ok(renewal);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return StatusCode(500, new { message = "Error fetching renewal", error = ex.Message });
-        //    }
-        //}
-
-        // POST: api/home/renewal
+        
         [HttpPost("renewal")]
         public async Task<IActionResult> CreateRenewal([FromBody] LicenseRenewalRequest request)
         {

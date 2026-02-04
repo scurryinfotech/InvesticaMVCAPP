@@ -3,6 +3,66 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
+@section Styles {
+    <style>
+        #renewalsTable .col-company,
+        #renewalsTable .col-address {
+            max-width: 220px;
+            word-break: break-word;
+            overflow-wrap: anywhere;
+        }
+
+        #renewalsTable .col-unikey {
+            min-width: 180px;
+            word-break: break-all;
+        }
+
+        /* Searchable Dropdown Styles */
+        .searchable-dropdown-wrapper {
+            position: relative;
+        }
+
+        .searchable-dropdown-list {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            max-height: 200px;
+            overflow-y: auto;
+            background: white;
+            border: 1px solid #ced4da;
+            border-top: none;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+            .searchable-dropdown-list li {
+                padding: 8px 12px;
+                cursor: pointer;
+                font-size: 0.875rem;
+            }
+
+                .searchable-dropdown-list li:hover,
+                .searchable-dropdown-list li.active {
+                    background-color: #f8f9fa;
+                }
+
+                .searchable-dropdown-list li.no-results {
+                    color: #6c757d;
+                    cursor: default;
+                    text-align: center;
+                }
+
+                    .searchable-dropdown-list li.no-results:hover {
+                        background-color: white;
+                    }
+    </style>
+}
+
 <div class="container-custom">
     <div class="right-panel" style="grid-column: 1 / span 2;">
         <div class="dashboard">
@@ -19,19 +79,32 @@
                 <!-- FILTERS -->
                 <div class="row g-2 mb-3">
                     <div class="col-md-3">
-                        <select id="filter_company" class="form-select form-select-sm">
-                            <option value="">All Companies</option>
-                        </select>
+                        <div id="filter_code-wrapper" class="searchable-dropdown-wrapper">
+                            <input type="text" class="form-control form-control-sm searchable-input" placeholder="All Codes">
+                            <input type="hidden" id="filter_code">
+                            <ul class="searchable-dropdown-list"></ul>
+                        </div>
                     </div>
                     <div class="col-md-3">
-                        <select id="filter_license" class="form-select form-select-sm">
-                            <option value="">All License Types</option>
-                        </select>
+                        <div id="filter_company-wrapper" class="searchable-dropdown-wrapper">
+                            <input type="text" class="form-control form-control-sm searchable-input" placeholder="All Companies">
+                            <input type="hidden" id="filter_company">
+                            <ul class="searchable-dropdown-list"></ul>
+                        </div>
                     </div>
                     <div class="col-md-3">
-                        <select id="filter_location" class="form-select form-select-sm">
-                            <option value="">All Locations</option>
-                        </select>
+                        <div id="filter_license-wrapper" class="searchable-dropdown-wrapper">
+                            <input type="text" class="form-control form-control-sm searchable-input" placeholder="All License Types">
+                            <input type="hidden" id="filter_license">
+                            <ul class="searchable-dropdown-list"></ul>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div id="filter_location-wrapper" class="searchable-dropdown-wrapper">
+                            <input type="text" class="form-control form-control-sm searchable-input" placeholder="All Locations">
+                            <input type="hidden" id="filter_location">
+                            <ul class="searchable-dropdown-list"></ul>
+                        </div>
                     </div>
                     <div class="col-md-3">
                         <select id="filter_status" class="form-select form-select-sm">
@@ -57,19 +130,21 @@
                         <thead class="table-dark">
                             <tr>
                                 <th>SR NO</th>
+                                <th style="width: 200px;">UNIKEY</th>
                                 <th>COMPANY</th>
-                                <th>UNIKEY</th>
                                 <th>LICENSE TYPE</th>
                                 <th>LOCATION</th>
+                                <th style="width: 200px;">ADDRESS</th>
                                 <th>EXPIRY DATE</th>
                                 <th>DAYS LEFT</th>
                                 <th>STATUS</th>
                                 <th style="width: 110px;">ACTIONS</th>
+                                <th>Notes</th>
                             </tr>
                         </thead>
                         <tbody id="renewalsBody">
                             <tr>
-                                <td colspan="9" class="text-center text-muted">Loading...</td>
+                                <td colspan="10" class="text-center text-muted">Loading...</td>
                             </tr>
                         </tbody>
                     </table>
@@ -91,19 +166,36 @@
             <div class="modal-body">
                 <input type="hidden" id="renewalId" value="0">
 
+                <!-- Unique Key -->
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Code <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <input type="text"
+                               id="modalUnikey"
+                               class="form-control form-control-sm"
+                               placeholder="Enter or edit unique key"
+                               aria-describedby="unikeyHelp" />
+                    </div>
+                    <div id="unikeyHelp" class="form-text">The unique key is set by Editor only</div>
+                </div>
+
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label class="form-label fw-semibold">Company <span class="text-danger">*</span></label>
-                        <select id="modalCompanyId" class="form-select form-select-sm">
-                            <option value="">-- Select Company --</option>
-                        </select>
+                        <div id="modalCompanyId-wrapper" class="searchable-dropdown-wrapper">
+                            <input type="text" class="form-control form-control-sm searchable-input"  placeholder="-- Select Company --">
+                            <input type="hidden" id="modalCompanyId">
+                            <ul class="searchable-dropdown-list"></ul>
+                        </div>
                     </div>
 
                     <div class="col-md-6 mb-3">
                         <label class="form-label fw-semibold">License Type <span class="text-danger">*</span></label>
-                        <select id="modalLicenseTypeId" class="form-select form-select-sm">
-                            <option value="">-- Select License Type --</option>
-                        </select>
+                        <div id="modalLicenseTypeId-wrapper" class="searchable-dropdown-wrapper">
+                            <input type="text" class="form-control form-control-sm searchable-input" placeholder="-- Select License Type --">
+                            <input type="hidden" id="modalLicenseTypeId">
+                            <ul class="searchable-dropdown-list"></ul>
+                        </div>
                     </div>
                 </div>
 
@@ -161,4 +253,6 @@
 
 @section Scripts {
     <script src="~/js/Renewals.js"></script>
+    <script src="~/js/LeftPanel.js"></script>
+
 }
