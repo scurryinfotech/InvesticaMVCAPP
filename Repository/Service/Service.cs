@@ -1006,7 +1006,7 @@ namespace Investica.Repository
                     lr.Id,
                     lr.CompanyId,
                     cm.CompanyName,
-                    cm.Unikey,
+                    lr.Code,
                     lr.LicenseTypeId,
                     lt.AppTypeName AS LicenseType,
                     lr.CityState,
@@ -1039,7 +1039,7 @@ namespace Investica.Repository
                     Id = rdr.GetInt32(0),
                     CompanyId = rdr.GetInt32(1),
                     CompanyName = rdr.GetString(2),
-                    Unikey = rdr.GetString(3),
+                    Unikey = rdr.IsDBNull(3) ? null : rdr.GetString(3),
                     LicenseTypeId = rdr.GetInt32(4),
                     LicenseType = rdr.GetString(5),
                     CityState = rdr.GetString(6),
@@ -1074,7 +1074,7 @@ namespace Investica.Repository
                     lr.Id,
                     lr.CompanyId,
                     cm.CompanyName,
-                    cm.Unikey,
+                    lr.Code,
                     lr.LicenseTypeId,
                     lt.AppTypeName AS LicenseType,
                     lr.CityState,
@@ -1108,7 +1108,7 @@ namespace Investica.Repository
                     Id = rdr.GetInt32(0),
                     CompanyId = rdr.GetInt32(1),
                     CompanyName = rdr.GetString(2),
-                    Unikey = rdr.GetString(3),
+                    Unikey = rdr.IsDBNull(3) ? null : rdr.GetString(3),
                     LicenseTypeId = rdr.GetInt32(4),
                     LicenseType = rdr.GetString(5),
                     CityState = rdr.GetString(6),
@@ -1205,6 +1205,7 @@ namespace Investica.Repository
             const string sql = @"
                 UPDATE LicenseRenewal
                 SET 
+                    Code = @Code,
                     CompanyId = @CompanyId,
                     LicenseTypeId = @LicenseTypeId,
                     CityState = @CityState,
@@ -1227,6 +1228,7 @@ namespace Investica.Repository
             var expiryYear = request.ExpiryDate.Year;
 
             cmd.Parameters.AddWithValue("@Id", id);
+            cmd.Parameters.AddWithValue("@Code", request.Unique);
             cmd.Parameters.AddWithValue("@CompanyId", request.CompanyId);
             cmd.Parameters.AddWithValue("@LicenseTypeId", request.LicenseTypeId);
             cmd.Parameters.AddWithValue("@CityState", request.CityState);

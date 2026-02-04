@@ -3,6 +3,20 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
+   @section Styles{ <style >
+    #renewalsTable .col-company,
+    #renewalsTable .col-address {
+        max-width: 220px;
+        word-break: break-word;
+        overflow-wrap: anywhere;
+    }
+
+    #renewalsTable .col-unikey {
+        min-width: 180px;
+        word-break: break-all;
+    }
+</style>
+   }
 <div class="container-custom">
     <div class="right-panel" style="grid-column: 1 / span 2;">
         <div class="dashboard">
@@ -57,10 +71,11 @@
                         <thead class="table-dark">
                             <tr>
                                 <th>SR NO</th>
+                                 <th>UNIKEY</th> 
                                 <th>COMPANY</th>
-                                <th>UNIKEY</th>
                                 <th>LICENSE TYPE</th>
                                 <th>LOCATION</th>
+                                <th style="width: 200px;">ADDRESS</th>
                                 <th>EXPIRY DATE</th>
                                 <th>DAYS LEFT</th>
                                 <th>STATUS</th>
@@ -69,7 +84,7 @@
                         </thead>
                         <tbody id="renewalsBody">
                             <tr>
-                                <td colspan="9" class="text-center text-muted">Loading...</td>
+                                <td colspan="10" class="text-center text-muted">Loading...</td>
                             </tr>
                         </tbody>
                     </table>
@@ -90,6 +105,19 @@
 
             <div class="modal-body">
                 <input type="hidden" id="renewalId" value="0">
+
+                <!-- Unique Key (read-only) -->
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Code <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <input type="text"
+                               id="modalUnikey"
+                               class="form-control form-control-sm"
+                               placeholder="Enter or edit unique key"
+                               aria-describedby="unikeyHelp" />
+                    </div>
+                    <div id="unikeyHelp" class="form-text">The unique key is set by Editor only</div>
+                </div>
 
                 <div class="row">
                     <div class="col-md-6 mb-3">

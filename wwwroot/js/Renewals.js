@@ -115,10 +115,12 @@
                     data-location="${item.cityState.toUpperCase()}"
                     data-status="${item.status}">
                     <td>${index + 1}</td>
-                    <td>${item.companyName}</td>
                     <td>${item.unikey}</td>
+                    <td>${item.companyName}</td>
+                    
                     <td>${item.licenseType}</td>
                     <td>${item.cityState}</td>
+                    <td>${item.address}</td>
                     <td>${item.expiryDateFormatted}</td>
                     <td class="text-center">${daysLeft}</td>
                     <td>${badge}</td>
@@ -204,7 +206,7 @@
                     $("#renewalId").val(item.id);
                     $("#renewalModalLabel").text("Edit Renewal");
                     $("#btnSave").text("Update");
-
+                    $("#modalUnikey").val(item.unikey || "");
                     $("#modalCompanyId").val(item.companyId);
                     $("#modalLicenseTypeId").val(item.licenseTypeId);
                     $("#modalCityState").val(item.cityState);
@@ -227,6 +229,7 @@
     function clearModalFields() {
         $("#modalCompanyId, #modalLicenseTypeId").val("");
         $("#modalCityState, #modalAddress, #modalExpiryDate, #modalRemarks").val("");
+        $("#modalUnikey").val("");
     }
 
     // ═══════════════════════════════════════════════════════════
@@ -245,12 +248,12 @@
     //  SAVE RENEWAL
     // ═══════════════════════════════════════════════════════════
     function saveRenewal() {
-        const id = parseInt($("#renewalId").val());
-        const companyId = parseInt($("#modalCompanyId").val());
-        const licenseTypeId = parseInt($("#modalLicenseTypeId").val());
+        const id = Number($("#renewalId").val()) || 0;
+        const companyId = Number($("#modalCompanyId").val()) || 0;
+        const licenseTypeId = Number($("#modalLicenseTypeId").val()) || 0;
         const cityState = $("#modalCityState").val().trim();
         const address = $("#modalAddress").val().trim();
-        const expiryDate = $("#modalExpiryDate").val().trim();
+        const expiryDateRaw = $("#modalExpiryDate").val().trim();
         const remarks = $("#modalRemarks").val().trim();
 
         // Validation
@@ -259,7 +262,7 @@
         if (!licenseTypeId) errors.push("Please select a License Type.");
         if (!cityState) errors.push("Please enter City / State.");
         if (!address) errors.push("Please enter Address.");
-        if (!expiryDate) errors.push("Please select an Expiry Date.");
+        if (!expiryDateRaw) errors.push("Please select an Expiry Date.");
 
         if (errors.length > 0) {
             $("#modalAlert").removeClass("d-none").html(errors.join("<br>"));
@@ -268,33 +271,41 @@
 
         $("#modalAlert").addClass("d-none");
 
-        // Build request body
+        const expiryIso = expiryDateRaw + "T00:00:00";
         const body = {
             companyId,
             licenseTypeId,
             cityState,
             address,
-            expiryDate: expiryDate + "T00:00:00",
+            expiryDate: expiryIso,
             remarks,
-            isActive: true
+            isActive: true,
+            unikey: ($("#modalUnikey").length ? $("#modalUnikey").val() : "")
         };
+        console.log(body);
 
         const url = id === 0 ? API_BASE + "/renewal" : API_BASE + "/renewal/" + id;
         const method = id === 0 ? "POST" : "PUT";
+
+        $("#btnSave").prop("disabled", true);
 
         $.ajax({
             url,
             type: method,
             contentType: "application/json",
             data: JSON.stringify(body),
-            success: function () {
+            success: function (response) {
                 $("#renewalModal").modal("hide");
                 showToast(id === 0 ? "Renewal created successfully!" : "Renewal updated successfully!", "success");
                 loadRenewals();
             },
             error: function (xhr) {
-                const msg = xhr.responseJSON?.message || "Operation failed";
+                const msg = xhr.responseJSON?.message || xhr.statusText || "Operation failed";
+                $("#modalAlert").removeClass("d-none").text(msg);
                 showToast(msg, "danger");
+            },
+            complete: function () {
+                $("#btnSave").prop("disabled", false);
             }
         });
     }
@@ -340,4 +351,4 @@
         setTimeout(() => $("#" + id).remove(), 3500);
     }
 
-}); 
+});
