@@ -270,13 +270,13 @@
                     data-location="${item.cityState.toUpperCase()}"
                     data-status="${item.status}">
                     <td>${index + 1}</td>
-                    <td style="text-wrap: nowrap; width:200px">${item.unikey}</td>
-                    <td style="text-wrap:wrap;width:200px">${item.companyName}</td>
+                    <td style="text-wrap: nowrap;">${item.unikey}</td>
+                    <td style="text-wrap:wrap;">${item.companyName}</td>
                     
                     <td>${item.licenseType}</td>
                     <td>${item.cityState}</td>
                     <td style="text-wrap: wrap;">${item.address}</td>
-                    <td style="text-wrap: nowrap;">${item.expiryDateFormatted}</td>
+                    <td style="text-wrap: wrap;">${item.expiryDateFormatted}</td>
                     <td class="text-center">${daysDisplay}</td>
                     <td>${badge}</td>
                     // inside renderTable(...) replace button HTML so icons have accessible fallback
