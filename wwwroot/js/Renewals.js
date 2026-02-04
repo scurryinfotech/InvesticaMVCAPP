@@ -36,41 +36,181 @@
             success: function (data) {
                 dropdownData = data;
 
-                // Populate Company Dropdown
-                let companyHtml = '<option value="">-- Select Company --</option>';
-                data.companies.forEach(c => {
-                    companyHtml += `<option value="${c.id}">${c.name}</option>`;
-                });
-                $("#modalCompanyId").html(companyHtml);
+                // Populate Modal Company Dropdown (searchable)
+                populateSearchableDropdown(
+                    '#modalCompanyId-wrapper',
+                    data.companies,
+                    '-- Select Company --'
+                );
 
-                // Populate License Type Dropdown
-                let licenseHtml = '<option value="">-- Select License Type --</option>';
-                data.licenseTypes.forEach(lt => {
-                    licenseHtml += `<option value="${lt.id}">${lt.name}</option>`;
-                });
-                $("#modalLicenseTypeId").html(licenseHtml);
+                // Populate Modal License Type Dropdown (searchable)
+                populateSearchableDropdown(
+                    '#modalLicenseTypeId-wrapper',
+                    data.licenseTypes,
+                    '-- Select License Type --'
+                );
 
-                // Populate Filter Dropdowns
-                let filterCompanyHtml = '<option value="">All Companies</option>';
-                data.companies.forEach(c => {
-                    filterCompanyHtml += `<option value="${c.id}">${c.name}</option>`;
-                });
-                $("#filter_company").html(filterCompanyHtml);
+                // Populate Filter Company Dropdown (searchable)
+                populateSearchableDropdown(
+                    '#filter_company-wrapper',
+                    data.companies,
+                    'All Companies'
+                );
 
-                let filterLicenseHtml = '<option value="">All License Types</option>';
-                data.licenseTypes.forEach(lt => {
-                    filterLicenseHtml += `<option value="${lt.id}">${lt.name}</option>`;
-                });
-                $("#filter_license").html(filterLicenseHtml);
+                // Populate Filter License Type Dropdown (searchable)
+                populateSearchableDropdown(
+                    '#filter_license-wrapper',
+                    data.licenseTypes,
+                    'All License Types'
+                );
 
-                let filterLocationHtml = '<option value="">All Locations</option>';
-                data.locations.forEach(loc => {
-                    filterLocationHtml += `<option value="${loc.toUpperCase()}">${loc}</option>`;
-                });
-                $("#filter_location").html(filterLocationHtml);
+                // Populate Filter Location Dropdown (searchable)
+                populateSearchableDropdown(
+                    '#filter_location-wrapper',
+                    data.locations.map(loc => ({ id: loc.toUpperCase(), name: loc })),
+                    'All Locations'
+                );
+
+                // Initialize searchable dropdowns after populating
+                initializeSearchableDropdowns();
             },
             error: function () {
                 showToast("Failed to load dropdown data", "danger");
+            }
+        });
+    }
+    function initializeSearchableDropdowns() {
+        $('.searchable-input').each(function () {
+            const $input = $(this);
+            const $list = $input.siblings('.searchable-dropdown-list');
+            const $hiddenValue = $input.siblings('input[type="hidden"]');
+            const isMultiSelect = $input.hasClass('multi-select');
+
+            $input.on('focus click', function (e) {
+                e.stopPropagation();
+                $('.searchable-dropdown-list').not($list).hide();
+
+                if (!isMultiSelect) {
+                    if ($input.val() && $hiddenValue.val()) {
+                        $input.val('');
+                    }
+                }
+
+                $list.show();
+                $list.find('li').not('.no-results').show();
+                $list.find('.no-results').remove();
+            });
+
+            $input.on('input', function () {
+                const searchValue = $(this).val().toLowerCase();
+                let visibleCount = 0;
+
+                if (isMultiSelect) {
+                    const parts = searchValue.split(',');
+                    const lastPart = parts[parts.length - 1].trim();
+
+                    $list.find('li').not('.no-results').each(function () {
+                        const text = $(this).text().toLowerCase();
+                        const matches = text.includes(lastPart);
+                        $(this).toggle(matches);
+                        if (matches) visibleCount++;
+                    });
+                } else {
+                    $list.find('li').not('.no-results').each(function () {
+                        const text = $(this).text().toLowerCase();
+                        const matches = text.includes(searchValue);
+                        $(this).toggle(matches);
+                        if (matches) visibleCount++;
+                    });
+                }
+
+                $list.find('.no-results').remove();
+                if (visibleCount === 0 && searchValue !== '') {
+                    $list.append('<li class="no-results">No results found</li>');
+                }
+
+                $list.show();
+            });
+
+            $input.on('keydown', function (e) {
+                const $visibleItems = $list.find('li:visible').not('.no-results');
+                const $active = $list.find('li.active');
+                let $next;
+
+                if (e.keyCode === 40) { // Down arrow
+                    e.preventDefault();
+                    if ($active.length === 0) {
+                        $next = $visibleItems.first();
+                    } else {
+                        $next = $active.removeClass('active').nextAll('li:visible').not('.no-results').first();
+                        if ($next.length === 0) $next = $visibleItems.first();
+                    }
+                } else if (e.keyCode === 38) { // Up arrow
+                    e.preventDefault();
+                    if ($active.length === 0) {
+                        $next = $visibleItems.last();
+                    } else {
+                        $next = $active.removeClass('active').prevAll('li:visible').not('.no-results').first();
+                        if ($next.length === 0) $next = $visibleItems.last();
+                    }
+                } else if (e.keyCode === 13) { // Enter
+                    e.preventDefault();
+                    if ($active.length > 0) {
+                        $active.click();
+                    }
+                    return;
+                } else if (e.keyCode === 27) { // Escape
+                    $list.hide();
+                    $input.blur();
+                    return;
+                }
+
+                if ($next && $next.length > 0) {
+                    $next.addClass('active');
+                    // Scroll into view
+                    const listTop = $list.scrollTop();
+                    const listHeight = $list.height();
+                    const itemTop = $next.position().top;
+                    const itemHeight = $next.outerHeight();
+
+                    if (itemTop < 0) {
+                        $list.scrollTop(listTop + itemTop);
+                    } else if (itemTop + itemHeight > listHeight) {
+                        $list.scrollTop(listTop + itemTop + itemHeight - listHeight);
+                    }
+                }
+            });
+
+            $list.on('mouseenter', 'li', function () {
+                $list.find('li.active').removeClass('active');
+            });
+        });
+
+        // Handle item selection
+        $(document).on('click', '.searchable-dropdown-list li', function () {
+            if ($(this).hasClass('no-results')) return;
+
+            const $item = $(this);
+            const $list = $item.parent();
+            const $wrapper = $list.parent();
+            const $input = $wrapper.find('.searchable-input');
+            const $hiddenValue = $wrapper.find('input[type="hidden"]');
+
+            const selectedValue = $item.data('value');
+            const selectedText = $item.text();
+
+            $input.val(selectedText);
+            $hiddenValue.val(selectedValue);
+            $list.hide();
+
+            // Trigger change event for filters
+            $hiddenValue.trigger('change');
+        });
+
+        // Hide dropdowns on outside click
+        $(document).on('click', function (e) {
+            if (!$(e.target).closest('.searchable-dropdown-wrapper').length) {
+                $('.searchable-dropdown-list').hide();
             }
         });
     }
@@ -158,10 +298,10 @@
     //  APPLY FILTERS
     // ═══════════════════════════════════════════════════════════
     function applyFilters() {
-        const companyFilter = $("#filter_company").val();
-        const licenseFilter = $("#filter_license").val();
-        const locationFilter = $("#filter_location").val().toUpperCase();
-        const statusFilter = $("#filter_status").val();
+        const companyFilter = $('#filter_company-wrapper input[type="hidden"]').val() || $('#filter_company').val() || "";
+        const licenseFilter = $('#filter_license-wrapper input[type="hidden"]').val() || $('#filter_license').val() || "";
+        const locationFilter = ($('#filter_location-wrapper input[type="hidden"]').val() || $('#filter_location').val() || "").toUpperCase();
+        const statusFilter = $('#filter_status').val() || "";
 
         $("#renewalsBody tr").each(function () {
             const $row = $(this);
@@ -180,7 +320,20 @@
     //  RESET FILTERS
     // ═══════════════════════════════════════════════════════════
     function resetFilters() {
+        // Clear our searchable controls (visible input + hidden value)
+        $('.searchable-input').val('');
+        $('.searchable-dropdown-wrapper input[type="hidden"]').val('');
+
+        // Also reset any regular selects if present
         $("#filter_company, #filter_license, #filter_location, #filter_status").val("");
+
+        // Hide dropdown lists and remove no-results rows
+        $('.searchable-dropdown-list').hide().find('.no-results').remove();
+
+        // Trigger change on hidden inputs so any listeners react
+        $('.searchable-dropdown-wrapper input[type="hidden"]').trigger('change');
+
+        // Show all rows again
         $("#renewalsBody tr").show();
     }
 
@@ -227,11 +380,14 @@
     //  CLEAR MODAL FIELDS
     // ═══════════════════════════════════════════════════════════
     function clearModalFields() {
+        // Clear searchable dropdowns
+        $('#modalCompanyId-wrapper .searchable-input').val('');
+        $('#modalLicenseTypeId-wrapper .searchable-input').val('');
         $("#modalCompanyId, #modalLicenseTypeId").val("");
+
         $("#modalCityState, #modalAddress, #modalExpiryDate, #modalRemarks").val("");
         $("#modalUnikey").val("");
     }
-
     // ═══════════════════════════════════════════════════════════
     //  DATE TO INPUT FORMAT
     // ═══════════════════════════════════════════════════════════
@@ -329,6 +485,29 @@
         });
     }
 
+    function populateSearchableDropdown(wrapperSelector, items, placeholder) {
+        const $wrapper = $(wrapperSelector);
+        const $input = $wrapper.find('.searchable-input');
+        const $list = $wrapper.find('.searchable-dropdown-list');
+        const $hiddenValue = $wrapper.find('input[type="hidden"]');
+
+        // Set placeholder
+        $input.attr('placeholder', placeholder);
+
+        // Clear existing list items
+        $list.empty();
+
+        // Populate list items
+        items.forEach(item => {
+            const value = item.id || item;
+            const text = item.name || item;
+            $list.append(`<li data-value="${value}">${text}</li>`);
+        });
+
+        // Reset input and hidden value
+        $input.val('');
+        $hiddenValue.val('');
+    }
     // ═══════════════════════════════════════════════════════════
     //  SHOW TOAST
     // ═══════════════════════════════════════════════════════════
