@@ -5,5 +5,6 @@
         public List<DropdownItem> Companies { get; set; } = new();
         public List<DropdownItem> LicenseTypes { get; set; } = new();
         public List<string> Locations { get; set; } = new();
+        public List<string?> Code { get; set; } = new();
     }
 }

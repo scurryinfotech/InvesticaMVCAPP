@@ -79,6 +79,13 @@
                 <!-- FILTERS -->
                 <div class="row g-2 mb-3">
                     <div class="col-md-3">
+                        <div id="filter_code-wrapper" class="searchable-dropdown-wrapper">
+                            <input type="text" class="form-control form-control-sm searchable-input" placeholder="All Codes">
+                            <input type="hidden" id="filter_code">
+                            <ul class="searchable-dropdown-list"></ul>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
                         <div id="filter_company-wrapper" class="searchable-dropdown-wrapper">
                             <input type="text" class="form-control form-control-sm searchable-input" placeholder="All Companies">
                             <input type="hidden" id="filter_company">
@@ -123,7 +130,7 @@
                         <thead class="table-dark">
                             <tr>
                                 <th>SR NO</th>
-                                <th>UNIKEY</th>
+                                <th style="width: 200px;">UNIKEY</th>
                                 <th>COMPANY</th>
                                 <th>LICENSE TYPE</th>
                                 <th>LOCATION</th>
@@ -132,6 +139,7 @@
                                 <th>DAYS LEFT</th>
                                 <th>STATUS</th>
                                 <th style="width: 110px;">ACTIONS</th>
+                                <th>Notes</th>
                             </tr>
                         </thead>
                         <tbody id="renewalsBody">
@@ -175,7 +183,7 @@
                     <div class="col-md-6 mb-3">
                         <label class="form-label fw-semibold">Company <span class="text-danger">*</span></label>
                         <div id="modalCompanyId-wrapper" class="searchable-dropdown-wrapper">
-                            <input type="text" class="form-control form-control-sm searchable-input" placeholder="-- Select Company --">
+                            <input type="text" class="form-control form-control-sm searchable-input"  placeholder="-- Select Company --">
                             <input type="hidden" id="modalCompanyId">
                             <ul class="searchable-dropdown-list"></ul>
                         </div>

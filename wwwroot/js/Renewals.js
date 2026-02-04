@@ -5,11 +5,13 @@
     let dropdownData = null;
 
 
-    loadDropdowns();
     loadRenewals();
 
+    setTimeout(loadDropdowns, 0);
+
+
     // Event Listeners
-    $("#filter_company, #filter_license, #filter_location, #filter_status").on("change", applyFilters);
+    $("#filter_company,#filter_code, #filter_license, #filter_location, #filter_status").on("change", applyFilters);
     $("#btnResetFilters").on("click", resetFilters);
     $("#btnAddNew").on("click", () => openModal());
     $("#btnSave").on("click", saveRenewal);
@@ -34,6 +36,7 @@
             url: API_BASE + "/renewals/dropdowns",
             type: "GET",
             success: function (data) {
+                debugger    
                 dropdownData = data;
 
                 // Populate Modal Company Dropdown (searchable)
@@ -48,6 +51,12 @@
                     '#modalLicenseTypeId-wrapper',
                     data.licenseTypes,
                     '-- Select License Type --'
+                );
+
+                populateSearchableDropdown(
+                    '#filter_code-wrapper',
+                    data.code,
+                    'All Code'
                 );
 
                 // Populate Filter Company Dropdown (searchable)
@@ -246,23 +255,29 @@
 
         renewals.forEach((item, index) => {
             const badge = getStatusBadge(item.status);
-            const daysLeft = item.daysUntilExpiry >= 0 ? item.daysUntilExpiry : 0;
+            const daysUntilExpiry = Number(item.daysUntilExpiry) || 0;
+            const daysLeft = daysUntilExpiry >= 0 ? daysUntilExpiry : 0;
+            const daysSinceExpiry = daysUntilExpiry < 0 ? Math.abs(daysUntilExpiry) : 0;
+            const daysDisplay = daysSinceExpiry > 0
+                ? `<span class="text-danger">-${daysSinceExpiry}</span>`
+                : `<span>${daysLeft}</span>`;
 
             tbody.append(`
                 <tr data-id="${item.id}"
                     data-company="${item.companyId}"
+                    data-code="${item.unikey}" 
                     data-license="${item.licenseTypeId}"
                     data-location="${item.cityState.toUpperCase()}"
                     data-status="${item.status}">
                     <td>${index + 1}</td>
-                    <td>${item.unikey}</td>
-                    <td>${item.companyName}</td>
+                    <td style="text-wrap: nowrap; width:200px">${item.unikey}</td>
+                    <td style="text-wrap:wrap;width:200px">${item.companyName}</td>
                     
                     <td>${item.licenseType}</td>
                     <td>${item.cityState}</td>
-                    <td>${item.address}</td>
-                    <td>${item.expiryDateFormatted}</td>
-                    <td class="text-center">${daysLeft}</td>
+                    <td style="text-wrap: wrap;">${item.address}</td>
+                    <td style="text-wrap: nowrap;">${item.expiryDateFormatted}</td>
+                    <td class="text-center">${daysDisplay}</td>
                     <td>${badge}</td>
                     // inside renderTable(...) replace button HTML so icons have accessible fallback
 <td class="text-center">
@@ -274,7 +289,8 @@
         <i class="fas fa-trash-alt" aria-hidden="true"></i>
         <span class="">Delete</span>
     </button>
-</td>
+</td>       
+         <td>${item.remarks}</td>
                 </tr>
             `);
         });
@@ -298,6 +314,7 @@
     //  APPLY FILTERS
     // ═══════════════════════════════════════════════════════════
     function applyFilters() {
+        const companyCode = $('#filter_code-wrapper input[type="hidden"]').val() || $('#filter_code').val() || "";
         const companyFilter = $('#filter_company-wrapper input[type="hidden"]').val() || $('#filter_company').val() || "";
         const licenseFilter = $('#filter_license-wrapper input[type="hidden"]').val() || $('#filter_license').val() || "";
         const locationFilter = ($('#filter_location-wrapper input[type="hidden"]').val() || $('#filter_location').val() || "").toUpperCase();
@@ -308,6 +325,7 @@
             let show = true;
 
             if (companyFilter && $row.data("company") != companyFilter) show = false;
+            if (companyCode && $row.data("code") != companyCode) show = false;
             if (licenseFilter && $row.data("license") != licenseFilter) show = false;
             if (locationFilter && $row.data("location").indexOf(locationFilter) === -1) show = false;
             if (statusFilter && $row.data("status") !== statusFilter) show = false;
@@ -325,7 +343,7 @@
         $('.searchable-dropdown-wrapper input[type="hidden"]').val('');
 
         // Also reset any regular selects if present
-        $("#filter_company, #filter_license, #filter_location, #filter_status").val("");
+        $("#filter_company,#filter_code, #filter_license, #filter_location, #filter_status").val("");
 
         // Hide dropdown lists and remove no-results rows
         $('.searchable-dropdown-list').hide().find('.no-results').remove();

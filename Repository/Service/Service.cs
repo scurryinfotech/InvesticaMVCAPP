@@ -1024,7 +1024,7 @@ namespace Investica.Repository
                 INNER JOIN CompanyMaster cm ON lr.CompanyId = cm.Id
                 INNER JOIN LicenseTypeMaster lt ON lr.LicenseTypeId = lt.Id
                 WHERE lr.IsActive = 1
-                ORDER BY lr.ExpiryDate";
+               ";
 
             await using var con = Conn();
             await con.OpenAsync();
@@ -1277,43 +1277,55 @@ namespace Investica.Repository
             await con.OpenAsync();
 
             // Get Companies
-            const string companySql = "SELECT Id, CompanyName FROM CompanyMaster WHERE IsActive = 1 ORDER BY CompanyName";
-            await using var cmdCompany = new SqlCommand(companySql, con);
-            await using var rdrCompany = await cmdCompany.ExecuteReaderAsync();
-
-            while (await rdrCompany.ReadAsync())
             {
-                data.Companies.Add(new DropdownItem
+                const string companySql = "SELECT Id, CompanyName FROM CompanyMaster WHERE IsActive = 1 ORDER BY CompanyName";
+                await using var cmdCompany = new SqlCommand(companySql, con);
+                await using var rdrCompany = await cmdCompany.ExecuteReaderAsync();
+                while (await rdrCompany.ReadAsync())
                 {
-                    Id = rdrCompany.GetInt32(0),
-                    Name = rdrCompany.GetString(1)
-                });
+                    data.Companies.Add(new DropdownItem
+                    {
+                        Id = rdrCompany.GetInt32(0),
+                        Name = rdrCompany.GetString(1)
+                    });
+                }
             }
-            await rdrCompany.CloseAsync();
 
             // Get License Types
-            const string licenseSql = "SELECT Id, AppTypeName FROM LicenseTypeMaster WHERE IsActive = 1 ORDER BY AppTypeName";
-            await using var cmdLicense = new SqlCommand(licenseSql, con);
-            await using var rdrLicense = await cmdLicense.ExecuteReaderAsync();
-
-            while (await rdrLicense.ReadAsync())
             {
-                data.LicenseTypes.Add(new DropdownItem
+                const string licenseSql = "SELECT Id, AppTypeName FROM LicenseTypeMaster WHERE IsActive = 1 ORDER BY AppTypeName";
+                await using var cmdLicense = new SqlCommand(licenseSql, con);
+                await using var rdrLicense = await cmdLicense.ExecuteReaderAsync();
+                while (await rdrLicense.ReadAsync())
                 {
-                    Id = rdrLicense.GetInt32(0),
-                    Name = rdrLicense.GetString(1)
-                });
+                    data.LicenseTypes.Add(new DropdownItem
+                    {
+                        Id = rdrLicense.GetInt32(0),
+                        Name = rdrLicense.GetString(1)
+                    });
+                }
             }
-            await rdrLicense.CloseAsync();
 
             // Get Unique Locations
-            const string locationSql = "SELECT DISTINCT CityState FROM LicenseRenewal WHERE IsActive = 1 AND CityState IS NOT NULL ORDER BY CityState";
-            await using var cmdLocation = new SqlCommand(locationSql, con);
-            await using var rdrLocation = await cmdLocation.ExecuteReaderAsync();
-
-            while (await rdrLocation.ReadAsync())
             {
-                data.Locations.Add(rdrLocation.GetString(0));
+                const string locationSql = "SELECT DISTINCT CityState FROM LicenseRenewal WHERE IsActive = 1 AND CityState IS NOT NULL ORDER BY CityState";
+                await using var cmdLocation = new SqlCommand(locationSql, con);
+                await using var rdrLocation = await cmdLocation.ExecuteReaderAsync();
+                while (await rdrLocation.ReadAsync())
+                {
+                    data.Locations.Add(rdrLocation.GetString(0));
+                }
+            }
+
+            // Get Codes
+            {
+                const string codeSql = "SELECT Code FROM LicenseRenewal WHERE IsActive = 1";
+                await using var cmdCode = new SqlCommand(codeSql, con);
+                await using var rdrCode = await cmdCode.ExecuteReaderAsync();
+                while (await rdrCode.ReadAsync())
+                {
+                    data.Code.Add(rdrCode.IsDBNull(0) ? null : rdrCode.GetString(0));
+                }
             }
 
             return data;
