@@ -1537,7 +1537,7 @@ namespace Investica.Repository
 
         public async Task<bool> DeleteFontSheetAsync(int id)
         {
-            const string sql = @"DELETE FROM FontSheet WHERE Id = @Id";
+            const string sql = @"UPDATE FontSheet SET IsActive = 0 WHERE Id = @Id;";
             await using var con = Conn();
             await con.OpenAsync();
             await using var cmd = new SqlCommand(sql, con);
