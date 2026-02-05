@@ -9,26 +9,36 @@ $(document).ready(function () {
     initializeEventHandlers();
 });
 
+// Initialize Event Handlers            
 // Initialize Event Handlers
 function initializeEventHandlers() {
-    // Edit/Save Button
     $("#frontsheetEditBtn").on("click", toggleEditMode);
-
-    // Create New Frontsheet Button (if you have one)
     $("#createNewFrontsheet").on("click", createNewFrontsheet);
-
-    // Delete Button (if you have one)
     $("#deleteFrontsheet").on("click", deleteFrontsheet);
+
+    // Frontsheet Selector Change Event
+    $("#frontsheetSelector").on("change", function () {
+        const selected = $(this).val();
+        const id = selected ? parseInt(selected, 10) : NaN;
+        if (!isNaN(id)) {
+            loadFrontsheetById(id);
+        } else {
+            console.warn('Invalid frontsheet id selected:', selected);
+        }
+    });
 }
 
-// Load Frontsheet List (for dropdown or selection)
+// Load Frontsheet List (for dropdown)
 function loadFrontsheetList() {
+    console.log('Loading frontsheet list...');
     $.ajax({
-        url: '/Frontsheet/GetAllFrontsheets',
+        url: '/Frontsheet',
         type: 'GET',
         dataType: 'json',
         success: function (response) {
+            console.log('Frontsheet list response:', response);
             if (response.success) {
+                debugger
                 populateFrontsheetDropdown(response.data);
             } else {
                 showNotification('Error loading frontsheets: ' + response.message, 'error');
@@ -36,47 +46,57 @@ function loadFrontsheetList() {
         },
         error: function (xhr, status, error) {
             console.error('Error loading frontsheets:', error);
+            console.error('XHR:', xhr);
             showNotification('Failed to load frontsheets', 'error');
         }
     });
 }
 
-// Populate Frontsheet Dropdown (if needed)
-function populateFrontsheetDropdown(data) {
-    const dropdown = $('#frontsheetSelector');
-    if (dropdown.length) {
-        dropdown.empty();
-        dropdown.append('<option value="">Select Frontsheet</option>');
-        $.each(data, function (index, item) {
-            dropdown.append(`<option value="${item.Id}">${item.EntityName}</option>`);
-        });
+// Populate Frontsheet Dropdown - robust property names
+// Populate Frontsheet Dropdown
+function populateFrontsheetDropdown(frontsheets) {
+    const dropdown = $("#frontsheetSelector");
+    dropdown.empty();
+    dropdown.append('<option value="">-- Select Frontsheet --</option>');
 
-        dropdown.on('change', function () {
-            const id = $(this).val();
-            if (id) {
-                loadFrontsheetById(id);
-            }
+    if (frontsheets && frontsheets.length > 0) {
+        frontsheets.forEach(fs => {
+           
+            const idValue = fs.Id ?? fs.id ?? fs.ID ?? "";
+            const displayName = fs.EntityName ?? fs.entityName ?? `Frontsheet #${idValue || 'unknown'}`;
+            dropdown.append(`<option value="${idValue}">${displayName}</option>`);
         });
+    } else {
+        console.log('No frontsheets found');
     }
 }
 
 // Load Frontsheet by ID
 function loadFrontsheetById(id) {
+    if (typeof id !== 'number' || isNaN(id)) {
+        console.error('loadFrontsheetById called with invalid id:', id);
+        return;
+    }
+
+    debugger
     $.ajax({
-        url: '/Frontsheet/GetFrontsheetById',
+        url: `/Frontsheet/${id}`,
         type: 'GET',
-        data: { id: id },
         dataType: 'json',
         success: function (response) {
+            console.log('Frontsheet data response:', response);
             if (response.success) {
                 currentFrontsheetId = id;
                 populateFrontsheetForm(response.data);
+                localStorage.setItem('currentFrontsheetId', id);
+                $("#frontsheetSelector").val(String(id));
             } else {
                 showNotification('Error loading frontsheet: ' + response.message, 'error');
             }
         },
         error: function (xhr, status, error) {
             console.error('Error loading frontsheet:', error);
+            console.error('XHR:', xhr);
             showNotification('Failed to load frontsheet data', 'error');
         }
     });
@@ -84,19 +104,16 @@ function loadFrontsheetById(id) {
 
 // Load Frontsheet Data (initial load or from localStorage)
 function loadFrontsheetData() {
-    // Check if we have an ID in URL or localStorage
     const urlParams = new URLSearchParams(window.location.search);
     const frontsheetId = urlParams.get('id') || localStorage.getItem('currentFrontsheetId');
 
     if (frontsheetId) {
-        loadFrontsheetById(frontsheetId);
+        loadFrontsheetById(parseInt(frontsheetId));
     } else {
-        // Load from localStorage (wizard data)
         loadFromLocalStorage();
     }
 }
 
-// Load from LocalStorage (wizard data)
 function loadFromLocalStorage() {
     const company = localStorage.getItem("sum_company") || "—";
     const address = localStorage.getItem("sum_address") || "—";
@@ -107,48 +124,43 @@ function loadFromLocalStorage() {
 
 // Populate Frontsheet Form with data
 function populateFrontsheetForm(data) {
+
     // Basic Information
-    $("#fs_name").text(data.EntityName || "—");
-    $("#fs_address").text(data.Address || "—");
-    $("#fs_phone").text(data.Phone || "—");
-    $("#fs_email").text(data.Email || "—");
+    $("#fs_name").text(data.entityName || "—");
+    $("#fs_address").text(data.ctaddress || "—");
+    $("#fs_phone").text(data.phone || "—");
+    $("#fs_email").text(data.email || "—");
 
-    // Promoter/Director Information
-    $("#fs_director").text(data.PromoterNameAddress || "—");
-    $("#fs_entitytype").text(data.EntityType || "—");
-    $("#fs_pan").text(data.PanAadhar || "—");
+    $("#fs_director").text(data.promoterNameAddress || "—");
+    $("#fs_entitytype").text(data.entityType || "—");
+    $("#fs_pan").text(data.panAadhar || "—");
 
-    // Business Information
-    $("#fs_business").text(data.NatureOfBusiness || "—");
-    $("#fs_epan").text(data.EntityPan || "—");
+    $("#fs_business").text(data.natureOfBusiness || "—");
+    $("#fs_epan").text(data.entityPan || "—");
 
-    // Personal Information
-    $("#fs_dob").text(data.DOB ? formatDate(data.DOB) : "—");
-    $("#fs_gender").text(data.Gender || "—");
-    $("#fs_marital").text(data.MaritalStatus || "—");
-    $("#fs_family").text(data.FatherMotherSpouseName || "—");
+    $("#fs_dob").text(data.dob ? formatDate(data.dob) : "—");
+    $("#fs_gender").text(data.gender || "—");
+    $("#fs_marital").text(data.maritalStatus || "—");
+    $("#fs_family").text(data.fatherMotherSpouseName || "—");
 
-    // Location Information
-    $("#fs_area").text(data.Area || "—");
-    $("#fs_ward").text(data.Ward || "—");
-    $("#fs_zone").text(data.Zone || "—");
+    $("#fs_area").text(data.area || "—");
+    $("#fs_ward").text(data.ward || "—");
+    $("#fs_zone").text(data.zone || "—");
 
-    // Product/Service Information
-    $("#fs_product").text(data.ProductServiceSold || "—");
+    $("#fs_product").text(data.productServiceSold || "—");
 
-    // Source Information
-    $("#fs_source").text(data.ClientSource || "");
-    $("#fs_sourcedby").text(data.SourcedByEmpId || "");
+    $("#fs_source").text(data.clientSource || "—");
+    $("#fs_sourcedby").text(data.sourcedByEmpId || "—");
 
-    // Additional Information
-    $("#fs_comments").text(data.Comments || "");
-    $("#fs_login").text(data.Login || "");
-    $("#fs_password").text(data.Password || "");
-    $("#fs_details").text(data.Details || "");
+    $("#fs_comments").text(data.comments || "—");
+    $("#fs_login").text(data.login || "—");
+    $("#fs_password").text(data.password || "—");
+    $("#fs_details").text("—"); // no matching field in response
 
-    // Document verification fields
-    $("#fs_docname").text("");
-    $("#fs_docsign").text("");
+    $("#fs_docname").text("—");
+    $("#fs_docsign").text("—");
+
+
 }
 
 // Toggle Edit Mode
@@ -245,7 +257,7 @@ function collectFormData(ids) {
         Comments: getFieldValue("fs_comments"),
         Login: getFieldValue("fs_login"),
         Password: getFieldValue("fs_password"),
-        ModifiedBy: 1 // As requested, keep ModifiedBy as 1
+        ModifiedBy: 1
     };
 
     return data;
@@ -262,24 +274,27 @@ function getFieldValue(fieldId) {
 
 // Save Frontsheet (Create or Update)
 function saveFrontsheet(data, ids) {
-    const url = data.Id > 0 ? '/Frontsheet/UpdateFrontsheet' : '/Frontsheet/CreateFrontsheet';
+    debugger
+    console.log('Saving frontsheet:', data);
+    const url = data.Id > 0 ? `/Frontsheet/${data.Id}` : '/Frontsheet';
+    const method = data.Id > 0 ? 'PUT' : 'POST';
 
     $.ajax({
         url: url,
-        type: 'POST',
+        type: method,
         contentType: 'application/json',
         data: JSON.stringify(data),
         success: function (response) {
+            console.log('Save response:', response);
             if (response.success) {
-                // Update UI with saved values
                 updateUIAfterSave(ids);
 
-                // Update current ID if it was a new record
                 if (!currentFrontsheetId && response.data && response.data.Id) {
                     currentFrontsheetId = response.data.Id;
                     localStorage.setItem('currentFrontsheetId', currentFrontsheetId);
                 }
 
+                loadFrontsheetList(); // Refresh the dropdown
                 showNotification('Frontsheet saved successfully!', 'success');
             } else {
                 showNotification('Error saving frontsheet: ' + response.message, 'error');
@@ -287,6 +302,7 @@ function saveFrontsheet(data, ids) {
         },
         error: function (xhr, status, error) {
             console.error('Error saving frontsheet:', error);
+            console.error('XHR:', xhr);
             showNotification('Failed to save frontsheet', 'error');
         }
     });
@@ -319,6 +335,7 @@ function createNewFrontsheet() {
     if (confirm('Are you sure you want to create a new frontsheet? Unsaved changes will be lost.')) {
         currentFrontsheetId = null;
         localStorage.removeItem('currentFrontsheetId');
+        $("#frontsheetSelector").val('');
         clearForm();
         $("#frontsheetEditBtn").click();
     }
@@ -349,15 +366,15 @@ function deleteFrontsheet() {
 
     if (confirm('Are you sure you want to delete this frontsheet? This action cannot be undone.')) {
         $.ajax({
-            url: '/Frontsheet/DeleteFrontsheet',
-            type: 'POST',
-            data: { id: currentFrontsheetId },
+            url: `/Frontsheet/${currentFrontsheetId}`,
+            type: 'DELETE',
             success: function (response) {
                 if (response.success) {
                     showNotification('Frontsheet deleted successfully!', 'success');
                     currentFrontsheetId = null;
                     localStorage.removeItem('currentFrontsheetId');
                     clearForm();
+                    $("#frontsheetSelector").val('');
                     loadFrontsheetList();
                 } else {
                     showNotification('Error deleting frontsheet: ' + response.message, 'error');

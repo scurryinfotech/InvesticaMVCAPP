@@ -1478,6 +1478,74 @@ namespace Investica.Repository
             var rows = await cmd.ExecuteNonQueryAsync();
             return rows > 0;
         }
+
+        // Add these methods to your repository class
+
+        public async Task<FontSheet?> GetFontSheetByIdAsync(int id)
+        {
+            const string sql = @"SELECT Id, CompanyId, EntityName, Address, Phone, Email, 
+                         PromoterNameAddress, EntityType, NatureOfBusiness, PanAadhar, 
+                         EntityPan, DOB, Gender, MaritalStatus, FatherMotherSpouseName, 
+                         Area, Ward, Zone, ProductServiceSold, ClientSource, SourcedByEmpId, 
+                         Comments, Login, Password, CreatedDate, CreatedBy, ModifiedDate, 
+                         ModifiedBy, IsActive 
+                         FROM FontSheet WHERE Id = @Id";
+
+            await using var con = Conn();
+            await con.OpenAsync();
+            await using var cmd = new SqlCommand(sql, con);
+            cmd.Parameters.AddWithValue("@Id", id);
+
+            await using var rdr = await cmd.ExecuteReaderAsync();
+            if (await rdr.ReadAsync())
+            {
+                return new FontSheet
+                {
+                    Id = rdr.GetInt32(0),
+                    CompanyId = rdr.IsDBNull(1) ? null : (int?)rdr.GetInt32(1),
+                    EntityName = rdr.IsDBNull(2) ? string.Empty : rdr.GetString(2),
+                    Address = rdr.IsDBNull(3) ? string.Empty : rdr.GetString(3),
+                    Phone = rdr.IsDBNull(4) ? null : rdr.GetString(4),
+                    Email = rdr.IsDBNull(5) ? null : rdr.GetString(5),
+                    PromoterNameAddress = rdr.IsDBNull(6) ? null : rdr.GetString(6),
+                    EntityType = rdr.IsDBNull(7) ? null : rdr.GetString(7),
+                    NatureOfBusiness = rdr.IsDBNull(8) ? null : rdr.GetString(8),
+                    PanAadhar = rdr.IsDBNull(9) ? null : rdr.GetString(9),
+                    EntityPan = rdr.IsDBNull(10) ? null : rdr.GetString(10),
+                    DOB = rdr.IsDBNull(11) ? null : (DateTime?)rdr.GetDateTime(11),
+                    Gender = rdr.IsDBNull(12) ? null : rdr.GetString(12),
+                    MaritalStatus = rdr.IsDBNull(13) ? null : rdr.GetString(13),
+                    FatherMotherSpouseName = rdr.IsDBNull(14) ? null : rdr.GetString(14),
+                    Area = rdr.IsDBNull(15) ? null : rdr.GetString(15),
+                    Ward = rdr.IsDBNull(16) ? null : rdr.GetString(16),
+                    Zone = rdr.IsDBNull(17) ? null : rdr.GetString(17),
+                    ProductServiceSold = rdr.IsDBNull(18) ? null : rdr.GetString(18),
+                    ClientSource = rdr.IsDBNull(19) ? null : rdr.GetString(19),
+                    SourcedByEmpId = rdr.IsDBNull(20) ? null : (int?)rdr.GetInt32(20),
+                    Comments = rdr.IsDBNull(21) ? null : rdr.GetString(21),
+                    Login = rdr.IsDBNull(22) ? null : rdr.GetString(22),
+                    Password = rdr.IsDBNull(23) ? null : rdr.GetString(23),
+                    CreatedDate = rdr.IsDBNull(24) ? null : (DateTime?)rdr.GetDateTime(24),
+                    CreatedBy = rdr.IsDBNull(25) ? null : (int?)rdr.GetInt32(25),
+                    ModifiedDate = rdr.IsDBNull(26) ? null : (DateTime?)rdr.GetDateTime(26),
+                    ModifiedBy = rdr.IsDBNull(27) ? null : (int?)rdr.GetInt32(27),
+                    IsActive = !rdr.IsDBNull(28) && rdr.GetBoolean(28)
+                };
+            }
+            return null;
+        }
+
+        public async Task<bool> DeleteFontSheetAsync(int id)
+        {
+            const string sql = @"DELETE FROM FontSheet WHERE Id = @Id";
+            await using var con = Conn();
+            await con.OpenAsync();
+            await using var cmd = new SqlCommand(sql, con);
+            cmd.Parameters.AddWithValue("@Id", id);
+
+            var rows = await cmd.ExecuteNonQueryAsync();
+            return rows > 0;
+        } 
         #endregion
 
         #region ShopCategoryLinks
