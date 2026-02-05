@@ -782,5 +782,119 @@ namespace Investica.Controllers
         }
 
         #endregion
-    }
+
+
+        //Frontsheet Controller
+        #region this is the code for the frontsheet
+
+            // GET: api/frontsheet
+            [HttpGet("Frontsheet")]
+            public async Task<IActionResult> GetAllFrontsheets()
+            {
+                try
+                {
+                    var list = await _service.GetFontSheetsAsync();
+                    return Ok(new { success = true, data = list });
+                }
+                catch (Exception ex)
+                {
+                    return StatusCode(500, new { success = false, message = ex.Message });
+                }
+            }
+
+            // GET: api/frontsheet/{id}
+            [HttpGet("Frontsheet/{id:int}")]
+            public async Task<IActionResult> GetFrontsheetById(int id)
+            {
+                try
+                {
+                    var item = await _service.GetFontSheetByIdAsync(id);
+                    if (item == null)
+                        return NotFound(new { success = false, message = "Frontsheet not found" });
+
+                    return Ok(new { success = true, data = item });
+                }
+                catch (Exception ex)
+                {
+                    return StatusCode(500, new { success = false, message = ex.Message });
+                }
+            }
+
+            // POST: api/frontsheet
+            [HttpPost("Frontsheet")]
+            public async Task<IActionResult> CreateFrontsheet([FromBody] FontSheet frontsheet)
+            {
+                try
+                {
+                    if (!ModelState.IsValid)
+                        return BadRequest(new { success = false, message = "Invalid data", errors = ModelState });
+
+                    // Set creation metadata
+                    frontsheet.CreatedDate = DateTime.UtcNow;
+                    frontsheet.IsActive = true;
+
+                    var newId = await _service.CreateFontSheetAsync(frontsheet);
+
+                    if (newId > 0)
+                    {
+                        frontsheet.Id = newId;
+                        return Ok(new { success = true, message = "Frontsheet created successfully", data = frontsheet });
+                    }
+
+                    return StatusCode(500, new { success = false, message = "Failed to create frontsheet" });
+                }
+                catch (Exception ex)
+                {
+                    return StatusCode(500, new { success = false, message = ex.Message });
+                }
+            }
+
+            // PUT: api/frontsheet/{id}
+            [HttpPut("Frontsheet/{id:int}")]
+            public async Task<IActionResult> UpdateFrontsheet(int id, [FromBody] FontSheet frontsheet)
+            {
+                try
+                {
+                    if (id != frontsheet.Id)
+                        return BadRequest(new { success = false, message = "ID mismatch" });
+
+                    
+             
+                    frontsheet.ModifiedDate = DateTime.UtcNow;
+
+                    var result = await _service.UpdateFontSheetAsync(frontsheet);
+
+                    if (result)
+                        return Ok(new { success = true, message = "Frontsheet updated successfully", data = frontsheet });
+
+                    return NotFound(new { success = false, message = "Frontsheet not found" });
+                }
+                catch (Exception ex)
+                {
+                    return StatusCode(500, new { success = false, message = ex.Message });
+                }
+            }
+
+            // DELETE: api/frontsheet/{id}
+            [HttpDelete("Frontsheet/{id:int}")]
+            public async Task<IActionResult> DeleteFrontsheet(int id)
+            {
+                try
+                {
+                    var result = await _service.DeleteFontSheetAsync(id);
+
+                    if (result)
+                        return Ok(new { success = true, message = "Frontsheet deleted successfully" });
+
+                    return NotFound(new { success = false, message = "Frontsheet not found" });
+                }
+                catch (Exception ex)
+                {
+                    return StatusCode(500, new { success = false, message = ex.Message });
+                }
+            }
+
+            #endregion
+
+        }
 }

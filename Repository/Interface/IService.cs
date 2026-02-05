@@ -78,10 +78,11 @@ namespace Investica.Repository.Interface
 
         // FontSheet
         Task<List<FontSheet>> GetFontSheetsAsync();
+        Task<FontSheet?> GetFontSheetByIdAsync(int id);
         Task<int> CreateFontSheetAsync(FontSheet f);
         Task<bool> UpdateFontSheetAsync(FontSheet f);
-
-        // ShopCategoryLinks
+        Task<bool> DeleteFontSheetAsync(int id);
+        // ShopCategoryLinks                                           
         Task<List<ShopCategoryLink>> GetShopLinksAsync();
         Task<int> CreateShopLinkAsync(ShopCategoryLink s);
         Task<bool> UpdateShopLinkAsync(ShopCategoryLink s);
