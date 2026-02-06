@@ -787,8 +787,41 @@ namespace Investica.Controllers
         //Frontsheet Controller
         #region this is the code for the frontsheet
 
-            // GET: api/frontsheet
-            [HttpGet("Frontsheet")]
+        // Add endpoints near other GET endpoints (for example near renewals dropdown endpoint)
+        [HttpGet("entitytypes")]
+        public async Task<IActionResult> GetEntityTypes()
+        {
+            try
+            {
+                var list = await _service.GetEntityTypesAsync();
+                return Ok(list);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching entity types");
+                return StatusCode(500, new { message = "Error fetching entity types", error = ex.Message });
+            }
+        }
+
+        [HttpGet("Frontsheet/dropdowns")]
+        public async Task<IActionResult> GetFrontsheetDropdowns()
+        {
+            try
+            {
+                var frontsheets = await _service.GetFontSheetsAsync();
+                var entityTypes = await _service.GetEntityTypesAsync();
+                // Provide minimal shapes expected by frontend
+                var fsList = frontsheets.Select(fs => new { id = fs.Id, name = fs.EntityName }).ToList();
+                return Ok(new { frontsheets = fsList, entityTypes });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching frontsheet dropdowns");
+                return StatusCode(500, new { message = "Error fetching frontsheet dropdowns", error = ex.Message });
+            }
+        }
+        // GET: api/frontsheet
+        [HttpGet("Frontsheet")]
             public async Task<IActionResult> GetAllFrontsheets()
             {
                 try

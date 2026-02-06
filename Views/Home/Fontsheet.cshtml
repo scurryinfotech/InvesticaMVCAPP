@@ -18,9 +18,13 @@
                 <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
                     <div style="flex:1; min-width:250px;">
                         <label style="font-weight:bold; font-size:11px; display:block; margin-bottom:5px;">SELECT FRONTSHEET:</label>
-                        <select id="frontsheetSelector" class="form-control" style="font-size:12px;">
-                            <option value="">-- Select Frontsheet --</option>
-                        </select>
+
+                        <!-- Searchable wrapper for frontsheets -->
+                        <div id="frontsheetSelector-wrapper" class="searchable-dropdown-wrapper" style="position:relative;">
+                            <input type="text" id="frontsheetSearch" class="searchable-input form-control" placeholder="-- Select Frontsheet --" autocomplete="off" />
+                            <input type="hidden" id="frontsheetSelector" />
+                            <ul class="searchable-dropdown-list list-group" style="position:absolute; z-index:999; display:none; max-height:220px; overflow:auto; width:100%;"></ul>
+                        </div>
                     </div>
                     <div style="display:flex; gap:10px; align-items:flex-end;">
                         <button class="btn btn-success" id="createNewFrontsheet" style="padding:8px 15px; font-size:12px; font-weight:bold;">
@@ -92,7 +96,11 @@
                         <div class="row">
                             <div class="col block" style="flex:0 0 18%;">
                                 <div class="title-small">ENTITY TYPE</div>
-                                <div id="fs_entitytype" class="small-value" contenteditable="false">—</div>
+                                <div id="fs_entitytype-wrapper" class="searchable-dropdown-wrapper" style="position:relative;">
+                                    <input type="text" id="fs_entitytype_display" class="searchable-input small-value form-control" placeholder="—" readonly />
+                                    <input type="hidden" id="fs_entitytype" />
+                                    <ul class="searchable-dropdown-list list-group" style="position:absolute; z-index:999; display:none; max-height:160px; overflow:auto; width:100%;"></ul>
+                                </div>
                             </div>
                             <div class="col block" style="flex:0 0 20%;">
                                 <div class="title-small">DATE OF INCORP.</div>

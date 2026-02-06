@@ -82,6 +82,7 @@ namespace Investica.Repository.Interface
         Task<int> CreateFontSheetAsync(FontSheet f);
         Task<bool> UpdateFontSheetAsync(FontSheet f);
         Task<bool> DeleteFontSheetAsync(int id);
+        Task<List<DropdownItem>> GetEntityTypesAsync();
         // ShopCategoryLinks                                           
         Task<List<ShopCategoryLink>> GetShopLinksAsync();
         Task<int> CreateShopLinkAsync(ShopCategoryLink s);
@@ -99,5 +100,7 @@ namespace Investica.Repository.Interface
         Task<bool> UpdateInvoiceAsync(InvoiceModel inv);
         //Task<List<InvoiceModel>> GetInvoiceByIdAsync(int id);
         //Task<bool> GetInvoiceByIdAsync(int id);
+
+       
     }
 }

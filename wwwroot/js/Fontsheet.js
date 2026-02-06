@@ -40,9 +40,99 @@ const personFormHolder = document.getElementById('personFormHolder');
 const editBtn = document.getElementById('editBtn');
 const sampleBtn = document.getElementById('sampleBtn');
 
+// Reusable helper: populate searchable dropdown wrapper
+function populateSearchableDropdown(wrapperSelector, items, placeholder) {
+    const $wrapper = $(wrapperSelector);
+    const $input = $wrapper.find('.searchable-input');
+    const $list = $wrapper.find('.searchable-dropdown-list');
+    const $hiddenValue = $wrapper.find('input[type="hidden"]');
+
+    $input.attr('placeholder', placeholder || '');
+
+    $list.empty();
+    items.forEach(item => {
+        // item may be { id, name } or a string
+        const value = item.id ?? item.Id ?? item.ID ?? item;
+        const text = item.name ?? item.Name ?? item.name ?? item;
+        const li = $('<li class="list-group-item list-group-item-action" />')
+            .text(text)
+            .attr('data-value', value)
+            .data('value', value);
+        $list.append(li);
+    });
+
+    // click handler for items
+    $list.off('click').on('click', 'li', function () {
+        const $li = $(this);
+        const selectedValue = $li.data('value');
+        const selectedText = $li.text();
+        $input.val(selectedText);
+        $hiddenValue.val(selectedValue).trigger('change');
+        $list.hide();
+
+        // specific action for frontsheets: load selected frontsheet by id (if wrapper is frontsheet)
+        if ($hiddenValue.attr('id') === 'frontsheetSelector' && selectedValue) {
+            loadFrontsheetById(Number(selectedValue));
+        }
+    });
+
+    // simple filter behavior
+    $input.on('input', function () {
+        const q = $(this).val().toLowerCase();
+        $list.find('li').each(function () {
+            const t = $(this).text().toLowerCase();
+            $(this).toggle(t.indexOf(q) !== -1);
+        });
+        $list.show();
+    });
+
+    // show/hide
+    $input.on('focus click', function (e) {
+        e.stopPropagation();
+        $('.searchable-dropdown-list').not($list).hide();
+        $list.show();
+    });
+
+    $(document).on('click', function (e) {
+        if (!$(e.target).closest('.searchable-dropdown-wrapper').length) {
+            $list.hide();
+        }
+    });
+}
+
+// Initialize frontsheet + entitytype dropdowns on page load
+function loadFrontsheetDropdowns() {
+    $.ajax({
+        url: '/Frontsheet/dropdowns',
+        type: 'GET',
+        success: function (response) {
+            // response: { frontsheets: [{id,name}], entityTypes: [{id,name}] }
+            const fsItems = response.frontsheets || [];
+            const etItems = response.entityTypes || [];
+
+            // populate frontsheet searchable wrapper
+            populateSearchableDropdown('#frontsheetSelector-wrapper', fsItems, '-- Select Frontsheet --');
+
+            // populate entity type wrapper
+            populateSearchableDropdown('#fs_entitytype-wrapper', etItems, 'Select entity type');
+
+            // If there is a current id in localStorage, set display
+            const savedId = localStorage.getItem('currentFrontsheetId');
+            if (savedId) {
+                $('#frontsheetSelector').val(savedId);
+                const selected = fsItems.find(f => String(f.id) === String(savedId));
+                if (selected) $('#frontsheetSearch').val(selected.name);
+            }
+        },
+        error: function (xhr, status, err) {
+            console.error('Failed to load frontsheet dropdowns', err);
+        }
+    });
+}
+
 // Load all Frontsheets on page load
 $(document).ready(function () {
-    loadFrontsheetList();
+    loadFrontsheetDropdowns();
     loadFrontsheetData();
     initializeEventHandlers();
 });
@@ -427,6 +517,10 @@ function populateFrontsheetForm(data) {
         persons = [{ name: '', address: '', pan: '', aadhar: '' }];
     }
 
+    // try to set visible input
+    const disp = document.getElementById('fs_entitytype_display');
+    if (disp) disp.value = getProp(data, 'EntityType') ?? '—';
+
     renderPersons();
 }
 
@@ -483,6 +577,8 @@ function collectFormData() {
         return el ? el.checked : false;
     };
 
+    const entityTypeText = document.getElementById('fs_entitytype_display')?.value || get('fs_entitytype');
+
     // Collect persons
     const personsData = persons
         .filter(p => p.name && p.name !== '—')
@@ -503,7 +599,7 @@ function collectFormData() {
         Phone: get('fs_phone'),
         Email: get('fs_email'),
         CINNumber: get('fs_cin'),
-        EntityType: get('fs_entitytype'),
+        EntityType: entityTypeText,
         DateOfIncorporation: get('fs_incop') || null,
         EntityPan: get('fs_epan'),
         NatureOfBusiness: get('fs_business'),
