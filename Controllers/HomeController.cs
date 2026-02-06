@@ -810,9 +810,17 @@ namespace Investica.Controllers
             {
                 var frontsheets = await _service.GetFontSheetsAsync();
                 var entityTypes = await _service.GetEntityTypesAsync();
-                // Provide minimal shapes expected by frontend
+                var companies = await _service.GetCompaniesAsync(page: 1, pageSize: 1000);
+
                 var fsList = frontsheets.Select(fs => new { id = fs.Id, name = fs.EntityName }).ToList();
-                return Ok(new { frontsheets = fsList, entityTypes });
+                var companiesList = companies.Select(c => new { id = c.Id, name = c.CompanyName }).ToList();
+
+                return Ok(new
+                {
+                    frontsheets = fsList,
+                    entityTypes,
+                    companies = companiesList
+                });
             }
             catch (Exception ex)
             {
@@ -859,7 +867,12 @@ namespace Investica.Controllers
             {
                 try
                 {
-                    if (!ModelState.IsValid)
+                if (frontsheet == null)
+                {
+                    _logger.LogWarning("CreateFrontsheet called with null body. ModelState errors: {Errors}", ModelState);
+                    return BadRequest(new { success = false, message = "Invalid frontsheet payload", errors = ModelState });
+                }
+                if (!ModelState.IsValid)
                         return BadRequest(new { success = false, message = "Invalid data", errors = ModelState });
 
                     // Set creation metadata
