@@ -487,3 +487,15 @@ a {
     cursor: pointer;
     border-radius: 3px;
 }
+
+/* bring add button to front and allow clicks */
+.add-person, #addPersonBtn {
+  position: relative;
+  z-index: 1000;
+  pointer-events: auto;
+}
+
+/* if overlay intentionally covers area but should be click-through */
+.overlay-blocking {
+  pointer-events: none; /* only if safe to do so */
+}

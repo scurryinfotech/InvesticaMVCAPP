@@ -1352,6 +1352,25 @@ namespace Investica.Repository
         #endregion
 
         #region FontSheet
+        // Add near other dropdown / master-data methods
+        public async Task<List<DropdownItem>> GetEntityTypesAsync()
+        {
+            var list = new List<DropdownItem>();
+            const string sql = "SELECT Id, EntityType FROM EntitType WHERE IsActive = 1 ORDER BY EntityType";
+            await using var con = Conn();
+            await con.OpenAsync();
+            await using var cmd = new SqlCommand(sql, con);
+            await using var rdr = await cmd.ExecuteReaderAsync();
+            while (await rdr.ReadAsync())
+            {
+                list.Add(new DropdownItem
+                {
+                    Id = rdr.GetInt32(0),
+                    Name = rdr.IsDBNull(1) ? string.Empty : rdr.GetString(1)
+                });
+            }
+            return list;
+        }
         public async Task<List<FontSheet>> GetFontSheetsAsync()
         {
             var list = new List<FontSheet>();

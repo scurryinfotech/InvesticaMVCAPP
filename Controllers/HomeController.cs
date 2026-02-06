@@ -787,8 +787,49 @@ namespace Investica.Controllers
         //Frontsheet Controller
         #region this is the code for the frontsheet
 
-            // GET: api/frontsheet
-            [HttpGet("Frontsheet")]
+        // Add endpoints near other GET endpoints (for example near renewals dropdown endpoint)
+        [HttpGet("entitytypes")]
+        public async Task<IActionResult> GetEntityTypes()
+        {
+            try
+            {
+                var list = await _service.GetEntityTypesAsync();
+                return Ok(list);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching entity types");
+                return StatusCode(500, new { message = "Error fetching entity types", error = ex.Message });
+            }
+        }
+
+        [HttpGet("Frontsheet/dropdowns")]
+        public async Task<IActionResult> GetFrontsheetDropdowns()
+        {
+            try
+            {
+                var frontsheets = await _service.GetFontSheetsAsync();
+                var entityTypes = await _service.GetEntityTypesAsync();
+                var companies = await _service.GetCompaniesAsync(page: 1, pageSize: 1000);
+
+                var fsList = frontsheets.Select(fs => new { id = fs.Id, name = fs.EntityName }).ToList();
+                var companiesList = companies.Select(c => new { id = c.Id, name = c.CompanyName }).ToList();
+
+                return Ok(new
+                {
+                    frontsheets = fsList,
+                    entityTypes,
+                    companies = companiesList
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching frontsheet dropdowns");
+                return StatusCode(500, new { message = "Error fetching frontsheet dropdowns", error = ex.Message });
+            }
+        }
+        // GET: api/frontsheet
+        [HttpGet("Frontsheet")]
             public async Task<IActionResult> GetAllFrontsheets()
             {
                 try
@@ -826,7 +867,12 @@ namespace Investica.Controllers
             {
                 try
                 {
-                    if (!ModelState.IsValid)
+                if (frontsheet == null)
+                {
+                    _logger.LogWarning("CreateFrontsheet called with null body. ModelState errors: {Errors}", ModelState);
+                    return BadRequest(new { success = false, message = "Invalid frontsheet payload", errors = ModelState });
+                }
+                if (!ModelState.IsValid)
                         return BadRequest(new { success = false, message = "Invalid data", errors = ModelState });
 
                     // Set creation metadata
