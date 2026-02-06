@@ -3,6 +3,10 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
+@section Styles {
+    <link href="~/css/Fontsheet.css" rel="stylesheet" />
+}
+
 <div class="container-custom">
     @Html.Partial("~/Views/Shared/_frontSheetLeftPanel.cshtml")
 
@@ -29,316 +33,292 @@
                 </div>
             </div>
 
-            <div style="background:#fff; padding:0; font-family:Arial, sans-serif; line-height:1.4; font-size:12px;">
+            <!-- Frontsheet Content -->
+            <div id="frontsheet">
+                <div class="sheet-wrap">
 
-                <div style="background:#fff; padding:15px; border-bottom:2px solid #0f1445; display:flex; justify-content:space-between; align-items:center;">
-                    <div style="flex:1;">
-                        <div style="background:#ff69b4; padding:8px 12px; border-radius:8px; display:inline-block; font-weight:bold; color:#000;">
-                            INVESTICA
-                        </div>
-                        <div style="margin-top:5px; font-size:10px; color:#666;">
-                            For New Client Acquisition / Existing Client Update
+                    <!-- Header -->
+                    <div class="header">
+                        <div class="logo">INVESTICA</div>
+                        <div class="title">INVESTICA</div>
+                        <div class="crn">
+                            <div class="label">CRN NO:</div>
+                            <div class="box value" id="fs_crn" contenteditable="false">—</div>
                         </div>
                     </div>
 
-                    <div style="text-align:center; font-size:14px; font-weight:bold; color:#0f1445;">
-                        INVESTICA
+                    <div class="subtitle">NEW CLIENT ACQUISITION / EXISTING CLIENT UPDATE APPLICATION FORM</div>
+
+                    <div class="content">
+
+                        <!-- NAME -->
+                        <div class="row">
+                            <div class="col block">
+                                <div class="title-small">NAME / ENTITY NAME:</div>
+                                <div id="fs_name" class="value" contenteditable="false">—</div>
+                            </div>
+                        </div>
+
+                        <!-- ADDRESS -->
+                        <div class="row">
+                            <div class="col block">
+                                <div class="title-small">ADDRESS:</div>
+                                <div id="fs_address" class="value" contenteditable="false">—</div>
+                            </div>
+                        </div>
+
+                        <!-- Contact + Email -->
+                        <div class="row">
+                            <div class="col block">
+                                <div class="title-small">CONTACT: PHONE / MOB.</div>
+                                <div id="fs_phone" class="small-value" contenteditable="false">—</div>
+                            </div>
+
+                            <div class="col block">
+                                <div class="title-small">E-MAIL ID:</div>
+                                <div id="fs_email" class="small-value" contenteditable="false">—</div>
+                            </div>
+                        </div>
+
+                        <!-- CIN Number -->
+                        <div class="row">
+                            <div class="col block">
+                                <div class="title-small">NATURE OF BUSINESS</div>
+                                <div id="fs_business" class="small-value" contenteditable="false">—</div>
+                            </div>
+                        </div>
+
+                        <!-- Entity Type + Date of Incorporation + Entity PAN + Nature of Business (4 columns) -->
+                        <div class="row">
+                            <div class="col block" style="flex:0 0 18%;">
+                                <div class="title-small">ENTITY TYPE</div>
+                                <div id="fs_entitytype" class="small-value" contenteditable="false">—</div>
+                            </div>
+                            <div class="col block" style="flex:0 0 20%;">
+                                <div class="title-small">DATE OF INCORP.</div>
+                                <div id="fs_incop" class="small-value" contenteditable="false">—</div>
+                            </div>
+
+                            <div class="col block" style="flex:0 0 22%;">
+                                <div class="title-small">ENTITY PAN</div>
+                                <div id="fs_epan" class="small-value" contenteditable="false">—</div>
+                            </div>
+                           
+                            
+                                <div class="col block">
+                                    <div class="title-small">CIN NUMBER</div>
+                                    <div id="fs_cin" class="small-value" contenteditable="false">—</div>
+                                </div>
+                            
+                        </div>
+
+                        <!-- NEW: Persons in columns with Name, Address, and PAN & Aadhar separate -->
+                        <div class="persons-columns-container">
+                            <div class="persons-header" id="personsHeader">
+                                <div class="title-small" style="flex:1;margin-bottom:0;">INDIVIDUAL / PROMOTER / PARTNER / DIRECTOR / HUF</div>
+                                <div style="display:flex;align-items:center;gap:6px;">
+                                    <button id="addPerson" class="add-person-btn" title="Add person">+ Add</button>
+                                </div>
+                            </div>
+
+                            <!-- Inline form will be injected here when adding/editing a person -->
+                            <div id="personFormHolder"></div>
+
+                            <div id="personsContainer" class="persons-columns" aria-live="polite"></div>
+                        </div>
+
+                        <!-- DOB + Gender + Father's Name in one row -->
+                        <div class="row">
+                            <div class="col block" style="flex:0 0 20%;">
+                                <div class="title-small">DOB</div>
+                                <div id="fs_dob" class="small-value" contenteditable="false">—</div>
+                            </div>
+                            <div class="col block" style="flex:0 0 16%;">
+                                <div class="title-small">GENDER</div>
+                                <div id="fs_gender" class="small-value" contenteditable="false">—</div>
+                            </div>
+
+                            <div class="col block">
+                                <div class="title-small">FATHER'S NAME</div>
+                                <div id="fs_father" class="small-value" contenteditable="false">—</div>
+                            </div>
+                        </div>
+
+                        <!-- Marital Status -->
+                        <div class="row">
+                            <div class="col block">
+                                <div class="title-small">MARITAL STATUS</div>
+                                <div id="fs_marital" class="small-value" contenteditable="false">—</div>
+                            </div>
+                        </div>
+
+                        <!-- Entity Location: Area + Ward + Zone -->
+                        <div class="row">
+                            <div class="col block">
+                                <div class="title-small">ENTITY LOCATION</div>
+                                <div class="grid-3" style="margin-top:2px;">
+                                    <div>
+                                        <div class="muted">AREA:</div>
+                                        <div id="fs_area" class="small-value" contenteditable="false">—</div>
+                                    </div>
+                                    <div>
+                                        <div class="muted">WARD:</div>
+                                        <div id="fs_ward" class="small-value" contenteditable="false">—</div>
+                                    </div>
+                                    <div>
+                                        <div class="muted">ZONE:</div>
+                                        <div id="fs_zone" class="small-value" contenteditable="false">—</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Product / Service -->
+                        <div class="row">
+                            <div class="col block">
+                                <div class="title-small">PRODUCT / SERVICE SOLD</div>
+                                <div id="fs_product" class="value" contenteditable="false">—</div>
+                            </div>
+                        </div>
+
+                        <!-- Documents KYC - ALL IN SINGLE ROW -->
+                        <div class="row">
+                            <div class="col block">
+                                <div class="title-small">DOCUMENTS / KYC SUBMITTED (✔)</div>
+
+                                <!-- Checkboxes in single row -->
+                                <div class="docs-single-row">
+                                    <label><input type="checkbox" id="cb_pan"> PAN</label>
+                                    <label><input type="checkbox" id="cb_aadhar"> AADHAR</label>
+                                    <label><input type="checkbox" id="cb_entity"> ENTITY</label>
+                                    <label><input type="checkbox" id="cb_addr"> ADDRESS</label>
+                                    <label><input type="checkbox" id="cb_bank"> BANK</label>
+                                    <label><input type="checkbox" id="cb_photo"> PHOTO</label>
+                                    <label><input type="checkbox" id="cb_shop"> SHOP</label>
+                                    <label><input type="checkbox" id="cb_mda"> MDA/COI/AOA</label>
+                                </div>
+
+                                <!-- Two column layout: Left = Client Source + Sourced By, Right = Additional Details Table -->
+                                <div class="docs-additional-wrapper">
+                                    <!-- LEFT SIDE: Client Source and Sourced By stacked -->
+                                    <div class="left-source-section">
+                                        <div class="block">
+                                            <div class="title-small">CLIENT SOURCE</div>
+                                            <div id="fs_source" class="small-value" contenteditable="false">—</div>
+                                        </div>
+                                        <div class="block">
+                                            <div class="title-small">SOURCED BY (EMP. ID)</div>
+                                            <div id="fs_sourcedby" class="small-value" contenteditable="false">—</div>
+                                        </div>
+                                    </div>
+
+                                    <!-- RIGHT SIDE: Additional Details Table -->
+                                    <div>
+                                        <div class="title-small">ADDITIONAL DETAILS</div>
+                                        <table class="add-table">
+                                            <tbody>
+                                                <tr>
+                                                    <td>ELECTRIC BILL NO:</td>
+                                                    <td id="fs_electric" contenteditable="false">—</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>PROPERTY TAX NO:</td>
+                                                    <td id="fs_proptax" contenteditable="false">—</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>SQ FT:</td>
+                                                    <td id="fs_sqft" contenteditable="false">—</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>OTHER DETAILS:</td>
+                                                    <td id="fs_otherdoc" contenteditable="false">—</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Cross Sell + Details -->
+                        <div class="row">
+                            <div class="col block">
+                                <div class="title-small">CROSS SELL OF OTHER PRODUCTS</div>
+                                <div id="fs_crosssell" class="small-value" contenteditable="false">—</div>
+                            </div>
+                            <div class="col block" style="flex:0 0 35%;">
+                                <div class="title-small">DETAILS</div>
+                                <div id="fs_crossdetails" class="small-value" contenteditable="false">—</div>
+                            </div>
+                        </div>
+
+                        <!-- Comments + Internal Details side by side -->
+                        <div class="row">
+                            <div class="col block">
+                                <div class="title-small">COMMENTS / REMARKS</div>
+                                <div id="fs_comments" class="value" contenteditable="false" style="min-height:50px;">—</div>
+                            </div>
+
+                            <div class="col block" style="flex:0 0 42%;">
+                                <div class="title-small">OTHER INTERNAL DETAILS</div>
+                                <div class="internal-compact">
+                                    <div class="left">
+                                        <div>
+                                            <div class="muted">LOGIN: </div>
+                                            <div id="fs_login" class="small-value" contenteditable="false">—</div>
+                                        </div>
+                                        <div>
+                                            <div class="muted">PSWRD:</div>
+                                            <div id="fs_password" class="small-value" contenteditable="false">—</div>
+                                        </div>
+                                        <div class="right">
+                                            <div class="muted">DETAILS:</div>
+                                            <div id="fs_details" class="details" contenteditable="false">—</div>
+                                        </div>
+                                    </div>
+                                   
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Signatures -->
+                        <div class="signs">
+                            <div class="sign">
+                                <div class="line"></div>
+                                <div>APPLICANT SIGNATURE</div>
+                                <div class="muted">WITH STAMP / SEAL</div>
+                            </div>
+                            <div class="sign">
+                                <div class="line"></div>
+                                <div>INVESTICA OFFICER SIGN</div>
+                                <div class="muted">DOCS VERIFIED WITH ORIGINAL</div>
+                            </div>
+                        </div>
+
+                        <!-- Document scanned -->
+                        <div class="scanned">
+                            <div style="font-weight:900;color:var(--brand);font-size:9.5px;margin-bottom:2px;">DOCUMENT SCANNED, UPLOADED, BACKED UP BY:</div>
+                            <div class="grid-2">
+                                <div>
+                                    <div class="muted">NAME:</div>
+                                    <div id="fs_docname" class="small-value" contenteditable="false">—</div>
+                                </div>
+                                <div>
+                                    <div class="muted">SIGN:</div>
+                                    <div id="fs_docsign" class="small-value" contenteditable="false">—</div>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
 
-                    <div style="text-align:right;">
-                        <div style="font-size:10px; font-weight:bold;">CRN NO:</div>
-                        <div style="border:1px solid #333; padding:4px 8px; min-width:80px; text-align:center;" id="fs_crn"></div>
+                    <!-- Actions -->
+                    <div class="actions">
+                        <button class="btn btn-edit" id="editBtn">Edit Form</button>
+                        <button class="btn btn-print" id="printBtn">Print</button>
+                        <button class="btn btn-sample" id="sampleBtn">Fill Demo</button>
                     </div>
                 </div>
-
-                <div style="text-align:center; padding:10px; background:#f8f9fa; border-bottom:1px solid #ddd; font-weight:bold; font-size:11px;">
-                    FOR NEW CLIENT ACQUISITION / EXISTING CLIENT UPDATE APPLICATION FORM
-                </div>
-
-                <div style="padding:15px;">
-
-                    <div style="border:1px solid #000; margin-bottom:10px; padding:8px;">
-                        <div style="font-weight:bold; font-size:10px; background:#f0f0f0; padding:4px; margin-bottom:4px;">
-                            NAME / ENTITY NAME:
-                        </div>
-                        <div id="fs_name" style="padding:6px; border:1px solid #ccc; background:#fff; min-height:20px;">
-                            —
-                        </div>
-                    </div>
-
-                    <div style="border:1px solid #000; margin-bottom:10px; padding:8px;">
-                        <div style="font-weight:bold; font-size:10px; background:#f0f0f0; padding:4px; margin-bottom:4px;">
-                            ADDRESS:
-                        </div>
-                        <div id="fs_address" style="padding:6px; border:1px solid #ccc; background:#fff; min-height:20px;">
-                            —
-                        </div>
-                    </div>
-
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px;">
-                        <div style="border:1px solid #000; padding:8px;">
-                            <div style="font-weight:bold; font-size:10px; background:#f0f0f0; padding:4px; margin-bottom:4px;">
-                                CONTACT DETAILS: PHONE/ MOB:
-                            </div>
-                            <div id="fs_phone" style="padding:6px; border:1px solid #ccc; background:#fff; min-height:20px;">
-                                —
-                            </div>
-                        </div>
-
-                        <div style="border:1px solid #000; padding:8px;">
-                            <div style="font-weight:bold; font-size:10px; background:#f0f0f0; padding:4px; margin-bottom:4px;">
-                                E-MAIL ID:
-                            </div>
-                            <div id="fs_email" style="padding:6px; border:1px solid #ccc; background:#fff; min-height:20px;">
-                                —
-                            </div>
-                        </div>
-                    </div>
-
-                    <div style="border:1px solid #000; margin-bottom:10px; padding:8px;">
-                        <div style="font-weight:bold; font-size:10px; background:#f0f0f0; padding:4px; margin-bottom:4px;">
-                            INDIVIDUAL/PROMOTER/PARTNER/DIRECTOR/HUF NAME & ADDRESS(s):
-                        </div>
-                        <div id="fs_director" style="padding:6px; border:1px solid #ccc; background:#fff; min-height:20px;">
-                            —
-                        </div>
-                    </div>
-
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px;">
-                        <div style="border:1px solid #000; padding:8px;">
-                            <div style="font-weight:bold; font-size:10px; background:#f0f0f0; padding:4px; margin-bottom:4px;">
-                                ENTITY TYPE:
-                            </div>
-                            <div id="fs_entitytype" style="padding:6px; border:1px solid #ccc; background:#fff; min-height:20px;">
-                                —
-                            </div>
-                        </div>
-
-                        <div style="border:1px solid #000; padding:8px;">
-                            <div style="font-weight:bold; font-size:10px; background:#f0f0f0; padding:4px; margin-bottom:4px;">
-                                PAN & AADHAR:
-                            </div>
-                            <div id="fs_pan" style="padding:6px; border:1px solid #ccc; background:#fff; min-height:20px;">
-                                —
-                            </div>
-                        </div>
-                    </div>
-
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px;">
-                        <div style="border:1px solid #000; padding:8px;">
-                            <div style="font-weight:bold; font-size:10px; background:#f0f0f0; padding:4px; margin-bottom:4px;">
-                                NATURE OF BUSINESS:
-                            </div>
-                            <div id="fs_business" style="padding:6px; border:1px solid #ccc; background:#fff; min-height:20px;">
-                                —
-                            </div>
-                        </div>
-
-                        <div style="border:1px solid #000; padding:8px;">
-                            <div style="font-weight:bold; font-size:10px; background:#f0f0f0; padding:4px; margin-bottom:4px;">
-                                ENTITY PAN:
-                            </div>
-                            <div id="fs_epan" style="padding:6px; border:1px solid #ccc; background:#fff; min-height:20px;">
-                                —
-                            </div>
-                        </div>
-                    </div>
-
-                    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:10px;">
-                        <div style="border:1px solid #000; padding:8px;">
-                            <div style="font-weight:bold; font-size:10px; background:#f0f0f0; padding:4px; margin-bottom:4px;">
-                                DOB:
-                            </div>
-                            <div id="fs_dob" style="padding:6px; border:1px solid #ccc; background:#fff; min-height:20px;">—</div>
-                        </div>
-
-                        <div style="border:1px solid #000; padding:8px;">
-                            <div style="font-weight:bold; font-size:10px; background:#f0f0f0; padding:4px; margin-bottom:4px;">
-                                GENDER:
-                            </div>
-                            <div id="fs_gender" style="padding:6px; border:1px solid #ccc; background:#fff; min-height:20px;">—</div>
-                        </div>
-
-                        <div style="border:1px solid #000; padding:8px;">
-                            <div style="font-weight:bold; font-size:10px; background:#f0f0f0; padding:4px; margin-bottom:4px;">
-                                MARITAL STATUS:
-                            </div>
-                            <div id="fs_marital" style="padding:6px; border:1px solid #ccc; background:#fff; min-height:20px;">—</div>
-                        </div>
-                    </div>
-
-                    <div style="border:1px solid #000; margin-bottom:10px; padding:8px;">
-                        <div style="font-weight:bold; font-size:10px; background:#f0f0f0; padding:4px; margin-bottom:4px;">
-                            FATHER'S NAME / MOTHER'S NAME / SPOUSE NAME:
-                        </div>
-                        <div id="fs_family" style="padding:6px; border:1px solid #ccc; background:#fff; min-height:20px;">—</div>
-                    </div>
-
-                    <div style="border:1px solid #000; margin-bottom:10px; padding:8px;">
-                        <div style="font-weight:bold; font-size:10px; background:#f0f0f0; padding:4px; margin-bottom:4px;">
-                            ENTITY LOCATION :-
-                        </div>
-
-                        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-top:6px;">
-                            <div>
-                                <div style="font-size:9px; font-weight:bold;">AREA:</div>
-                                <div id="fs_area" style="padding:4px; border:1px solid #ccc; background:#fff; min-height:18px;">—</div>
-                            </div>
-                            <div>
-                                <div style="font-size:9px; font-weight:bold;">WARD:</div>
-                                <div id="fs_ward" style="padding:4px; border:1px solid #ccc; background:#fff; min-height:18px;">—</div>
-                            </div>
-                            <div>
-                                <div style="font-size:9px; font-weight:bold;">ZONE:</div>
-                                <div id="fs_zone" style="padding:4px; border:1px solid #ccc; background:#fff; min-height:18px;">—</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div style="border:1px solid #000; margin-bottom:10px; padding:8px;">
-                        <div style="font-weight:bold; font-size:10px; background:#f0f0f0; padding:4px; margin-bottom:4px;">
-                            PRODUCT / SERVICE SOLD:
-                        </div>
-                        <div id="fs_product" style="padding:6px; border:1px solid #ccc; background:#fff; min-height:20px;">—</div>
-                    </div>
-
-                    <div style="border:1px solid #000; margin-bottom:10px; padding:8px;">
-                        <div style="font-weight:bold; font-size:10px; background:#f0f0f0; padding:4px; margin-bottom:4px;">
-                            DOCUMENTS PYC SUBMITTED:
-                        </div>
-
-                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:6px;">
-                            <div style="display:flex; gap:10px;">
-                                <label style="display:flex; align-items:center; gap:5px;">
-                                    <input type="checkbox" checked> <span style="font-size:10px;">PAN</span>
-                                </label>
-                                <label style="display:flex; align-items:center; gap:5px;">
-                                    <input type="checkbox" checked> <span style="font-size:10px;">AADHAR</span>
-                                </label>
-                            </div>
-
-                            <div style="display:flex; gap:10px;">
-                                <label style="display:flex; align-items:center; gap:5px;">
-                                    <input type="checkbox" checked> <span style="font-size:10px;">ADDRESS PROOF</span>
-                                </label>
-                                <label style="display:flex; align-items:center; gap:5px;">
-                                    <input type="checkbox" checked> <span style="font-size:10px;">BANK DETAILS</span>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div style="border:1px solid #000; margin-bottom:10px; padding:8px;">
-                        <div style="font-weight:bold; font-size:10px; background:#f0f0f0; padding:4px; margin-bottom:4px;">
-                            PHOTOGRAPH / SHOP PHOTO / MDA/COI/AOA/PART. DEED:
-                        </div>
-
-                        <div style="display:flex; gap:20px; margin-top:6px;">
-                            <label style="display:flex; align-items:center; gap:5px;">
-                                <input type="checkbox" checked> <span style="font-size:10px;">PHOTOGRAPH</span>
-                            </label>
-                            <label style="display:flex; align-items:center; gap:5px;">
-                                <input type="checkbox"> <span style="font-size:10px;">SHOP PHOTO</span>
-                            </label>
-                            <label style="display:flex; align-items:center; gap:5px;">
-                                <input type="checkbox" checked> <span style="font-size:10px;">MDA/COI/AOA/PART. DEED</span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px;">
-                        <div style="border:1px solid #000; padding:8px;">
-                            <div style="font-weight:bold; font-size:10px; background:#f0f0f0; padding:4px; margin-bottom:4px;">
-                                CLIENT SOURCE:
-                            </div>
-                            <div id="fs_source" style="padding:6px; border:1px solid #ccc; background:#fff; min-height:20px;">—</div>
-                        </div>
-
-                        <div style="border:1px solid #000; padding:8px;">
-                            <div style="font-weight:bold; font-size:10px; background:#f0f0f0; padding:4px; margin-bottom:4px;">
-                                SOURCED BY ALONG WITH EMP. ID:
-                            </div>
-                            <div id="fs_sourcedby" style="padding:6px; border:1px solid #ccc; background:#fff; min-height:20px;">—</div>
-                        </div>
-                    </div>
-
-                    <div style="border:1px solid #000; margin-bottom:10px; padding:8px;">
-                        <div style="font-weight:bold; font-size:10px; background:#f0f0f0; padding:4px; margin-bottom:4px;">
-                            COMMENTS/REMARKS/ADDITIONAL INFO:
-                        </div>
-                        <div id="fs_comments" style="padding:6px; border:1px solid #ccc; background:#fff; min-height:30px;">—</div>
-                    </div>
-
-                    <div style="border:1px solid #000; margin-bottom:15px; padding:8px;">
-                        <div style="font-weight:bold; font-size:10px; background:#f0f0f0; padding:4px; margin-bottom:4px;">
-                            OTHER INTERNAL DETAILS:
-                        </div>
-
-                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:6px;">
-                            <div>
-                                <div style="font-size:9px; font-weight:bold;">LOGIN:</div>
-                                <div id="fs_login" style="padding:4px; border:1px solid #ccc; background:#fff; min-height:18px;">—</div>
-                            </div>
-
-                            <div>
-                                <div style="font-size:9px; font-weight:bold;">PASSWORD:</div>
-                                <div id="fs_password" style="padding:4px; border:1px solid #ccc; background:#fff; min-height:18px;">—</div>
-                            </div>
-                        </div>
-
-                        <div style="margin-top:6px;">
-                            <div style="font-size:9px; font-weight:bold;">DETAILS:</div>
-                            <div id="fs_details" style="padding:4px; border:1px solid #ccc; background:#fff; min-height:40px;">—</div>
-                        </div>
-                    </div>
-
-                    <div style="border-top:2px solid #0f1445; padding-top:15px; margin-top:15px;">
-                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:30px; margin-top:30px;">
-                            <div style="text-align:center;">
-                                <div style="border-bottom:1px solid #000; height:50px; margin-bottom:8px;"></div>
-                                <div style="font-weight:bold; font-size:11px;">APPLICANT SIGNATURE</div>
-                                <div style="font-size:9px; color:#666;">WITH STAMP / SEAL</div>
-                            </div>
-
-                            <div style="text-align:center;">
-                                <div style="border-bottom:1px solid #000; height:50px; margin-bottom:8px;"></div>
-                                <div style="font-weight:bold; font-size:11px;">INVESTICA OFFICER SIGN</div>
-                                <div style="font-size:9px; color:#666;">ALL DOCUMENTS ARE VERIFIED<br />WITH ORIGINAL</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div style="margin-top:20px; padding:10px; background:#f8f9fa; border:1px solid #ddd; border-radius:4px;">
-                        <div style="font-weight:bold; font-size:10px; color:#0f1445; margin-bottom:8px;">
-                            DOCUMENT SCANNED, UPLOADED, BACKED UP BY :-
-                        </div>
-
-                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-top:8px;">
-                            <div>
-                                <div style="font-size:9px; font-weight:bold;">NAME:</div>
-                                <div id="fs_docname" style="padding:4px; border:1px solid #ccc; background:#fff; min-height:18px;">—</div>
-                            </div>
-
-                            <div>
-                                <div style="font-size:9px; font-weight:bold;">SIGN:</div>
-                                <div id="fs_docsign" style="padding:4px; border:1px solid #ccc; background:#fff; min-height:18px;">—</div>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-
-                <!-- Buttons -->
-                <div style="padding:15px; border-top:2px solid #0f1445; display:flex; gap:10px; background:#f8f9fa;">
-                    <button class="btn btn-primary" id="frontsheetEditBtn" style="background:#0f1445; border:none; padding:10px 20px; font-size:13px; font-weight:bold;">
-                        Edit Form
-                    </button>
-
-                    <button class="btn btn-secondary" onclick="window.print()" style="padding:10px 20px; font-size:13px; font-weight:bold;">
-                        Print
-                    </button>
-                </div>
-
             </div>
 
         </div>
@@ -349,5 +329,4 @@
 @section Scripts {
     <script src="~/js/Fontsheet.js"></script>
     <script src="~/js/LeftPanel.js"></script>
-
 }

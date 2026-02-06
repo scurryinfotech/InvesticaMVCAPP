@@ -1355,7 +1355,21 @@ namespace Investica.Repository
         public async Task<List<FontSheet>> GetFontSheetsAsync()
         {
             var list = new List<FontSheet>();
-            const string sql = @"SELECT Id, CompanyId, EntityName, Address, Phone, Email, PromoterNameAddress, EntityType, NatureOfBusiness, PanAadhar, EntityPan, DOB, Gender, MaritalStatus, FatherMotherSpouseName, Area, Ward, Zone, ProductServiceSold, ClientSource, SourcedByEmpId, Comments, Login, Password, CreatedDate, CreatedBy, ModifiedDate, ModifiedBy, IsActive FROM FontSheet ORDER BY EntityName";
+            const string sql = @"
+                SELECT Id, CompanyId, CRNNo, EntityName, Address, Phone, Email, CINNumber,
+                       EntityType, DateOfIncorporation, EntityPan, NatureOfBusiness,
+                       DOB, Gender, MaritalStatus, FatherMotherSpouseName,
+                       Area, Ward, Zone, ProductServiceSold,
+                       ElectricBillNo, PropertyTaxNo, SqFt, OtherDetails,
+                       ClientSource, SourcedByEmpId,
+                       DocPAN, DocAadhar, DocEntity, DocAddress, DocBank, DocPhoto, DocShop, DocMDA,
+                       CrossSell, CrossSellDetails,
+                       Comments, Login, Password, InternalDetails,
+                       ScannedByName, ScannedBySign,
+                       CreatedDate, CreatedBy, ModifiedDate, ModifiedBy, IsActive
+                FROM FrontSheet
+                WHERE IsActive = 1
+                ORDER BY EntityName";
             await using var con = Conn();
             await con.OpenAsync();
             await using var cmd = new SqlCommand(sql, con);
@@ -1366,33 +1380,51 @@ namespace Investica.Repository
                 {
                     Id = rdr.GetInt32(0),
                     CompanyId = rdr.IsDBNull(1) ? null : (int?)rdr.GetInt32(1),
-                    EntityName = rdr.IsDBNull(2) ? string.Empty : rdr.GetString(2),
-                    Address = rdr.IsDBNull(3) ? string.Empty : rdr.GetString(3),
-                    Phone = rdr.IsDBNull(4) ? null : rdr.GetString(4),
-                    Email = rdr.IsDBNull(5) ? null : rdr.GetString(5),
-                    PromoterNameAddress = rdr.IsDBNull(6) ? null : rdr.GetString(6),
-                    EntityType = rdr.IsDBNull(7) ? null : rdr.GetString(7),
-                    NatureOfBusiness = rdr.IsDBNull(8) ? null : rdr.GetString(8),
-                    PanAadhar = rdr.IsDBNull(9) ? null : rdr.GetString(9),
+                    CRNNo = rdr.IsDBNull(2) ? null : rdr.GetString(2),
+                    EntityName = rdr.IsDBNull(3) ? string.Empty : rdr.GetString(3),
+                    Address = rdr.IsDBNull(4) ? string.Empty : rdr.GetString(4),
+                    Phone = rdr.IsDBNull(5) ? null : rdr.GetString(5),
+                    Email = rdr.IsDBNull(6) ? null : rdr.GetString(6),
+                    CINNumber = rdr.IsDBNull(7) ? null : rdr.GetString(7),
+                    EntityType = rdr.IsDBNull(8) ? null : rdr.GetString(8),
+                    DateOfIncorporation = rdr.IsDBNull(9) ? null : (DateTime?)rdr.GetDateTime(9),
                     EntityPan = rdr.IsDBNull(10) ? null : rdr.GetString(10),
-                    DOB = rdr.IsDBNull(11) ? null : (DateTime?)rdr.GetDateTime(11),
-                    Gender = rdr.IsDBNull(12) ? null : rdr.GetString(12),
-                    MaritalStatus = rdr.IsDBNull(13) ? null : rdr.GetString(13),
-                    FatherMotherSpouseName = rdr.IsDBNull(14) ? null : rdr.GetString(14),
-                    Area = rdr.IsDBNull(15) ? null : rdr.GetString(15),
-                    Ward = rdr.IsDBNull(16) ? null : rdr.GetString(16),
-                    Zone = rdr.IsDBNull(17) ? null : rdr.GetString(17),
-                    ProductServiceSold = rdr.IsDBNull(18) ? null : rdr.GetString(18),
-                    ClientSource = rdr.IsDBNull(19) ? null : rdr.GetString(19),
-                    SourcedByEmpId = rdr.IsDBNull(20) ? null : (int?)rdr.GetInt32(20),
-                    Comments = rdr.IsDBNull(21) ? null : rdr.GetString(21),
-                    Login = rdr.IsDBNull(22) ? null : rdr.GetString(22),
-                    Password = rdr.IsDBNull(23) ? null : rdr.GetString(23),
-                    CreatedDate = rdr.IsDBNull(24) ? null : (DateTime?)rdr.GetDateTime(24),
-                    CreatedBy = rdr.IsDBNull(25) ? null : (int?)rdr.GetInt32(25),
-                    ModifiedDate = rdr.IsDBNull(26) ? null : (DateTime?)rdr.GetDateTime(26),
-                    ModifiedBy = rdr.IsDBNull(27) ? null : (int?)rdr.GetInt32(27),
-                    IsActive = !rdr.IsDBNull(28) && rdr.GetBoolean(28)
+                    NatureOfBusiness = rdr.IsDBNull(11) ? null : rdr.GetString(11),
+                    DOB = rdr.IsDBNull(12) ? null : (DateTime?)rdr.GetDateTime(12),
+                    Gender = rdr.IsDBNull(13) ? null : rdr.GetString(13),
+                    MaritalStatus = rdr.IsDBNull(14) ? null : rdr.GetString(14),
+                    FatherMotherSpouseName = rdr.IsDBNull(15) ? null : rdr.GetString(15),
+                    Area = rdr.IsDBNull(16) ? null : rdr.GetString(16),
+                    Ward = rdr.IsDBNull(17) ? null : rdr.GetString(17),
+                    Zone = rdr.IsDBNull(18) ? null : rdr.GetString(18),
+                    ProductServiceSold = rdr.IsDBNull(19) ? null : rdr.GetString(19),
+                    ElectricBillNo = rdr.IsDBNull(20) ? null : rdr.GetString(20),
+                    PropertyTaxNo = rdr.IsDBNull(21) ? null : rdr.GetString(21),
+                    SqFt = rdr.IsDBNull(22) ? null : rdr.GetString(22),
+                    OtherDetails = rdr.IsDBNull(23) ? null : rdr.GetString(23),
+                    ClientSource = rdr.IsDBNull(24) ? null : rdr.GetString(24),
+                    SourcedByEmpId = rdr.IsDBNull(25) ? null : (int?)rdr.GetInt32(25),
+                    DocPAN = !rdr.IsDBNull(26) && rdr.GetBoolean(26),
+                    DocAadhar = !rdr.IsDBNull(27) && rdr.GetBoolean(27),
+                    DocEntity = !rdr.IsDBNull(28) && rdr.GetBoolean(28),
+                    DocAddress = !rdr.IsDBNull(29) && rdr.GetBoolean(29),
+                    DocBank = !rdr.IsDBNull(30) && rdr.GetBoolean(30),
+                    DocPhoto = !rdr.IsDBNull(31) && rdr.GetBoolean(31),
+                    DocShop = !rdr.IsDBNull(32) && rdr.GetBoolean(32),
+                    DocMDA = !rdr.IsDBNull(33) && rdr.GetBoolean(33),
+                    CrossSell = rdr.IsDBNull(34) ? null : rdr.GetString(34),
+                    CrossSellDetails = rdr.IsDBNull(35) ? null : rdr.GetString(35),
+                    Comments = rdr.IsDBNull(36) ? null : rdr.GetString(36),
+                    Login = rdr.IsDBNull(37) ? null : rdr.GetString(37),
+                    Password = rdr.IsDBNull(38) ? null : rdr.GetString(38),
+                    InternalDetails = rdr.IsDBNull(39) ? null : rdr.GetString(39),
+                    ScannedByName = rdr.IsDBNull(40) ? null : rdr.GetString(40),
+                    ScannedBySign = rdr.IsDBNull(41) ? null : rdr.GetString(41),
+                    CreatedDate = rdr.IsDBNull(42) ? null : (DateTime?)rdr.GetDateTime(42),
+                    CreatedBy = rdr.IsDBNull(43) ? null : (int?)rdr.GetInt32(43),
+                    ModifiedDate = rdr.IsDBNull(44) ? null : (DateTime?)rdr.GetDateTime(44),
+                    ModifiedBy = rdr.IsDBNull(45) ? null : (int?)rdr.GetInt32(45),
+                    IsActive = !rdr.IsDBNull(46) && rdr.GetBoolean(46)
                 });
             }
             return list;
@@ -1400,96 +1432,249 @@ namespace Investica.Repository
 
         public async Task<int> CreateFontSheetAsync(FontSheet f)
         {
-            const string sql = @"INSERT INTO FontSheet (CompanyId, EntityName, Address, Phone, Email, PromoterNameAddress, EntityType, NatureOfBusiness, PanAadhar, EntityPan, DOB, Gender, MaritalStatus, FatherMotherSpouseName, Area, Ward, Zone, ProductServiceSold, ClientSource, SourcedByEmpId, Comments, Login, Password, CreatedDate, CreatedBy, ModifiedDate, ModifiedBy, IsActive)
-                                 OUTPUT INSERTED.Id
-                                 VALUES(@CompanyId,@EntityName,@Address,@Phone,@Email,@PromoterNameAddress,@EntityType,@NatureOfBusiness,@PanAadhar,@EntityPan,@DOB,@Gender,@MaritalStatus,@FatherMotherSpouseName,@Area,@Ward,@Zone,@ProductServiceSold,@ClientSource,@SourcedByEmpId,@Comments,@Login,@Password,@CreatedDate,@CreatedBy,@ModifiedDate,@ModifiedBy,@IsActive)";
+            const string sql = @"
+                INSERT INTO FrontSheet
+                (
+                    CompanyId, CRNNo, EntityName, Address, Phone, Email, CINNumber,
+                    EntityType, DateOfIncorporation, EntityPan, NatureOfBusiness,
+                    DOB, Gender, MaritalStatus, FatherMotherSpouseName,
+                    Area, Ward, Zone, ProductServiceSold,
+                    ElectricBillNo, PropertyTaxNo, SqFt, OtherDetails,
+                    ClientSource, SourcedByEmpId,
+                    DocPAN, DocAadhar, DocEntity, DocAddress, DocBank, DocPhoto, DocShop, DocMDA,
+                    CrossSell, CrossSellDetails,
+                    Comments, Login, Password, InternalDetails,
+                    ScannedByName, ScannedBySign,
+                    CreatedDate, CreatedBy, ModifiedDate, ModifiedBy, IsActive
+                )
+                OUTPUT INSERTED.Id
+                VALUES
+                (
+                    @CompanyId, @CRNNo, @EntityName, @Address, @Phone, @Email, @CINNumber,
+                    @EntityType, @DateOfIncorporation, @EntityPan, @NatureOfBusiness,
+                    @DOB, @Gender, @MaritalStatus, @FatherMotherSpouseName,
+                    @Area, @Ward, @Zone, @ProductServiceSold,
+                    @ElectricBillNo, @PropertyTaxNo, @SqFt, @OtherDetails,
+                    @ClientSource, @SourcedByEmpId,
+                    @DocPAN, @DocAadhar, @DocEntity, @DocAddress, @DocBank, @DocPhoto, @DocShop, @DocMDA,
+                    @CrossSell, @CrossSellDetails,
+                    @Comments, @Login, @Password, @InternalDetails,
+                    @ScannedByName, @ScannedBySign,
+                    @CreatedDate, @CreatedBy, @ModifiedDate, @ModifiedBy, @IsActive
+                )";
+
             await using var con = Conn();
             await con.OpenAsync();
-            await using var cmd = new SqlCommand(sql, con);
+            using var tx = con.BeginTransaction();
+            try
+            {
+                await using var cmd = new SqlCommand(sql, con, tx);
+                cmd.Parameters.AddWithValue("@CompanyId", f.CompanyId ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@CRNNo", f.CRNNo ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@EntityName", f.EntityName ?? string.Empty);
+                cmd.Parameters.AddWithValue("@Address", f.Address ?? string.Empty);
+                cmd.Parameters.AddWithValue("@Phone", f.Phone ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@Email", f.Email ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@CINNumber", f.CINNumber ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@EntityType", f.EntityType ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@DateOfIncorporation", f.DateOfIncorporation ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@EntityPan", f.EntityPan ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@NatureOfBusiness", f.NatureOfBusiness ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@DOB", f.DOB ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@Gender", f.Gender ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@MaritalStatus", f.MaritalStatus ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@FatherMotherSpouseName", f.FatherMotherSpouseName ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@Area", f.Area ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@Ward", f.Ward ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@Zone", f.Zone ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@ProductServiceSold", f.ProductServiceSold ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@ElectricBillNo", f.ElectricBillNo ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@PropertyTaxNo", f.PropertyTaxNo ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@SqFt", f.SqFt ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@OtherDetails", f.OtherDetails ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@ClientSource", f.ClientSource ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@SourcedByEmpId", f.SourcedByEmpId ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@DocPAN", f.DocPAN);
+                cmd.Parameters.AddWithValue("@DocAadhar", f.DocAadhar);
+                cmd.Parameters.AddWithValue("@DocEntity", f.DocEntity);
+                cmd.Parameters.AddWithValue("@DocAddress", f.DocAddress);
+                cmd.Parameters.AddWithValue("@DocBank", f.DocBank);
+                cmd.Parameters.AddWithValue("@DocPhoto", f.DocPhoto);
+                cmd.Parameters.AddWithValue("@DocShop", f.DocShop);
+                cmd.Parameters.AddWithValue("@DocMDA", f.DocMDA);
+                cmd.Parameters.AddWithValue("@CrossSell", f.CrossSell ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@CrossSellDetails", f.CrossSellDetails ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@Comments", f.Comments ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@Login", f.Login ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@Password", f.Password ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@InternalDetails", f.InternalDetails ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@ScannedByName", f.ScannedByName ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@ScannedBySign", f.ScannedBySign ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@CreatedDate", f.CreatedDate ?? DateTime.UtcNow);
+                cmd.Parameters.AddWithValue("@CreatedBy", f.CreatedBy ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@ModifiedDate", f.ModifiedDate ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@ModifiedBy", f.ModifiedBy ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@IsActive", f.IsActive);
 
-            cmd.Parameters.AddWithValue("@CompanyId", f.CompanyId ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@EntityName", f.EntityName ?? string.Empty);
-            cmd.Parameters.AddWithValue("@Address", f.Address ?? string.Empty);
-            cmd.Parameters.AddWithValue("@Phone", f.Phone ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@Email", f.Email ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@PromoterNameAddress", f.PromoterNameAddress ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@EntityType", f.EntityType ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@NatureOfBusiness", f.NatureOfBusiness ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@PanAadhar", f.PanAadhar ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@EntityPan", f.EntityPan ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@DOB", f.DOB ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@Gender", f.Gender ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@MaritalStatus", f.MaritalStatus ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@FatherMotherSpouseName", f.FatherMotherSpouseName ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@Area", f.Area ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@Ward", f.Ward ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@Zone", f.Zone ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@ProductServiceSold", f.ProductServiceSold ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@ClientSource", f.ClientSource ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@SourcedByEmpId", f.SourcedByEmpId ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@Comments", f.Comments ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@Login", f.Login ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@Password", f.Password ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@CreatedDate", f.CreatedDate ?? DateTime.UtcNow);
-            cmd.Parameters.AddWithValue("@CreatedBy", f.CreatedBy ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@ModifiedDate", f.ModifiedDate ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@ModifiedBy", f.ModifiedBy ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@IsActive", f.IsActive);
+                var idObj = await cmd.ExecuteScalarAsync();
+                var id = idObj == null ? 0 : Convert.ToInt32(idObj);
 
-            var id = await cmd.ExecuteScalarAsync();
-            return id == null ? 0 : Convert.ToInt32(id);
+                // Insert persons if any
+                if (id > 0 && f.Persons != null && f.Persons.Count > 0)
+                {
+                    const string psql = @"INSERT INTO FrontSheetPerson (FrontSheetId, Name, Address, PAN, Aadhar, DisplayOrder, CreatedDate, IsActive)
+                                          VALUES (@FrontSheetId, @Name, @Address, @PAN, @Aadhar, @DisplayOrder, GETDATE(), 1)";
+                    foreach (var p in f.Persons)
+                    {
+                        await using var pcmd = new SqlCommand(psql, con, tx);
+                        pcmd.Parameters.AddWithValue("@FrontSheetId", id);
+                        pcmd.Parameters.AddWithValue("@Name", p.Name ?? (object)DBNull.Value);
+                        pcmd.Parameters.AddWithValue("@Address", p.Address ?? (object)DBNull.Value);
+                        pcmd.Parameters.AddWithValue("@PAN", p.PAN ?? (object)DBNull.Value);
+                        pcmd.Parameters.AddWithValue("@Aadhar", p.Aadhar ?? (object)DBNull.Value);
+                        pcmd.Parameters.AddWithValue("@DisplayOrder", p.DisplayOrder ?? (object)DBNull.Value);
+                        await pcmd.ExecuteNonQueryAsync();
+                    }
+                }
+
+                tx.Commit();
+                return id;
+            }
+            catch
+            {
+                tx.Rollback();
+                throw;
+            }
         }
 
         public async Task<bool> UpdateFontSheetAsync(FontSheet f)
         {
-            const string sql = @"UPDATE FontSheet SET CompanyId=@CompanyId, EntityName=@EntityName, Address=@Address, Phone=@Phone, Email=@Email, PromoterNameAddress=@PromoterNameAddress, EntityType=@EntityType, NatureOfBusiness=@NatureOfBusiness, PanAadhar=@PanAadhar, EntityPan=@EntityPan, DOB=@DOB, Gender=@Gender, MaritalStatus=@MaritalStatus, FatherMotherSpouseName=@FatherMotherSpouseName, Area=@Area, Ward=@Ward, Zone=@Zone, ProductServiceSold=@ProductServiceSold, ClientSource=@ClientSource, SourcedByEmpId=@SourcedByEmpId, Comments=@Comments, Login=@Login, Password=@Password, ModifiedDate=@ModifiedDate, ModifiedBy=@ModifiedBy, IsActive=@IsActive WHERE Id=@Id";
+            const string sql = @"
+                UPDATE FrontSheet SET
+                    CompanyId=@CompanyId, CRNNo=@CRNNo, EntityName=@EntityName, Address=@Address, Phone=@Phone, Email=@Email, CINNumber=@CINNumber,
+                    EntityType=@EntityType, DateOfIncorporation=@DateOfIncorporation, EntityPan=@EntityPan, NatureOfBusiness=@NatureOfBusiness,
+                    DOB=@DOB, Gender=@Gender, MaritalStatus=@MaritalStatus, FatherMotherSpouseName=@FatherMotherSpouseName,
+                    Area=@Area, Ward=@Ward, Zone=@Zone, ProductServiceSold=@ProductServiceSold,
+                    ElectricBillNo=@ElectricBillNo, PropertyTaxNo=@PropertyTaxNo, SqFt=@SqFt, OtherDetails=@OtherDetails,
+                    ClientSource=@ClientSource, SourcedByEmpId=@SourcedByEmpId,
+                    DocPAN=@DocPAN, DocAadhar=@DocAadhar, DocEntity=@DocEntity, DocAddress=@DocAddress, DocBank=@DocBank, DocPhoto=@DocPhoto, DocShop=@DocShop, DocMDA=@DocMDA,
+                    CrossSell=@CrossSell, CrossSellDetails=@CrossSellDetails,
+                    Comments=@Comments, Login=@Login, Password=@Password, InternalDetails=@InternalDetails,
+                    ScannedByName=@ScannedByName, ScannedBySign=@ScannedBySign,
+                    ModifiedDate=@ModifiedDate, ModifiedBy=@ModifiedBy, IsActive=@IsActive
+                WHERE Id=@Id";
+
             await using var con = Conn();
             await con.OpenAsync();
-            await using var cmd = new SqlCommand(sql, con);
+            using var tx = con.BeginTransaction();
+            try
+            {
+                await using var cmd = new SqlCommand(sql, con, tx);
+                cmd.Parameters.AddWithValue("@CompanyId", f.CompanyId ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@CRNNo", f.CRNNo ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@EntityName", f.EntityName ?? string.Empty);
+                cmd.Parameters.AddWithValue("@Address", f.Address ?? string.Empty);
+                cmd.Parameters.AddWithValue("@Phone", f.Phone ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@Email", f.Email ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@CINNumber", f.CINNumber ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@EntityType", f.EntityType ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@DateOfIncorporation", f.DateOfIncorporation ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@EntityPan", f.EntityPan ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@NatureOfBusiness", f.NatureOfBusiness ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@DOB", f.DOB ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@Gender", f.Gender ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@MaritalStatus", f.MaritalStatus ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@FatherMotherSpouseName", f.FatherMotherSpouseName ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@Area", f.Area ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@Ward", f.Ward ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@Zone", f.Zone ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@ProductServiceSold", f.ProductServiceSold ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@ElectricBillNo", f.ElectricBillNo ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@PropertyTaxNo", f.PropertyTaxNo ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@SqFt", f.SqFt ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@OtherDetails", f.OtherDetails ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@ClientSource", f.ClientSource ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@SourcedByEmpId", f.SourcedByEmpId ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@DocPAN", f.DocPAN);
+                cmd.Parameters.AddWithValue("@DocAadhar", f.DocAadhar);
+                cmd.Parameters.AddWithValue("@DocEntity", f.DocEntity);
+                cmd.Parameters.AddWithValue("@DocAddress", f.DocAddress);
+                cmd.Parameters.AddWithValue("@DocBank", f.DocBank);
+                cmd.Parameters.AddWithValue("@DocPhoto", f.DocPhoto);
+                cmd.Parameters.AddWithValue("@DocShop", f.DocShop);
+                cmd.Parameters.AddWithValue("@DocMDA", f.DocMDA);
+                cmd.Parameters.AddWithValue("@CrossSell", f.CrossSell ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@CrossSellDetails", f.CrossSellDetails ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@Comments", f.Comments ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@Login", f.Login ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@Password", f.Password ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@InternalDetails", f.InternalDetails ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@ScannedByName", f.ScannedByName ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@ScannedBySign", f.ScannedBySign ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@ModifiedDate", f.ModifiedDate ?? DateTime.UtcNow);
+                cmd.Parameters.AddWithValue("@ModifiedBy", f.ModifiedBy ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@IsActive", f.IsActive);
+                cmd.Parameters.AddWithValue("@Id", f.Id);
 
-            cmd.Parameters.AddWithValue("@CompanyId", f.CompanyId ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@EntityName", f.EntityName ?? string.Empty);
-            cmd.Parameters.AddWithValue("@Address", f.Address ?? string.Empty);
-            cmd.Parameters.AddWithValue("@Phone", f.Phone ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@Email", f.Email ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@PromoterNameAddress", f.PromoterNameAddress ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@EntityType", f.EntityType ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@NatureOfBusiness", f.NatureOfBusiness ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@PanAadhar", f.PanAadhar ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@EntityPan", f.EntityPan ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@DOB", f.DOB ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@Gender", f.Gender ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@MaritalStatus", f.MaritalStatus ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@FatherMotherSpouseName", f.FatherMotherSpouseName ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@Area", f.Area ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@Ward", f.Ward ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@Zone", f.Zone ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@ProductServiceSold", f.ProductServiceSold ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@ClientSource", f.ClientSource ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@SourcedByEmpId", f.SourcedByEmpId ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@Comments", f.Comments ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@Login", f.Login ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@Password", f.Password ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@ModifiedDate", f.ModifiedDate ?? DateTime.UtcNow);
-            cmd.Parameters.AddWithValue("@ModifiedBy", f.ModifiedBy ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@IsActive", f.IsActive);
-            cmd.Parameters.AddWithValue("@Id", f.Id);
+                var rows = await cmd.ExecuteNonQueryAsync();
 
-            var rows = await cmd.ExecuteNonQueryAsync();
-            return rows > 0;
+                if (rows <= 0)
+                {
+                    tx.Rollback();
+                    return false;
+                }
+
+                // Remove existing persons and re-insert supplied persons
+                const string delSql = "DELETE FROM FrontSheetPerson WHERE FrontSheetId = @FrontSheetId";
+                await using (var dcmd = new SqlCommand(delSql, con, tx))
+                {
+                    dcmd.Parameters.AddWithValue("@FrontSheetId", f.Id);
+                    await dcmd.ExecuteNonQueryAsync();
+                }
+
+                if (f.Persons != null && f.Persons.Count > 0)
+                {
+                    const string psql = @"INSERT INTO FrontSheetPerson (FrontSheetId, Name, Address, PAN, Aadhar, DisplayOrder, CreatedDate, IsActive)
+                                          VALUES (@FrontSheetId, @Name, @Address, @PAN, @Aadhar, @DisplayOrder, GETDATE(), 1)";
+                    foreach (var p in f.Persons)
+                    {
+                        await using var pcmd = new SqlCommand(psql, con, tx);
+                        pcmd.Parameters.AddWithValue("@FrontSheetId", f.Id);
+                        pcmd.Parameters.AddWithValue("@Name", p.Name ?? (object)DBNull.Value);
+                        pcmd.Parameters.AddWithValue("@Address", p.Address ?? (object)DBNull.Value);
+                        pcmd.Parameters.AddWithValue("@PAN", p.PAN ?? (object)DBNull.Value);
+                        pcmd.Parameters.AddWithValue("@Aadhar", p.Aadhar ?? (object)DBNull.Value);
+                        pcmd.Parameters.AddWithValue("@DisplayOrder", p.DisplayOrder ?? (object)DBNull.Value);
+                        await pcmd.ExecuteNonQueryAsync();
+                    }
+                }
+
+                tx.Commit();
+                return true;
+            }
+            catch
+            {
+                tx.Rollback();
+                throw;
+            }
         }
-
-        // Add these methods to your repository class
 
         public async Task<FontSheet?> GetFontSheetByIdAsync(int id)
         {
-            const string sql = @"SELECT Id, CompanyId, EntityName, Address, Phone, Email, 
-                         PromoterNameAddress, EntityType, NatureOfBusiness, PanAadhar, 
-                         EntityPan, DOB, Gender, MaritalStatus, FatherMotherSpouseName, 
-                         Area, Ward, Zone, ProductServiceSold, ClientSource, SourcedByEmpId, 
-                         Comments, Login, Password, CreatedDate, CreatedBy, ModifiedDate, 
-                         ModifiedBy, IsActive 
-                         FROM FontSheet WHERE Id = @Id";
+            const string sql = @"
+        SELECT Id, CompanyId, CRNNo, EntityName, Address, Phone, Email, CINNumber,
+               EntityType, DateOfIncorporation, EntityPan, NatureOfBusiness,
+               DOB, Gender, MaritalStatus, FatherMotherSpouseName,
+               Area, Ward, Zone, ProductServiceSold,
+               ElectricBillNo, PropertyTaxNo, SqFt, OtherDetails,
+               ClientSource, SourcedByEmpId,
+               DocPAN, DocAadhar, DocEntity, DocAddress, DocBank, DocPhoto, DocShop, DocMDA,
+               CrossSell, CrossSellDetails,
+               Comments, Login, Password, InternalDetails,
+               ScannedByName, ScannedBySign,
+               CreatedDate, CreatedBy, ModifiedDate, ModifiedBy, IsActive
+        FROM FrontSheet
+        WHERE Id = @Id";
 
             await using var con = Conn();
             await con.OpenAsync();
@@ -1497,47 +1682,91 @@ namespace Investica.Repository
             cmd.Parameters.AddWithValue("@Id", id);
 
             await using var rdr = await cmd.ExecuteReaderAsync();
-            if (await rdr.ReadAsync())
+            if (!await rdr.ReadAsync()) return null;
+
+            var fs = new FontSheet
             {
-                return new FontSheet
+                Id = rdr.GetInt32(0),
+                CompanyId = rdr.IsDBNull(1) ? null : (int?)rdr.GetInt32(1),
+                CRNNo = rdr.IsDBNull(2) ? null : rdr.GetString(2),
+                EntityName = rdr.IsDBNull(3) ? string.Empty : rdr.GetString(3),
+                Address = rdr.IsDBNull(4) ? string.Empty : rdr.GetString(4),
+                Phone = rdr.IsDBNull(5) ? null : rdr.GetString(5),
+                Email = rdr.IsDBNull(6) ? null : rdr.GetString(6),
+                CINNumber = rdr.IsDBNull(7) ? null : rdr.GetString(7),
+                EntityType = rdr.IsDBNull(8) ? null : rdr.GetString(8),
+                DateOfIncorporation = rdr.IsDBNull(9) ? null : (DateTime?)rdr.GetDateTime(9),
+                EntityPan = rdr.IsDBNull(10) ? null : rdr.GetString(10),
+                NatureOfBusiness = rdr.IsDBNull(11) ? null : rdr.GetString(11),
+                DOB = rdr.IsDBNull(12) ? null : (DateTime?)rdr.GetDateTime(12),
+                Gender = rdr.IsDBNull(13) ? null : rdr.GetString(13),
+                MaritalStatus = rdr.IsDBNull(14) ? null : rdr.GetString(14),
+                FatherMotherSpouseName = rdr.IsDBNull(15) ? null : rdr.GetString(15),
+                Area = rdr.IsDBNull(16) ? null : rdr.GetString(16),
+                Ward = rdr.IsDBNull(17) ? null : rdr.GetString(17),
+                Zone = rdr.IsDBNull(18) ? null : rdr.GetString(18),
+                ProductServiceSold = rdr.IsDBNull(19) ? null : rdr.GetString(19),
+                ElectricBillNo = rdr.IsDBNull(20) ? null : rdr.GetString(20),
+                PropertyTaxNo = rdr.IsDBNull(21) ? null : rdr.GetString(21),
+                SqFt = rdr.IsDBNull(22) ? null : rdr.GetString(22),
+                OtherDetails = rdr.IsDBNull(23) ? null : rdr.GetString(23),
+                ClientSource = rdr.IsDBNull(24) ? null : rdr.GetString(24),
+                SourcedByEmpId = rdr.IsDBNull(25) ? null : (int?)rdr.GetInt32(25),
+                DocPAN = !rdr.IsDBNull(26) && rdr.GetBoolean(26),
+                DocAadhar = !rdr.IsDBNull(27) && rdr.GetBoolean(27),
+                DocEntity = !rdr.IsDBNull(28) && rdr.GetBoolean(28),
+                DocAddress = !rdr.IsDBNull(29) && rdr.GetBoolean(29),
+                DocBank = !rdr.IsDBNull(30) && rdr.GetBoolean(30),
+                DocPhoto = !rdr.IsDBNull(31) && rdr.GetBoolean(31),
+                DocShop = !rdr.IsDBNull(32) && rdr.GetBoolean(32),
+                DocMDA = !rdr.IsDBNull(33) && rdr.GetBoolean(33),
+                CrossSell = rdr.IsDBNull(34) ? null : rdr.GetString(34),
+                CrossSellDetails = rdr.IsDBNull(35) ? null : rdr.GetString(35),
+                Comments = rdr.IsDBNull(36) ? null : rdr.GetString(36),
+                Login = rdr.IsDBNull(37) ? null : rdr.GetString(37),
+                Password = rdr.IsDBNull(38) ? null : rdr.GetString(38),
+                InternalDetails = rdr.IsDBNull(39) ? null : rdr.GetString(39),
+                ScannedByName = rdr.IsDBNull(40) ? null : rdr.GetString(40),
+                ScannedBySign = rdr.IsDBNull(41) ? null : rdr.GetString(41),
+                CreatedDate = rdr.IsDBNull(42) ? null : (DateTime?)rdr.GetDateTime(42),
+                CreatedBy = rdr.IsDBNull(43) ? null : (int?)rdr.GetInt32(43),
+                ModifiedDate = rdr.IsDBNull(44) ? null : (DateTime?)rdr.GetDateTime(44),
+                ModifiedBy = rdr.IsDBNull(45) ? null : (int?)rdr.GetInt32(45),
+                IsActive = !rdr.IsDBNull(46) && rdr.GetBoolean(46)
+            };
+
+            await rdr.DisposeAsync();
+
+            const string psql = @"SELECT Id, FrontSheetId, Name, Address, PAN, Aadhar, DisplayOrder, CreatedDate, IsActive
+                          FROM FrontSheetPerson WHERE FrontSheetId = @FrontSheetId AND IsActive = 1 ORDER BY DisplayOrder";
+            await using var pcmd = new SqlCommand(psql, con);
+            pcmd.Parameters.AddWithValue("@FrontSheetId", id);
+            await using var prdr = await pcmd.ExecuteReaderAsync();
+
+            var persons = new List<FrontSheetPerson>();
+            while (await prdr.ReadAsync())
+            {
+                persons.Add(new FrontSheetPerson
                 {
-                    Id = rdr.GetInt32(0),
-                    CompanyId = rdr.IsDBNull(1) ? null : (int?)rdr.GetInt32(1),
-                    EntityName = rdr.IsDBNull(2) ? string.Empty : rdr.GetString(2),
-                    Address = rdr.IsDBNull(3) ? string.Empty : rdr.GetString(3),
-                    Phone = rdr.IsDBNull(4) ? null : rdr.GetString(4),
-                    Email = rdr.IsDBNull(5) ? null : rdr.GetString(5),
-                    PromoterNameAddress = rdr.IsDBNull(6) ? null : rdr.GetString(6),
-                    EntityType = rdr.IsDBNull(7) ? null : rdr.GetString(7),
-                    NatureOfBusiness = rdr.IsDBNull(8) ? null : rdr.GetString(8),
-                    PanAadhar = rdr.IsDBNull(9) ? null : rdr.GetString(9),
-                    EntityPan = rdr.IsDBNull(10) ? null : rdr.GetString(10),
-                    DOB = rdr.IsDBNull(11) ? null : (DateTime?)rdr.GetDateTime(11),
-                    Gender = rdr.IsDBNull(12) ? null : rdr.GetString(12),
-                    MaritalStatus = rdr.IsDBNull(13) ? null : rdr.GetString(13),
-                    FatherMotherSpouseName = rdr.IsDBNull(14) ? null : rdr.GetString(14),
-                    Area = rdr.IsDBNull(15) ? null : rdr.GetString(15),
-                    Ward = rdr.IsDBNull(16) ? null : rdr.GetString(16),
-                    Zone = rdr.IsDBNull(17) ? null : rdr.GetString(17),
-                    ProductServiceSold = rdr.IsDBNull(18) ? null : rdr.GetString(18),
-                    ClientSource = rdr.IsDBNull(19) ? null : rdr.GetString(19),
-                    SourcedByEmpId = rdr.IsDBNull(20) ? null : (int?)rdr.GetInt32(20),
-                    Comments = rdr.IsDBNull(21) ? null : rdr.GetString(21),
-                    Login = rdr.IsDBNull(22) ? null : rdr.GetString(22),
-                    Password = rdr.IsDBNull(23) ? null : rdr.GetString(23),
-                    CreatedDate = rdr.IsDBNull(24) ? null : (DateTime?)rdr.GetDateTime(24),
-                    CreatedBy = rdr.IsDBNull(25) ? null : (int?)rdr.GetInt32(25),
-                    ModifiedDate = rdr.IsDBNull(26) ? null : (DateTime?)rdr.GetDateTime(26),
-                    ModifiedBy = rdr.IsDBNull(27) ? null : (int?)rdr.GetInt32(27),
-                    IsActive = !rdr.IsDBNull(28) && rdr.GetBoolean(28)
-                };
+                    Id = prdr.GetInt32(0),
+                    FrontSheetId = prdr.GetInt32(1),
+                    Name = prdr.IsDBNull(2) ? null : prdr.GetString(2),
+                    Address = prdr.IsDBNull(3) ? null : prdr.GetString(3),
+                    PAN = prdr.IsDBNull(4) ? null : prdr.GetString(4),
+                    Aadhar = prdr.IsDBNull(5) ? null : prdr.GetString(5),
+                    DisplayOrder = prdr.IsDBNull(6) ? null : (int?)prdr.GetInt32(6),
+                    CreatedDate = prdr.IsDBNull(7) ? null : (DateTime?)prdr.GetDateTime(7),
+                    IsActive = !prdr.IsDBNull(8) && prdr.GetBoolean(8)
+                });
             }
-            return null;
+
+            fs.Persons = persons;
+            return fs;
         }
 
         public async Task<bool> DeleteFontSheetAsync(int id)
         {
-            const string sql = @"UPDATE FontSheet SET IsActive = 0 WHERE Id = @Id;";
+            const string sql = @"UPDATE FrontSheet SET IsActive = 0, ModifiedDate = GETDATE() WHERE Id = @Id;";
             await using var con = Conn();
             await con.OpenAsync();
             await using var cmd = new SqlCommand(sql, con);
@@ -1545,7 +1774,7 @@ namespace Investica.Repository
 
             var rows = await cmd.ExecuteNonQueryAsync();
             return rows > 0;
-        } 
+        }
         #endregion
 
         #region ShopCategoryLinks

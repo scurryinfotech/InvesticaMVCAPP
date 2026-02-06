@@ -1,0 +1,809 @@
+﻿:root {
+    --page-width: 210mm;
+    --page-margin: 4mm;
+    --brand: #0f1445;
+    --accent: #d67fb1;
+    --base-font: "Arial", "Helvetica", sans-serif;
+    --fs: 9.5px;
+}
+
+/* Scoped reset for Fontsheet only */
+#frontsheet * {
+    box-sizing: border-box;
+}
+
+#frontsheet {
+    font-family: var(--base-font);
+    color: #000;
+    background: #fff;
+    padding: 10px;
+    margin: 0;
+}
+
+.sheet-wrap {
+    width: 100%;
+    max-width: 100%;
+    margin: 0 auto;
+    background: #fff;
+    border: 1.5px solid #000;
+    padding: 8px;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+
+    /* Header - very compact */
+    .sheet-wrap .header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 2px solid var(--brand);
+        padding: 6px 10px;
+        margin-bottom: 4px;
+    }
+
+    .sheet-wrap .logo {
+        background: var(--accent);
+        padding: 6px 10px;
+        border-radius: 4px;
+        font-weight: 900;
+        font-size: 18px;
+        color: #000;
+    }
+
+    .sheet-wrap .title {
+        flex: 1;
+        text-align: center;
+        font-weight: 900;
+        color: var(--brand);
+        font-size: 28px;
+        letter-spacing: 0.3px;
+    }
+
+    .sheet-wrap .crn {
+        width: 120px;
+        text-align: right;
+    }
+
+        .sheet-wrap .crn .label {
+            font-size: 10px;
+            font-weight: 700;
+            margin-bottom: 3px;
+        }
+
+        .sheet-wrap .crn .box {
+            border: 1px solid #000;
+            padding: 4px 6px;
+            font-size: 11px;
+            text-align: center;
+            font-weight: 700;
+            background: #fff;
+        }
+
+    .sheet-wrap .subtitle {
+        background: #e8e8e8;
+        text-align: center;
+        font-weight: 900;
+        padding: 5px 6px;
+        font-size: 10px;
+        border-bottom: 1px solid #000;
+        margin-bottom: 5px;
+    }
+
+    /* Compact content */
+    .sheet-wrap .content {
+        padding: 6px;
+        font-size: 11px;
+        line-height: 1.3;
+    }
+
+    .sheet-wrap .row {
+        display: flex;
+        gap: 6px;
+        margin-bottom: 6px;
+    }
+
+    .sheet-wrap .col {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .sheet-wrap .block {
+        border: 1px solid #000;
+        padding: 4px 6px;
+        background: #fff;
+    }
+
+    .sheet-wrap .title-small {
+        font-weight: 900;
+        background: #f5f5f5;
+        padding: 3px 5px;
+        font-size: 10px;
+        border-bottom: 1px solid #ddd;
+        margin-bottom: 3px;
+    }
+
+    .sheet-wrap .value, .sheet-wrap .small-value {
+        min-height: 20px;
+        padding: 4px 6px;
+        border: 1px solid #ccc;
+        font-size: 11px;
+        background: #fff;
+        font-weight: 700;
+        line-height: 1.3;
+    }
+
+    .sheet-wrap .details {
+        border: 1px solid #ccc;
+        padding: 5px;
+        min-height: 50px;
+        background: #fff;
+        font-size: 11px;
+        font-weight: 700;
+        line-height: 1.3;
+    }
+
+    .sheet-wrap .muted {
+        font-size: 10px;
+        font-weight: 700;
+        margin-bottom: 2px;
+        color: #000;
+    }
+
+    /* Person columns layout */
+    .sheet-wrap .persons-columns-container {
+        border: 1px solid #000;
+        padding: 4px;
+        background: #fff;
+        margin-bottom: 6px;
+    }
+
+    .sheet-wrap .persons-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 4px;
+        padding: 3px;
+        background: #f5f5f5;
+    }
+
+    .sheet-wrap .persons-columns {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
+    }
+
+    .sheet-wrap .person-column {
+        border: 1px solid #e0e0e0;
+        background: #fafafa;
+        padding: 4px;
+        position: relative;
+    }
+
+    .sheet-wrap .person-column-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 3px;
+        padding-bottom: 2px;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .sheet-wrap .person-number {
+        font-size: 10px;
+        font-weight: 900;
+        color: var(--brand);
+    }
+
+    .sheet-wrap .remove-person-btn {
+        background: #dc3545;
+        border: none;
+        color: #fff;
+        font-weight: 900;
+        cursor: pointer;
+        padding: 3px 7px;
+        font-size: 11px;
+        border-radius: 3px;
+        visibility: hidden;
+    }
+
+    .sheet-wrap .person-field {
+        margin-bottom: 3px;
+    }
+
+        .sheet-wrap .person-field:last-child {
+            margin-bottom: 0;
+        }
+
+    .sheet-wrap .add-person-btn {
+        background: var(--brand);
+        color: #fff;
+        border: none;
+        padding: 5px 12px;
+        font-size: 11px;
+        font-weight: 700;
+        cursor: pointer;
+        border-radius: 3px;
+    }
+
+    /* Inline person form */
+    .sheet-wrap .person-inline-form {
+        border: 1px solid #dcdcdc;
+        background: #fff;
+        padding: 8px;
+        display: flex;
+        gap: 8px;
+        align-items: flex-start;
+        margin-bottom: 8px;
+        flex-wrap: wrap;
+    }
+
+        .sheet-wrap .person-inline-form .form-col {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            min-width: 180px;
+            flex: 1;
+        }
+
+        .sheet-wrap .person-inline-form input[type="text"],
+        .sheet-wrap .person-inline-form textarea {
+            padding: 6px;
+            border: 1px solid #ccc;
+            font-weight: 700;
+            font-size: 12px;
+            background: #fff;
+            font-family: var(--base-font);
+        }
+
+        .sheet-wrap .person-inline-form .form-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+    .sheet-wrap .btn-save-person {
+        background: #198754;
+        color: #fff;
+        border: none;
+        padding: 6px 12px;
+        font-weight: 900;
+        cursor: pointer;
+        border-radius: 3px;
+        font-size: 12px;
+    }
+
+    .sheet-wrap .btn-cancel-person {
+        background: #6c757d;
+        color: #fff;
+        border: none;
+        padding: 6px 12px;
+        font-weight: 900;
+        cursor: pointer;
+        border-radius: 3px;
+        font-size: 12px;
+    }
+
+    /* Documents in single row */
+    .sheet-wrap .docs-single-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px 12px;
+        padding: 5px;
+        border: 1px solid #ccc;
+        background: #fafafa;
+        align-items: center;
+    }
+
+        .sheet-wrap .docs-single-row label {
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .sheet-wrap .docs-single-row input[type="checkbox"] {
+            width: 14px;
+            height: 14px;
+            margin: 0;
+        }
+
+    /* Documents KYC and Additional Details combined layout */
+    .sheet-wrap .docs-additional-wrapper {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
+        margin-top: 6px;
+    }
+
+    .sheet-wrap .left-source-section {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .sheet-wrap .add-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 11px;
+    }
+
+        .sheet-wrap .add-table td {
+            border: 1px solid #000;
+            padding: 4px 6px;
+            font-weight: 700;
+        }
+
+            .sheet-wrap .add-table td:first-child {
+                background: #f5f5f5;
+                width: 45%;
+            }
+
+    /* Multi-column layouts */
+    .sheet-wrap .grid-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
+    }
+
+    .sheet-wrap .grid-3 {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 6px;
+    }
+
+    .sheet-wrap .grid-4 {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr 1fr;
+        gap: 6px;
+    }
+
+    /* Internal details layout */
+    .sheet-wrap .internal-compact {
+        display: grid;
+        grid-template-columns: 0.35fr 0.65fr;
+        gap: 6px;
+        margin-top: 6px;
+    }
+
+        .sheet-wrap .internal-compact .left {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+    /* Signatures */
+    .sheet-wrap .signs {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-top: 8px;
+        border-top: 2px solid var(--brand);
+        padding-top: 8px;
+    }
+
+    .sheet-wrap .sign {
+        text-align: center;
+    }
+
+        .sheet-wrap .sign .line {
+            border-bottom: 1px solid #000;
+            height: 40px;
+            margin-bottom: 5px;
+        }
+
+        .sheet-wrap .sign div {
+            font-weight: 900;
+            font-size: 10px;
+            line-height: 1.3;
+        }
+
+        .sheet-wrap .sign .muted {
+            font-size: 9px;
+        }
+
+    .sheet-wrap .scanned {
+        margin-top: 6px;
+        border: 1px solid #ccc;
+        background: #f9f9f9;
+        padding: 6px;
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+        .sheet-wrap .scanned .grid-2 {
+            margin-top: 4px;
+        }
+
+    /* Actions */
+    .sheet-wrap .actions {
+        display: flex;
+        gap: 10px;
+        padding: 8px;
+        background: #f5f5f5;
+        border-top: 1px solid #ccc;
+        margin-top: 6px;
+    }
+
+        .sheet-wrap .actions .btn {
+            padding: 8px 16px;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 12px;
+        }
+
+    .sheet-wrap .btn-edit {
+        background: var(--brand);
+        color: #fff;
+    }
+
+    .sheet-wrap .btn-print {
+        background: #6c757d;
+        color: #fff;
+    }
+
+    .sheet-wrap .btn-sample {
+        background: #198754;
+        color: #fff;
+    }
+
+/* ===== PRINT STYLES - RESTORE ORIGINAL COMPACT LAYOUT ===== */
+@page {
+    size: A4 portrait;
+    margin: 4mm;
+}
+
+@media print {
+    /* Reset body for print */
+    body {
+        margin: 0;
+        padding: 0;
+        background: #fff;
+    }
+
+    /* Hide everything except frontsheet */
+    header,
+    .left-panel,
+    .container-custom > *:not(.dashboard),
+    .tabs,
+    .card > *:not(#frontsheet) {
+        display: none !important;
+    }
+
+    /* Hide selector and action buttons */
+    #frontsheetSelector,
+    #createNewFrontsheet,
+    #deleteFrontsheet,
+    .btn-success,
+    .btn-danger,
+    div[style*="background:#f8f9fa"]:first-child {
+        display: none !important;
+    }
+
+    /* Frontsheet container adjustments */
+    .container-custom {
+        display: block !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        height: auto !important;
+    }
+
+    .dashboard {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: visible !important;
+    }
+
+    .card {
+        border: none !important;
+        box-shadow: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #fff !important;
+    }
+
+    #frontsheet {
+        background: #fff !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    /* Sheet adjustments - RESTORE ORIGINAL COMPACT SIZE */
+    .sheet-wrap {
+        width: calc(var(--page-width) - (var(--page-margin) * 2)) !important;
+        max-width: calc(var(--page-width) - (var(--page-margin) * 2)) !important;
+        margin: var(--page-margin) auto !important;
+        border: 1.5px solid #000 !important;
+        padding: 3px !important;
+        background: #fff !important;
+        box-shadow: none !important;
+    }
+
+        /* Header - RESTORE ORIGINAL COMPACT */
+        .sheet-wrap .header {
+            padding: 3px 5px !important;
+            margin-bottom: 2px !important;
+            border-bottom: 2px solid var(--brand) !important;
+        }
+
+        .sheet-wrap .logo {
+            font-size: 20px !important;
+            padding: 4px 7px !important;
+        }
+
+        .sheet-wrap .title {
+            font-size: 30px !important;
+        }
+
+        .sheet-wrap .crn {
+            width: 95px !important;
+        }
+
+            .sheet-wrap .crn .label {
+                font-size: 9px !important;
+                margin-bottom: 2px !important;
+            }
+
+            .sheet-wrap .crn .box {
+                font-size: 9.5px !important;
+                padding: 2px 4px !important;
+            }
+
+        /* Subtitle - RESTORE ORIGINAL */
+        .sheet-wrap .subtitle {
+            font-size: 9px !important;
+            padding: 3px 4px !important;
+            margin-bottom: 3px !important;
+        }
+
+        /* Content - RESTORE ORIGINAL COMPACT */
+        .sheet-wrap .content {
+            font-size: var(--fs) !important;
+            line-height: 1.1 !important;
+            padding: 3px !important;
+        }
+
+        .sheet-wrap .row {
+            gap: 3px !important;
+            margin-bottom: 3px !important;
+            page-break-inside: avoid;
+        }
+
+        .sheet-wrap .block {
+            padding: 2px 3px !important;
+            page-break-inside: avoid;
+        }
+
+        .sheet-wrap .title-small {
+            font-size: 8.5px !important;
+            padding: 2px 3px !important;
+            margin-bottom: 2px !important;
+        }
+
+        .sheet-wrap .value,
+        .sheet-wrap .small-value {
+            min-height: 15px !important;
+            padding: 2px 3px !important;
+            font-size: 10px !important;
+            line-height: 1.2 !important;
+            outline: none !important;
+            background: #fff !important;
+            border: 1px solid #ccc !important;
+        }
+
+        .sheet-wrap .details {
+            min-height: 40px !important;
+            padding: 3px !important;
+            font-size: 9.5px !important;
+            line-height: 1.2 !important;
+            outline: none !important;
+            background: #fff !important;
+        }
+
+        .sheet-wrap .muted {
+            font-size: 8.5px !important;
+            margin-bottom: 1px !important;
+        }
+
+        /* Person columns - RESTORE ORIGINAL COMPACT */
+        .sheet-wrap .persons-columns-container {
+            padding: 2px !important;
+            margin-bottom: 3px !important;
+            page-break-inside: avoid;
+        }
+
+        .sheet-wrap .persons-header {
+            padding: 0 !important;
+            margin-bottom: 2px !important;
+        }
+
+        .sheet-wrap .persons-columns {
+            grid-template-columns: 1fr 1fr !important;
+            gap: 3px !important;
+        }
+
+        .sheet-wrap .person-column {
+            padding: 2px !important;
+            page-break-inside: avoid;
+        }
+
+        .sheet-wrap .person-column-header {
+            margin-bottom: 2px !important;
+            padding-bottom: 1px !important;
+        }
+
+        .sheet-wrap .person-number {
+            font-size: 9px !important;
+        }
+
+        .sheet-wrap .person-field {
+            margin-bottom: 2px !important;
+        }
+
+        /* Hide person management buttons */
+        .sheet-wrap .remove-person-btn,
+        .sheet-wrap .add-person-btn,
+        .sheet-wrap .person-inline-form {
+            display: none !important;
+        }
+
+        /* Checkboxes - RESTORE ORIGINAL */
+        .sheet-wrap .docs-single-row {
+            gap: 4px 8px !important;
+            padding: 3px !important;
+        }
+
+            .sheet-wrap .docs-single-row label {
+                font-size: 9px !important;
+                gap: 3px !important;
+            }
+
+            .sheet-wrap .docs-single-row input[type="checkbox"] {
+                width: 12px !important;
+                height: 12px !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+
+        /* Documents additional wrapper - RESTORE ORIGINAL */
+        .sheet-wrap .docs-additional-wrapper {
+            gap: 3px !important;
+            margin-top: 3px !important;
+        }
+
+        .sheet-wrap .left-source-section {
+            gap: 3px !important;
+        }
+
+        /* Table - RESTORE ORIGINAL */
+        .sheet-wrap .add-table {
+            font-size: 9px !important;
+        }
+
+            .sheet-wrap .add-table td {
+                padding: 2px 3px !important;
+            }
+
+        /* Grids - RESTORE ORIGINAL */
+        .sheet-wrap .grid-2,
+        .sheet-wrap .grid-3,
+        .sheet-wrap .grid-4 {
+            gap: 3px !important;
+        }
+
+        /* Internal compact - RESTORE ORIGINAL */
+        .sheet-wrap .internal-compact {
+            gap: 3px !important;
+            margin-top: 3px !important;
+            grid-template-columns: 0.3fr 0.7fr !important;
+        }
+
+            .sheet-wrap .internal-compact .left {
+                gap: 2px !important;
+            }
+
+        /* Signatures - RESTORE ORIGINAL */
+        .sheet-wrap .signs {
+            gap: 6px !important;
+            margin-top: 4px !important;
+            padding-top: 4px !important;
+            page-break-inside: avoid;
+        }
+
+        .sheet-wrap .sign .line {
+            height: 30px !important;
+            margin-bottom: 3px !important;
+        }
+
+        .sheet-wrap .sign div {
+            font-size: 8.5px !important;
+            line-height: 1.2 !important;
+        }
+
+        .sheet-wrap .sign .muted {
+            font-size: 7.5px !important;
+        }
+
+        /* Scanned section - RESTORE ORIGINAL */
+        .sheet-wrap .scanned {
+            margin-top: 3px !important;
+            padding: 3px !important;
+            font-size: 9px !important;
+            page-break-inside: avoid;
+        }
+
+            .sheet-wrap .scanned .grid-2 {
+                margin-top: 2px !important;
+            }
+
+        /* Hide action buttons */
+        .sheet-wrap .actions {
+            display: none !important;
+        }
+
+        /* Force colors in print */
+        .sheet-wrap .header,
+        .sheet-wrap .logo,
+        .sheet-wrap .title,
+        .sheet-wrap .subtitle,
+        .sheet-wrap .title-small,
+        .sheet-wrap .person-number {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+
+        /* Prevent page breaks in critical sections */
+        .sheet-wrap .row,
+        .sheet-wrap .block,
+        .sheet-wrap .person-column,
+        .sheet-wrap .signs,
+        .sheet-wrap .scanned {
+            page-break-inside: avoid;
+        }
+}
+
+/* Responsive for smaller screens */
+@media (max-width: 1200px) {
+    .sheet-wrap .persons-columns {
+        grid-template-columns: 1fr;
+    }
+
+    .sheet-wrap .docs-additional-wrapper {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 760px) {
+    .sheet-wrap {
+        width: calc(100% - 8px);
+        margin: 4px;
+        padding: 4px;
+    }
+
+        .sheet-wrap .persons-columns {
+            grid-template-columns: 1fr;
+        }
+
+        .sheet-wrap .person-inline-form {
+            flex-direction: column;
+        }
+
+        .sheet-wrap .row {
+            flex-direction: column;
+        }
+
+        .sheet-wrap .grid-3,
+        .sheet-wrap .grid-4 {
+            grid-template-columns: 1fr;
+        }
+}

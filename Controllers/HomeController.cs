@@ -894,6 +894,14 @@ namespace Investica.Controllers
                 }
             }
 
+            // JS in wwwroot/js/Fontsheet.js calls /Frontsheet/GetAll and /Frontsheet/Create.
+        // Add small wrappers so both URL forms work.
+             [HttpGet("Frontsheet/GetAll")]
+             public Task<IActionResult> GetAllFrontsheets_ViaGetAll() => GetAllFrontsheets();
+           
+             [HttpPost("Frontsheet/Create")]
+             public Task<IActionResult> CreateFrontsheet_ViaCreate([FromBody] FontSheet frontsheet) => CreateFrontsheet(frontsheet);
+           
             #endregion
 
         }

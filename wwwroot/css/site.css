@@ -419,3 +419,71 @@ a {
 }
 
 
+#personsContainer .person-card {
+    border: 1px solid #e0e0e0;
+    background: #fafafa;
+    padding: 6px;
+    font-weight: 700;
+}
+
+    #personsContainer .person-card .muted {
+        font-size: 10px;
+        font-weight: 700;
+        margin-bottom: 4px;
+    }
+
+#personFormHolder .person-inline-form {
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+    background: #fff;
+    padding: 8px;
+    border: 1px solid #ddd;
+    flex-wrap: wrap;
+}
+
+    #personFormHolder .person-inline-form .form-col {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        min-width: 160px;
+    }
+
+    #personFormHolder .person-inline-form input[type="text"],
+    #personFormHolder .person-inline-form textarea {
+        padding: 6px;
+        border: 1px solid #ccc;
+        font-weight: 700;
+        font-size: 12px;
+        background: #fff;
+    }
+
+.remove-person {
+    background: #dc3545;
+    color: #fff;
+    border: none;
+    padding: 4px 8px;
+    font-weight: 800;
+    cursor: pointer;
+    border-radius: 3px;
+}
+
+.save-person {
+    background: #0f1445;
+    color: #fff;
+    border: none;
+    padding: 6px 10px;
+    font-weight: 800;
+    cursor: pointer;
+    border-radius: 3px;
+}
+
+.cancel-person {
+    background: #6c757d;
+    color: #fff;
+    border: none;
+    padding: 6px 10px;
+    font-weight: 800;
+    cursor: pointer;
+    border-radius: 3px;
+}
