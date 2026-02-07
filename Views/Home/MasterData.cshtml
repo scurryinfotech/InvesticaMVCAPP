@@ -6,7 +6,7 @@
     <div class="card shadow-sm">
         <div class="card-body">
             <h2 class="card-title">Master Data Management</h2>
-            <p class="text-muted">Manage Employees, Companies, License Types and Status.</p>
+            <p class="text-muted">Manage Employees, Companies, License Types, Statuses and Entity Types.</p>
 
             <ul class="nav nav-tabs" id="masterTabs" role="tablist">
                 <li class="nav-item">
@@ -20,6 +20,9 @@
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" id="status-tab" data-bs-toggle="tab" href="#statuses" role="tab">Statuses <span id="count-statuses" class="badge bg-dark ms-1">0</span></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="entitytype-tab" data-bs-toggle="tab" href="#entityTypes" role="tab">Entity Types <span id="count-entitytypes" class="badge bg-dark ms-1">0</span></a>
                 </li>
             </ul>
 
@@ -109,6 +112,28 @@
                         </table>
                     </div>
                 </div>
+
+                <!-- Entity Types -->
+                <div class="tab-pane fade" id="entityTypes" role="tabpanel">
+                    <div class="d-flex justify-content-between mb-2">
+                        <button id="btnAddEntityType" class="btn btn-success"><i class="bi bi-plus-lg"></i> Add</button>
+                        <input id="searchEntityTypes" class="form-control w-25" placeholder="Search" />
+                    </div>
+                    <div class="table-responsive">
+                        <table id="tblEntityTypes" class="table table-bordered table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width:50px">#</th>
+                                    <th>Name</th>
+                                    <th style="width:120px">Active</th>
+                                    <th style="width:160px">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+
             </div>
 
         </div>
@@ -124,7 +149,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <div id="modalBodyContent"></div>   
+                <div id="modalBodyContent"></div>
             </div>
             <div class="modal-footer">
                 <input type="hidden" id="entityType" />

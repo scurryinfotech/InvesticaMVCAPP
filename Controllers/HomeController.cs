@@ -578,7 +578,94 @@ namespace Investica.Controllers
         }
 
         #endregion
+        #region  entitys
+        [HttpGet("entity")]
+        public async Task<IActionResult> GetEntities()
+        {
+            try
+            {
+                var list = await _service.GetEntitiesAsync();
+                return Ok(list);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching entities");
+                return StatusCode(500, new { message = "Error fetching entities", error = ex.Message });
+            }
+        }
 
+        // GET /entitytypes/{id}
+        [HttpGet("entitytypes/{id:int}")]
+        public async Task<IActionResult> GetEntityByIdApi(int id)
+        {
+            try
+            {
+                var item = await _service.GetEntityByIdAsync(id);
+                if (item == null) return NotFound();
+                return Ok(item);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching entity {Id}", id);
+                return StatusCode(500, new { message = "Error fetching entity", error = ex.Message });
+            }
+        }
+
+        // POST /entitytypes
+        [HttpPost("entitytypes")]
+        public async Task<IActionResult> CreateEntity([FromBody] EntityType e)
+        {
+            if (e == null) return BadRequest();
+            try
+            {
+                e.CreatedDate = DateTime.UtcNow;
+                var id = await _service.CreateEntityAsync(e);
+                return CreatedAtAction(nameof(GetEntityByIdApi), new { id }, new { id });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error creating entity");
+                return StatusCode(500, new { message = "Error creating entity", error = ex.Message });
+            }
+        }
+
+        // PUT /entitytypes/{id}
+        [HttpPut("entitytypes/{id:int}")]
+        public async Task<IActionResult> UpdateEntity(int id, [FromBody] EntityType e)
+        {
+            if (e == null) return BadRequest();
+            try
+            {
+                e.Id = id;
+                e.ModifiedDate = DateTime.UtcNow;
+                var ok = await _service.UpdateEntityAsync(e);
+                if (!ok) return NotFound();
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating entity {Id}", id);
+                return StatusCode(500, new { message = "Error updating entity", error = ex.Message });
+            }
+        }
+
+        // DELETE /entitytypes/{id}
+        [HttpDelete("entitytypes/{id:int}")]
+        public async Task<IActionResult> DeleteEntity(int id, [FromQuery] int modifiedBy = 1)
+        {
+            try
+            {
+                var ok = await _service.SoftDeleteEntityAsync(id, modifiedBy);
+                if (!ok) return NotFound();
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error deleting entity {Id}", id);
+                return StatusCode(500, new { message = "Error deleting entity", error = ex.Message });
+            }
+        }
+        #endregion
 
         #region  Invoce Management
 

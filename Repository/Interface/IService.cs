@@ -45,6 +45,13 @@ namespace Investica.Repository.Interface
         Task<int> CreateStatusAsync(StatusMaster s);
         Task<bool> UpdateStatusAsync(StatusMaster s);
         Task<bool> SoftDeleteStatusAsync(int id, int modifiedBy);
+        // Entitytyoes
+        Task<List<EntityType>> GetEntitiesAsync();
+        Task<EntityType?> GetEntityByIdAsync(int id);
+        Task<int> CreateEntityAsync(EntityType e);
+        Task<bool> UpdateEntityAsync(EntityType e);
+        Task<bool> SoftDeleteEntityAsync(int id, int modifiedBy);
+
 
         // Tickets
         Task<List<Ticket>> GetTicketsAsync();
