@@ -37,7 +37,7 @@ function getProp(obj, propName) {
 
 // UI references
 const personsContainer = document.getElementById('personsContainer');
-const addPersonBtn = document.getElementById('addPerson');
+const addPersonBtn = document.getElementById('addPersonBtn');
 const personFormHolder = document.getElementById('personFormHolder');
 const editBtn = document.getElementById('editBtn');
 const sampleBtn = document.getElementById('sampleBtn');
@@ -110,6 +110,7 @@ function loadFrontsheetDropdowns() {
         url: '/Frontsheet/dropdowns',
         type: 'GET',
         success: function (response) {
+            console.debug('Frontsheet dropdowns response:', response);
             const fsItems = response.frontsheets || [];
             const etItems = response.entityTypes || [];
             const cmpItems = response.companies || [];
@@ -406,75 +407,85 @@ function validateBeforeSave() {
     return true;
 }
 
+// Replace the broken collectFormData() with this robust version
 function collectFormData() {
-    const get = (id) => {
+    const text = id => {
         const el = document.getElementById(id);
-        return el ? el.textContent.trim() : '';
+        return el ? String(el.textContent || '').trim() : '';
+    };
+    const inputVal = id => {
+        const v = $('#' + id).val();
+        return (v === undefined || v === null) ? '' : String(v).trim();
+    };
+    const checkbox = id => {
+        const el = document.getElementById(id);
+        return !!(el && el.checked);
     };
 
-    const getCheckbox = (id) => {
-        const el = document.getElementById(id);
-        return el ? el.checked : false;
-    };
+    const selectedCompanyId = inputVal('companySelector');
+    const companyIdVal = selectedCompanyId ? parseInt(selectedCompanyId, 10) : null;
+    const entityNameFromInput = inputVal('fs_name_input') || text('fs_name_display') || '';
 
-    const selectedCompanyId = $('#companySelector').val();
-    const companyIdVal = selectedCompanyId ? parseInt(selectedCompanyId) : null;
-    const entityNameFromInput = $('#fs_name_input').val() || get('fs_name');
-
-    const personsData = persons
-        .filter(p => p.name && p.name !== '—')
+    const personsData = (persons || [])
+        .filter(p => (p.name || '').trim() !== '')
         .map((p, idx) => ({
-            Name: p.name,
-            Address: p.address,
-            PAN: p.pan,
-            Aadhar: p.aadhar,
+            Name: p.name || '',
+            Address: p.address || '',
+            PAN: p.pan || '',
+            Aadhar: p.aadhar || '',
             DisplayOrder: idx
         }));
 
+    // Parse SourcedByEmpId as number if possible
+    const sourcedBy = parseInt(text('fs_sourcedby'), 10);
+    const sourcedByVal = Number.isNaN(sourcedBy) ? null : sourcedBy;
+
+    // Date fields are kept as strings (server code accepts DateTime parsing) — adjust if you send ISO strings
     return {
         Id: currentFrontsheetId || 0,
         CompanyId: companyIdVal,
-        CRNNo: get('fs_crn'),
+        CRNNo: text('fs_crn'),
         EntityName: entityNameFromInput,
-        Address: get('fs_address',
-        Phone: get('fs_phone',
-        Email: get('fs_email',
-        CINNumber: get('fs_cin',
-        EntityType: $('#fs_entitytype_display').val() || get('fs_entitytype',
-        DateOfIncorporation: get('fs_incop' || null,
-        EntityPan: get('fs_epan',
-        NatureOfBusiness: get('fs_business',
-        DOB: get('fs_dob' || null,
-        Gender: get('fs_gender',
-        FatherMotherSpouseName: get('fs_father',
-        MaritalStatus: get('fs_marital',
-        Area: get('fs_area',
-        Ward: get('fs_ward',
-        Zone: get('fs_zone',
-        ProductServiceSold: get('fs_product',
-        ElectricBillNo: get('fs_electric',
-        PropertyTaxNo: get('fs_proptax',
-        SqFt: get('fs_sqft',
-        OtherDetails: get('fs_otherdoc',
-        ClientSource: get('fs_source',
-        SourcedByEmpId: get('fs_sourcedby' ? parseInt(get('fs_sourcedby' : null,
-        DocPAN: getCheckbox('cb_pan',
-        DocAadhar: getCheckbox('cb_aadhar',
-        DocEntity: getCheckbox('cb_entity',
-        DocAddress: getCheckbox('cb_addr',
-        DocBank: getCheckbox('cb_bank',
-        DocPhoto: getCheckbox('cb_photo',
-        DocShop: getCheckbox('cb_shop',
-        DocMDA: getCheckbox('cb_mda',
-        CrossSell: get('fs_crosssell',
-        CrossSellDetails: get('fs_crossdetails',
-        Comments: get('fs_comments',
-        Login: get('fs_login',
-        Password: get('fs_password',
-        InternalDetails: get('fs_details',
-        ScannedByName: get('fs_docname',
-        ScannedBySign: get('fs_docsign',
-        Persons: personsData
+        Address: text('fs_address'),
+        Phone: text('fs_phone'),
+        Email: text('fs_email'),
+        CINNumber: text('fs_cin'),
+        EntityType: inputVal('fs_entitytype_display') || inputVal('fs_entitytype'),
+        DateOfIncorporation: text('fs_incop') || null,
+        EntityPan: text('fs_epan'),
+        NatureOfBusiness: text('fs_business'),
+        DOB: text('fs_dob') || null,
+        Gender: text('fs_gender'),
+        FatherMotherSpouseName: text('fs_father'),
+        MaritalStatus: text('fs_marital'),
+        Area: text('fs_area'),
+        Ward: text('fs_ward'),
+        Zone: text('fs_zone'),
+        ProductServiceSold: text('fs_product'),
+        ElectricBillNo: text('fs_electric'),
+        PropertyTaxNo: text('fs_proptax'),
+        SqFt: text('fs_sqft'),
+        OtherDetails: text('fs_otherdoc'),
+        ClientSource: text('fs_source'),
+        SourcedByEmpId: sourcedByVal,
+        DocPAN: checkbox('cb_pan'),
+        DocAadhar: checkbox('cb_aadhar'),
+        DocEntity: checkbox('cb_entity'),
+        DocAddress: checkbox('cb_addr'),
+        DocBank: checkbox('cb_bank'),
+        DocPhoto: checkbox('cb_photo'),
+        DocShop: checkbox('cb_shop'),
+        DocMDA: checkbox('cb_mda'),
+        CrossSell: text('fs_crosssell'),
+        CrossSellDetails: text('fs_crossdetails'),
+        Comments: text('fs_comments'),
+        Login: text('fs_login'),
+        Password: text('fs_password'),
+        InternalDetails: text('fs_details'),
+        ScannedByName: text('fs_docname'),
+        ScannedBySign: text('fs_docsign'),
+        Persons: personsData,
+        IsActive: true
     };
 }
 
@@ -659,23 +670,13 @@ function cancelEditMode() {
     if (cancelBtn) $(cancelBtn).hide();
 }
 
-// Ensure this file is loaded after DOM or placed in bundle
 document.addEventListener('click', function (e) {
-  // matches button with class add-person or id addPersonBtn
-  const btn = e.target.closest('.add-person, #addPersonBtn');
-  if (!btn) return;
-  e.preventDefault();
-
-  // call add-person logic
-  // example: append a new person form row
-  const list = document.querySelector('#personsList');
-  if (!list) return console.warn('personsList not found');
-  const newRow = document.createElement('div');
-  newRow.className = 'person-row';
-  newRow.innerHTML = `
-    <input name="Persons[].Name" placeholder="Name" />
-    <input name="Persons[].DOB" placeholder="DOB" />
-    <button type="button" class="remove-person">Remove</button>
-  `;
-  list.appendChild(newRow);
+    const btn = e.target.closest('.add-person, #addPersonBtn');
+    if (!btn) return;
+    e.preventDefault();
+    try {
+        openPersonForm(null);
+    } catch (err) {
+        console.error('Failed to open person form', err);
+    }
 });
