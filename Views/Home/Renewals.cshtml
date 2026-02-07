@@ -115,6 +115,20 @@
                             <option value="EXPIRED">Expired</option>
                         </select>
                     </div>
+                    <div class="col-md-3">
+                        <div id="filter_month-wrapper" class="searchable-dropdown-wrapper">
+                            <input type="text" class="form-control form-control-sm searchable-input multi-select" placeholder="All Months (select multiple)">
+                            <input type="hidden" id="filter_month">
+                            <ul class="searchable-dropdown-list"></ul>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div id="filter_year-wrapper" class="searchable-dropdown-wrapper">
+                            <input type="text" class="form-control form-control-sm searchable-input multi-select" placeholder="All Years (select multiple)">
+                            <input type="hidden" id="filter_year">
+                            <ul class="searchable-dropdown-list"></ul>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- RESET BUTTON -->
@@ -183,7 +197,7 @@
                     <div class="col-md-6 mb-3">
                         <label class="form-label fw-semibold">Company <span class="text-danger">*</span></label>
                         <div id="modalCompanyId-wrapper" class="searchable-dropdown-wrapper">
-                            <input type="text" class="form-control form-control-sm searchable-input"  placeholder="-- Select Company --">
+                            <input type="text" class="form-control form-control-sm searchable-input" placeholder="-- Select Company --">
                             <input type="hidden" id="modalCompanyId">
                             <ul class="searchable-dropdown-list"></ul>
                         </div>
