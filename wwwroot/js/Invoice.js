@@ -50,7 +50,7 @@ function displayAllInvoices(invoices) {
 function renderInvoiceLineItems(lineItems, editMode = false) {
     let html = '';
     lineItems.forEach((item, idx) => {
-        if (item.itemType === "heading") {
+        if (item.itemType === "heading" || item.ItemType === "heading") {
             const headingText = item.headingText ?? item.HeadingText ?? '';
             html += `
                 <tr class="table-dark heading-row" data-item-type="heading" data-row-index="${idx}">
@@ -75,12 +75,12 @@ function renderInvoiceLineItems(lineItems, editMode = false) {
                     <td class="text-end">
                         ${editMode
                     ? `<input class="form-control form-control-sm gross-input" data-row-index="${idx}" value="${escapeHtml(gross)}">`
-                    : escapeHtml(Number(gross).toFixed(2))}
+                    : escapeHtml(Number(gross || 0).toFixed(2))}
                     </td>
                     <td class="text-end">
                         ${editMode
                     ? `<input class="form-control form-control-sm net-input" data-row-index="${idx}" value="${escapeHtml(net)}">`
-                    : escapeHtml(Number(net).toFixed(2))}
+                    : escapeHtml(Number(net || 0).toFixed(2))}
                     </td>
                     ${editMode ? `<td class="text-end" style="width:80px;"><button class="btn btn-sm btn-danger remove-row-btn" data-row-index="${idx}" type="button">Remove</button></td>` : ''}
                 </tr>`;
@@ -97,14 +97,14 @@ function createInvoiceCard(invoice, index) {
             {
                 itemType: "data",
                 particulars: "BALLYGUNGE | APPROVAL DATE: 06/03/2025",
-                grossAmount: invoice.subTotal ?? invoice.SubTotal ?? '0.00',
-                netAmount: invoice.netTotal ?? invoice.NetTotal ?? '0.00',
+                grossAmount: invoice.subTotal ?? invoice.SubTotal ?? 0.00,
+                netAmount: invoice.netTotal ?? invoice.NetTotal ?? 0.00,
                 lineOrder: 2
             }
         ];
     }
 
-    const invoiceId = invoice.id ?? invoice.Id;
+    const invoiceId = invoice.id ?? invoice.Id ?? invoice.tempId;
     const invoiceNumber = invoice.invoiceNumber ?? invoice.InvoiceNumber ?? '';
     const invoiceDate = invoice.invoiceDate ?? invoice.InvoiceDate ?? '';
     const invTo = invoice.invoiceTo ?? invoice.InvoiceTo ?? '';
@@ -149,7 +149,7 @@ function createInvoiceCard(invoice, index) {
             <!-- Invoice Number & Date -->
             <div style="text-align:center; margin:20px 0;">
                 <div style="font-size:16px; font-weight:bold; color:#0f1445;">
-                    INVOICE NUMBER: <span class="inv_number">${escapeHtml(invoiceNumber)}</span>
+                    <span class="inv_number">${escapeHtml(invoiceNumber)}</span>
                 </div>
                 <div style="font-size:12px; color:#666;">
                     Date: <span class="inv_date">${escapeHtml(invoiceDate)}</span>
@@ -390,7 +390,12 @@ $(document).on("click", ".invoiceEditBtn", function (e) {
     editingInvoiceId = null;
 
     // Send to server
-    updateInvoice(invoice, invoiceId);
+    // if this is a newly created temp invoice, call create flow
+    if (String(invoiceId).startsWith('new-') || invoiceId === 0) {
+        createInvoice(invoice, invoiceId);
+    } else {
+        updateInvoice(invoice, invoiceId);
+    }
 });
 
 function parseDecimal(v) {
@@ -413,6 +418,61 @@ function formatDateForInput(d) {
     const mm = String(dt.getMonth() + 1).padStart(2, '0');
     const dd = String(dt.getDate()).padStart(2, '0');
     return `${dt.getFullYear()}-${mm}-${dd}`;
+}
+
+// ====== CREATE INVOICE FLOW (POST then PUT full model to persist line items) ======
+function createInvoice(invoiceObject, tempId) {
+    // build payload for POST (master)
+    const payload = {
+        invoiceNumber: invoiceObject.invoiceNumber ?? invoiceObject.InvoiceNumber ?? '',
+        invoiceDate: invoiceObject.invoiceDate ?? invoiceObject.InvoiceDate ?? new Date().toISOString(),
+        invoiceTo: invoiceObject.invoiceTo ?? invoiceObject.InvoiceTo ?? '',
+        gstNoTo: invoiceObject.gstNoTo ?? invoiceObject.GstNoTo ?? '',
+        invoiceToAddress: invoiceObject.invoiceToAddress ?? invoiceObject.InvoiceToAddress ?? '',
+        invoiceFrom: invoiceObject.invoiceFrom ?? invoiceObject.InvoiceFrom ?? '',
+        gstNoFrom: invoiceObject.gstNoFrom ?? invoiceObject.GstNoFrom ?? '',
+        invoiceFromAddress: invoiceObject.invoiceFromAddress ?? invoiceObject.InvoiceFromAddress ?? '',
+        subTotal: Number(invoiceObject.subTotal ?? invoiceObject.SubTotal ?? 0),
+        igst: Number(invoiceObject.igst ?? invoiceObject.Igst ?? 0),
+        taxAmount: Number(invoiceObject.taxAmount ?? invoiceObject.TaxAmount ?? 0),
+        netTotal: Number(invoiceObject.netTotal ?? invoiceObject.NetTotal ?? 0),
+        netTotalWords: invoiceObject.netTotalWords ?? invoiceObject.NetTotalWords ?? ''
+    };
+
+    $.ajax({
+        url: API_BASE,
+        method: "POST",
+        contentType: "application/json",
+        data: JSON.stringify(payload),
+        success: function (newId) {
+            if (!newId) {
+                alert("Failed to create invoice (no id returned)");
+                return;
+            }
+
+            // update DOM card id and internal maps
+            const card = $(`[data-invoice-id="${tempId}"]`);
+            if (card.length) {
+                card.attr('data-invoice-id', newId);
+            }
+
+            // move data from temp key to new key
+            invoicesData[newId] = invoicesData[tempId] || invoiceObject;
+            delete invoicesData[tempId];
+
+            // Now PUT the full invoice including line items to insert lineitems
+            // Ensure id present on object
+            invoiceObject.id = newId;
+            invoiceObject.Id = newId;
+
+            // call update to persist lineitems
+            updateInvoice(invoiceObject, newId);
+        },
+        error: function (xhr, status, error) {
+            console.error("Create invoice failed:", xhr.responseText || error);
+            alert("Create invoice failed: " + (xhr.responseText || error));
+        }
+    });
 }
 
 // ====== UPDATE INVOICE (PUT) ======
@@ -453,7 +513,11 @@ function updateInvoice(invoiceObject, invoiceId) {
         success: function (data) {
             alert("Invoice updated successfully");
             if (data && typeof data === "object") {
+                // update map for this invoice id
                 invoicesData[invoiceId] = { ...(invoicesData[invoiceId] || {}), ...data };
+                // also update allInvoices list
+                const idx = allInvoices.findIndex(x => (x.id ?? x.Id) == invoiceId);
+                if (idx >= 0) allInvoices[idx] = invoicesData[invoiceId];
             }
         },
         error: function (xhr, status, error) {
@@ -528,8 +592,47 @@ $('#clearBtn').on('click', function (e) {
     displayAllInvoices(allInvoices);
 });
 
+// ====== ADD NEW INVOICE BUTTON HANDLER ======
+function addNewInvoice() {
+    const tempId = 'new-' + Date.now();
+    const newInvoice = {
+        tempId,
+        invoiceNumber: '',
+        invoiceDate: new Date().toISOString().split('T')[0],
+        invoiceTo: '',
+        gstNoTo: '',
+        invoiceToAddress: '',
+        invoiceFrom: '',
+        gstNoFrom: '',
+        invoiceFromAddress: '',
+        subTotal: 0,
+        igst: 0,
+        taxAmount: 0,
+        netTotal: 0,
+        netTotalWords: '',
+        lineItems: [
+            { itemType: 'data', particulars: '', grossAmount: 0, netAmount: 0, lineOrder: 1 }
+        ]
+    };
+
+    // Add to data structures and render
+    invoicesData[tempId] = newInvoice;
+    allInvoices.unshift(newInvoice);
+    // prepend new card
+    $(".dashboard").prepend(createInvoiceCard(newInvoice));
+    // immediately open edit mode
+    const card = $(`[data-invoice-id="${tempId}"]`);
+    card.find('.invoiceEditBtn').trigger('click');
+}
+
 // ====== INITIALIZE ======
 $(document).ready(function () {
     loadInvoices();
     $("#invoiceFilters").show();
-});
+
+    // wire Add New Invoice button
+    $(document).on('click', '#addNewInvoiceBtn', function (e) {
+        e.preventDefault();
+        addNewInvoice();
+    });
+});                     
