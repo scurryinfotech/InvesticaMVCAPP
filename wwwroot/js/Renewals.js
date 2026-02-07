@@ -4,14 +4,12 @@
     let deleteTargetId = 0;
     let dropdownData = null;
 
-
     loadRenewals();
-
     setTimeout(loadDropdowns, 0);
 
-
-    // Event Listeners
-    $("#filter_company,#filter_code, #filter_license, #filter_location, #filter_status").on("change", applyFilters);
+    // Event Listeners - ADD month and year filters
+    $('#filter_company-wrapper input[type="hidden"], #filter_code-wrapper input[type="hidden"], #filter_license-wrapper input[type="hidden"], #filter_location-wrapper input[type="hidden"], #filter_month-wrapper input[type="hidden"], #filter_year-wrapper input[type="hidden"]').on('change', applyFilters);
+    $('#filter_status').on('change', applyFilters);
     $("#btnResetFilters").on("click", resetFilters);
     $("#btnAddNew").on("click", () => openModal());
     $("#btnSave").on("click", saveRenewal);
@@ -36,48 +34,88 @@
             url: API_BASE + "/renewals/dropdowns",
             type: "GET",
             success: function (data) {
-                debugger    
                 dropdownData = data;
-
+                debugger
                 // Populate Modal Company Dropdown (searchable)
                 populateSearchableDropdown(
                     '#modalCompanyId-wrapper',
                     data.companies,
-                    '-- Select Company --'
+                    '-- Select Company --',
+                    false
                 );
 
                 // Populate Modal License Type Dropdown (searchable)
                 populateSearchableDropdown(
                     '#modalLicenseTypeId-wrapper',
                     data.licenseTypes,
-                    '-- Select License Type --'
+                    '-- Select License Type --',
+                    false
                 );
 
                 populateSearchableDropdown(
                     '#filter_code-wrapper',
                     data.code,
-                    'All Code'
+                    'All Codes',
+                    false
                 );
 
                 // Populate Filter Company Dropdown (searchable)
                 populateSearchableDropdown(
                     '#filter_company-wrapper',
                     data.companies,
-                    'All Companies'
+                    'All Companies',
+                    false
                 );
 
                 // Populate Filter License Type Dropdown (searchable)
                 populateSearchableDropdown(
                     '#filter_license-wrapper',
                     data.licenseTypes,
-                    'All License Types'
+                    'All License Types',
+                    false
                 );
 
                 // Populate Filter Location Dropdown (searchable)
                 populateSearchableDropdown(
                     '#filter_location-wrapper',
                     data.locations.map(loc => ({ id: loc.toUpperCase(), name: loc })),
-                    'All Locations'
+                    'All Locations',
+                    false
+                );
+
+                // NEW: Populate Month Filter (multi-select)
+                const months = [
+                    { id: '1', name: 'January' },
+                    { id: '2', name: 'February' },
+                    { id: '3', name: 'March' },
+                    { id: '4', name: 'April' },
+                    { id: '5', name: 'May' },
+                    { id: '6', name: 'June' },
+                    { id: '7', name: 'July' },
+                    { id: '8', name: 'August' },
+                    { id: '9', name: 'September' },
+                    { id: '10', name: 'October' },
+                    { id: '11', name: 'November' },
+                    { id: '12', name: 'December' }
+                ];
+                populateSearchableDropdown(
+                    '#filter_month-wrapper',
+                    months,
+                    'All Months (select multiple)',
+                    true
+                );
+
+                // NEW: Populate Year Filter (multi-select)
+                const currentYear = new Date().getFullYear();
+                const years = [];
+                for (let i = currentYear - 2; i <= currentYear + 5; i++) {
+                    years.push({ id: i.toString(), name: i.toString() });
+                }
+                populateSearchableDropdown(
+                    '#filter_year-wrapper',
+                    years,
+                    'All Years (select multiple)',
+                    true
                 );
 
                 // Initialize searchable dropdowns after populating
@@ -88,6 +126,7 @@
             }
         });
     }
+
     function initializeSearchableDropdowns() {
         $('.searchable-input').each(function () {
             const $input = $(this);
@@ -176,7 +215,6 @@
 
                 if ($next && $next.length > 0) {
                     $next.addClass('active');
-                    // Scroll into view
                     const listTop = $list.scrollTop();
                     const listHeight = $list.height();
                     const itemTop = $next.position().top;
@@ -196,6 +234,7 @@
         });
 
         // Handle item selection
+        // inside initializeSearchableDropdowns() — update the click handler to log selected values
         $(document).on('click', '.searchable-dropdown-list li', function () {
             if ($(this).hasClass('no-results')) return;
 
@@ -204,13 +243,53 @@
             const $wrapper = $list.parent();
             const $input = $wrapper.find('.searchable-input');
             const $hiddenValue = $wrapper.find('input[type="hidden"]');
+            const isMultiSelect = $input.hasClass('multi-select');
 
-            const selectedValue = $item.data('value');
+            const selectedValueRaw = $item.data('value');
+            const selectedValue = selectedValueRaw;
+            const selectedValueStr = String(selectedValue);
             const selectedText = $item.text();
 
-            $input.val(selectedText);
-            $hiddenValue.val(selectedValue);
-            $list.hide();
+            if (isMultiSelect) {
+                // Normalize current values into an array of strings (non-empty)
+                let currentValues = ($hiddenValue.val() || '').toString().split(',').map(s => s.trim()).filter(s => s);
+                let currentTexts = $input.val() ? $input.val().split(', ').filter(t => t.trim()) : [];
+
+                if (currentValues.includes(selectedValueStr)) {
+                    currentValues = currentValues.filter(v => v !== selectedValueStr);
+                    currentTexts = currentTexts.filter(t => t !== selectedText);
+                } else {
+                    currentValues.push(selectedValueStr);
+                    currentTexts.push(selectedText);
+                }
+
+                $input.val(currentTexts.join(', '));
+
+                // Set hidden input reliably (jQuery + DOM property + attribute) then keep dropdown open
+                const joined = currentValues.join(',');
+                $hiddenValue.val(joined);
+                if ($hiddenValue[0]) $hiddenValue[0].value = joined;
+                $hiddenValue.attr('value', joined);
+                $list.show();
+            } else {
+                $input.val(selectedText);
+
+                // Set hidden input reliably (jQuery + DOM property + attribute)
+                $hiddenValue.val(selectedValueStr);
+                if ($hiddenValue[0]) $hiddenValue[0].value = selectedValueStr;
+                $hiddenValue.attr('value', selectedValueStr);
+
+                $list.hide();
+            }
+
+            // Debug: log selection so you can inspect values in DevTools
+            console.log('searchable selection:', {
+                wrapper: $wrapper.attr('id'),
+                selectedValue: selectedValueStr,
+                selectedText,
+                hiddenValueVal: $hiddenValue.val(),
+                hiddenValueAttr: $hiddenValue.attr('value')
+            });
 
             // Trigger change event for filters
             $hiddenValue.trigger('change');
@@ -236,20 +315,18 @@
             },
             error: function () {
                 showToast("Failed to load renewals", "danger");
-                $("#renewalsBody").html('<tr><td colspan="9" class="text-center text-danger">Failed to load data</td></tr>');
+                $("#renewalsBody").html('<tr><td colspan="11" class="text-center text-danger">Failed to load data</td></tr>');
             }
         });
     }
 
-    // ═══════════════════════════════════════════════════════════
-    //  RENDER TABLE
-    // ═══════════════════════════════════════════════════════════
+
     function renderTable(renewals) {
         const tbody = $("#renewalsBody");
         tbody.empty();
 
         if (!renewals || renewals.length === 0) {
-            tbody.append('<tr><td colspan="9" class="text-center text-muted">No records found.</td></tr>');
+            tbody.append('<tr><td colspan="11" class="text-center text-muted">No records found.</td></tr>');
             return;
         }
 
@@ -262,43 +339,51 @@
                 ? `<span class="text-danger">-${daysSinceExpiry}</span>`
                 : `<span>${daysLeft}</span>`;
 
+            // Extract month and year from expiry date and make them safe strings
+            let expiryMonth = "";
+            let expiryYear = "";
+            if (item.expiryDate) {
+                const expiryDate = new Date(item.expiryDate);
+                if (!isNaN(expiryDate.getTime())) {
+                    expiryMonth = String(expiryDate.getMonth() + 1); // "1" - "12"
+                    expiryYear = String(expiryDate.getFullYear());
+                }
+            }
+
             tbody.append(`
-                <tr data-id="${item.id}"
-                    data-company="${item.companyId}"
-                    data-code="${item.unikey}" 
-                    data-license="${item.licenseTypeId}"
-                    data-location="${item.cityState.toUpperCase()}"
-                    data-status="${item.status}">
-                    <td>${index + 1}</td>
-                    <td style="text-wrap: nowrap;">${item.unikey}</td>
-                    <td style="text-wrap:wrap;">${item.companyName}</td>
-                    
-                    <td>${item.licenseType}</td>
-                    <td>${item.cityState}</td>
-                    <td style="text-wrap: wrap;">${item.address}</td>
-                    <td style="text-wrap: wrap;">${item.expiryDateFormatted}</td>
-                    <td class="text-center">${daysDisplay}</td>
-                    <td>${badge}</td>
-                    // inside renderTable(...) replace button HTML so icons have accessible fallback
-<td class="text-center">
-    <button class="btn btn-outline-primary btn-sm btn-edit me-1" title="Edit" aria-label="Edit">
-        <i class="fas fa-pencil-alt" aria-hidden="true"></i>
-        <span class="">Edit</span>
-    </button>
-    <button class="btn btn-outline-danger btn-sm btn-delete" title="Delete" aria-label="Delete">
-        <i class="fas fa-trash-alt" aria-hidden="true"></i>
-        <span class="">Delete</span>
-    </button>
-</td>       
-         <td>${item.remarks}</td>
-                </tr>
-            `);
+            <tr data-id="${item.id}"
+                data-company="${item.companyId}"
+                data-code="${item.unikey}" 
+                data-license="${item.licenseTypeId}"
+                data-location="${item.cityState ? item.cityState.toUpperCase() : ''}"
+                data-status="${item.status || ''}"
+                data-month="${expiryMonth}"
+                data-year="${expiryYear}">
+                <td>${index + 1}</td>
+                <td style="text-wrap: nowrap;">${item.unikey}</td>
+                <td style="text-wrap:wrap;">${item.companyName}</td>
+                <td>${item.licenseType}</td>
+                <td>${item.cityState}</td>
+                <td style="text-wrap: wrap;">${item.address}</td>
+                <td style="text-wrap: wrap;">${item.expiryDateFormatted}</td>
+                <td class="text-center">${daysDisplay}</td>
+                <td>${badge}</td>
+                <td class="text-center">
+                    <button class="btn btn-outline-primary btn-sm btn-edit me-1" title="Edit" aria-label="Edit">
+                        <i class="fas fa-pencil-alt" aria-hidden="true"></i>
+                        <span class="d-none d-md-inline">Edit</span>
+                    </button>
+                    <button class="btn btn-outline-danger btn-sm btn-delete" title="Delete" aria-label="Delete">
+                        <i class="fas fa-trash-alt" aria-hidden="true"></i>
+                        <span class="d-none d-md-inline">Delete</span>
+                    </button>
+                </td>       
+                <td>${item.remarks}</td>
+            </tr>
+        `);
         });
     }
 
-    // ═══════════════════════════════════════════════════════════
-    //  GET STATUS BADGE
-    // ═══════════════════════════════════════════════════════════
     function getStatusBadge(status) {
         const badges = {
             "EXPIRED": "bg-secondary text-white",
@@ -310,25 +395,59 @@
         return `<span class="badge ${cls}">${status}</span>`;
     }
 
-    // ═══════════════════════════════════════════════════════════
-    //  APPLY FILTERS
-    // ═══════════════════════════════════════════════════════════
     function applyFilters() {
-        const companyCode = $('#filter_code-wrapper input[type="hidden"]').val() || $('#filter_code').val() || "";
-        const companyFilter = $('#filter_company-wrapper input[type="hidden"]').val() || $('#filter_company').val() || "";
-        const licenseFilter = $('#filter_license-wrapper input[type="hidden"]').val() || $('#filter_license').val() || "";
-        const locationFilter = ($('#filter_location-wrapper input[type="hidden"]').val() || $('#filter_location').val() || "").toUpperCase();
+        const companyCode = $('#filter_code-wrapper input[type="hidden"]').val() || "";
+        const companyFilter = $('#filter_company-wrapper input[type="hidden"]').val() || "";
+        const licenseFilter = $('#filter_license-wrapper input[type="hidden"]').val() || "";
+        const locationFilter = ($('#filter_location-wrapper input[type="hidden"]').val() || "").toUpperCase();
         const statusFilter = $('#filter_status').val() || "";
+
+        const monthFilter = $('#filter_month-wrapper input[type="hidden"]').val() || "";
+        const yearFilter = $('#filter_year-wrapper input[type="hidden"]').val() || "";
+
+        const selectedMonths = monthFilter ? monthFilter.split(',').map(m => m.trim()) : [];
+        const selectedYears = yearFilter ? yearFilter.split(',').map(y => y.trim()) : [];
+
+        debugger
+
+        // Debugging helper - remove or comment out in production
+        console.log('applyFilters()', {
+            companyFilter, companyCode, licenseFilter, locationFilter, statusFilter, selectedMonths, selectedYears
+        });
 
         $("#renewalsBody tr").each(function () {
             const $row = $(this);
             let show = true;
 
-            if (companyFilter && $row.data("company") != companyFilter) show = false;
-            if (companyCode && $row.data("code") != companyCode) show = false;
-            if (licenseFilter && $row.data("license") != licenseFilter) show = false;
-            if (locationFilter && $row.data("location").indexOf(locationFilter) === -1) show = false;
-            if (statusFilter && $row.data("status") !== statusFilter) show = false;
+            if (companyFilter && $row.data("company").toString() !== companyFilter.toString()) {
+                show = false;
+            }
+            if (companyCode && $row.data("code").toString() !== companyCode.toString()) {
+                show = false;
+            }
+            if (licenseFilter && $row.data("license").toString() !== licenseFilter.toString()) {
+                show = false;
+            }
+            if (locationFilter && $row.data("location").indexOf(locationFilter) === -1) {
+                show = false;
+            }
+            if (statusFilter && $row.data("status") !== statusFilter) {
+                show = false;
+            }
+
+            if (selectedMonths.length > 0) {
+                const rowMonth = $row.data("month").toString();
+                if (!selectedMonths.includes(rowMonth)) {
+                    show = false;
+                }
+            }
+
+            if (selectedYears.length > 0) {
+                const rowYear = $row.data("year").toString();
+                if (!selectedYears.includes(rowYear)) {
+                    show = false;
+                }
+            }
 
             $row.toggle(show);
         });
@@ -338,20 +457,20 @@
     //  RESET FILTERS
     // ═══════════════════════════════════════════════════════════
     function resetFilters() {
-        // Clear our searchable controls (visible input + hidden value)
+        // Clear searchable controls
         $('.searchable-input').val('');
         $('.searchable-dropdown-wrapper input[type="hidden"]').val('');
 
-        // Also reset any regular selects if present
-        $("#filter_company,#filter_code, #filter_license, #filter_location, #filter_status").val("");
+        // Reset regular selects
+        $("#filter_status").val("");
 
-        // Hide dropdown lists and remove no-results rows
+        // Hide dropdown lists and remove no-results
         $('.searchable-dropdown-list').hide().find('.no-results').remove();
 
-        // Trigger change on hidden inputs so any listeners react
+        // Trigger change
         $('.searchable-dropdown-wrapper input[type="hidden"]').trigger('change');
 
-        // Show all rows again
+        // Show all rows
         $("#renewalsBody tr").show();
     }
 
@@ -362,14 +481,12 @@
         $("#modalAlert").addClass("d-none").text("");
 
         if (!id) {
-            // ADD MODE
             $("#renewalId").val(0);
             $("#renewalModalLabel").text("Add New Renewal");
             $("#btnSave").text("Create");
             clearModalFields();
             $("#renewalModal").modal("show");
         } else {
-            // EDIT MODE
             $.ajax({
                 url: API_BASE + "/renewal/" + id,
                 type: "GET",
@@ -378,8 +495,11 @@
                     $("#renewalModalLabel").text("Edit Renewal");
                     $("#btnSave").text("Update");
                     $("#modalUnikey").val(item.unikey || "");
-                    $("#modalCompanyId").val(item.companyId);
-                    $("#modalLicenseTypeId").val(item.licenseTypeId);
+
+                    // Set searchable dropdowns
+                    setSearchableDropdownValue('#modalCompanyId-wrapper', item.companyId, item.companyName);
+                    setSearchableDropdownValue('#modalLicenseTypeId-wrapper', item.licenseTypeId, item.licenseType);
+
                     $("#modalCityState").val(item.cityState);
                     $("#modalAddress").val(item.address);
                     $("#modalExpiryDate").val(dateToInputFormat(item.expiryDate));
@@ -394,18 +514,24 @@
         }
     }
 
+    // Helper function to set searchable dropdown value
+    function setSearchableDropdownValue(wrapperSelector, value, text) {
+        const $wrapper = $(wrapperSelector);
+        $wrapper.find('.searchable-input').val(text);
+        $wrapper.find('input[type="hidden"]').val(value);
+    }
+
     // ═══════════════════════════════════════════════════════════
     //  CLEAR MODAL FIELDS
     // ═══════════════════════════════════════════════════════════
     function clearModalFields() {
-        // Clear searchable dropdowns
         $('#modalCompanyId-wrapper .searchable-input').val('');
         $('#modalLicenseTypeId-wrapper .searchable-input').val('');
         $("#modalCompanyId, #modalLicenseTypeId").val("");
-
         $("#modalCityState, #modalAddress, #modalExpiryDate, #modalRemarks").val("");
         $("#modalUnikey").val("");
     }
+
     // ═══════════════════════════════════════════════════════════
     //  DATE TO INPUT FORMAT
     // ═══════════════════════════════════════════════════════════
@@ -430,7 +556,6 @@
         const expiryDateRaw = $("#modalExpiryDate").val().trim();
         const remarks = $("#modalRemarks").val().trim();
 
-        // Validation
         const errors = [];
         if (!companyId) errors.push("Please select a Company.");
         if (!licenseTypeId) errors.push("Please select a License Type.");
@@ -456,7 +581,6 @@
             isActive: true,
             unikey: ($("#modalUnikey").length ? $("#modalUnikey").val() : "")
         };
-        console.log(body);
 
         const url = id === 0 ? API_BASE + "/renewal" : API_BASE + "/renewal/" + id;
         const method = id === 0 ? "POST" : "PUT";
@@ -503,29 +627,31 @@
         });
     }
 
-    function populateSearchableDropdown(wrapperSelector, items, placeholder) {
+    function populateSearchableDropdown(wrapperSelector, items, placeholder, isMultiSelect) {
+        debugger
         const $wrapper = $(wrapperSelector);
         const $input = $wrapper.find('.searchable-input');
         const $list = $wrapper.find('.searchable-dropdown-list');
         const $hiddenValue = $wrapper.find('input[type="hidden"]');
 
-        // Set placeholder
-        $input.attr('placeholder', placeholder);
+        // Add multi-select class if needed
+        if (isMultiSelect) {
+            $input.addClass('multi-select');
+        }
 
-        // Clear existing list items
+        $input.attr('placeholder', placeholder);
         $list.empty();
 
-        // Populate list items
         items.forEach(item => {
             const value = item.id || item;
             const text = item.name || item;
             $list.append(`<li data-value="${value}">${text}</li>`);
         });
 
-        // Reset input and hidden value
         $input.val('');
         $hiddenValue.val('');
     }
+
     // ═══════════════════════════════════════════════════════════
     //  SHOW TOAST
     // ═══════════════════════════════════════════════════════════

@@ -4,6 +4,30 @@
 }
 
 @section Styles {
+    <style>
+        /* Small layout rules needed for the header logo — keep these in head so they load before markup */
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .logo-img {
+            height: 42px;
+            width: auto;
+            display: block;
+        }
+        .brand-text {
+            font-weight: 900;
+            font-size: 18px;
+            color: var(--brand);
+            letter-spacing: 0.6px;
+        }
+        /* optional compact fallback when image is missing */
+        .logo .brand-text.fallback {
+            display: inline-block;
+        }
+    </style>
+
     <link href="~/css/Fontsheet.css" rel="stylesheet" />
 }
 
@@ -43,11 +67,13 @@
 
                     <!-- Header -->
                     <div class="header">
-                        <div class="logo">INVESTICA</div>
+                        @* Logo image + brand text. If you store logos in DB use the document endpoint (e.g. /document/{id}/data) or replace path below *@
+                            <img src="@(Url.Content("~/images/investicalogo.jpg"))" alt="Investica logo" class="logo-img" onerror="this.style.display='none'" />
+
                         <div class="title">INVESTICA</div>
                         <div class="crn">
                             <div class="label">CRN NO:</div>
-                            <div class="box value" id="fs_crn" contenteditable="false">\u2014</div>
+                            <div class="box value" id="fs_crn" contenteditable="false"></div>
                         </div>
                     </div>
 
@@ -68,7 +94,7 @@
                                 </div>
 
                                 <!-- fallback/display area (kept for printing/layout) -->
-                                <div id="fs_name_display" class="value" style="display:none;" contenteditable="false">\u2014</div>
+                                <div id="fs_name_display" class="value" style="display:none;" contenteditable="false"></div>
                             </div>
                         </div>
 
@@ -76,7 +102,7 @@
                         <div class="row">
                             <div class="col block">
                                 <div class="title-small">ADDRESS:</div>
-                                <div id="fs_address" class="value" contenteditable="false">\u2014</div>
+                                <div id="fs_address" class="value" contenteditable="false"></div>
                             </div>
                         </div>
 
@@ -84,12 +110,12 @@
                         <div class="row">
                             <div class="col block">
                                 <div class="title-small">CONTACT: PHONE / MOB.</div>
-                                <div id="fs_phone" class="small-value" contenteditable="false">\u2014</div>
+                                <div id="fs_phone" class="small-value" contenteditable="false"></div>
                             </div>
 
                             <div class="col block">
                                 <div class="title-small">E-MAIL ID:</div>
-                                <div id="fs_email" class="small-value" contenteditable="false">\u2014</div>
+                                <div id="fs_email" class="small-value" contenteditable="false"></div>
                             </div>
                         </div>
 
@@ -97,7 +123,7 @@
                         <div class="row">
                             <div class="col block">
                                 <div class="title-small">NATURE OF BUSINESS</div>
-                                <div id="fs_business" class="small-value" contenteditable="false">\u2014</div>
+                                <div id="fs_business" class="small-value" contenteditable="false"></div>
                             </div>
                         </div>
 
@@ -113,18 +139,18 @@
                             </div>
                             <div class="col block" style="flex:0 0 20%;">
                                 <div class="title-small">DATE OF INCORP.</div>
-                                <div id="fs_incop" class="small-value" contenteditable="false">\u2014</div>
+                                <div id="fs_incop" class="small-value" contenteditable="false"></div>
                             </div>
 
                             <div class="col block" style="flex:0 0 22%;">
                                 <div class="title-small">ENTITY PAN</div>
-                                <div id="fs_epan" class="small-value" contenteditable="false">\u2014</div>
+                                <div id="fs_epan" class="small-value" contenteditable="false"></div>
                             </div>
 
 
                             <div class="col block">
                                 <div class="title-small">CIN NUMBER</div>
-                                <div id="fs_cin" class="small-value" contenteditable="false">\u2014</div>
+                                <div id="fs_cin" class="small-value" contenteditable="false"></div>
                             </div>
 
                         </div>
@@ -148,16 +174,16 @@
                         <div class="row">
                             <div class="col block" style="flex:0 0 20%;">
                                 <div class="title-small">DOB</div>
-                                <div id="fs_dob" class="small-value" contenteditable="false">\u2014</div>
+                                <div id="fs_dob" class="small-value" contenteditable="false"></div>
                             </div>
                             <div class="col block" style="flex:0 0 16%;">
                                 <div class="title-small">GENDER</div>
-                                <div id="fs_gender" class="small-value" contenteditable="false">\u2014</div>
+                                <div id="fs_gender" class="small-value" contenteditable="false"></div>
                             </div>
 
                             <div class="col block">
                                 <div class="title-small">FATHER'S NAME</div>
-                                <div id="fs_father" class="small-value" contenteditable="false">\u2014</div>
+                                <div id="fs_father" class="small-value" contenteditable="false"></div>
                             </div>
                         </div>
 
@@ -165,7 +191,7 @@
                         <div class="row">
                             <div class="col block">
                                 <div class="title-small">MARITAL STATUS</div>
-                                <div id="fs_marital" class="small-value" contenteditable="false">\u2014</div>
+                                <div id="fs_marital" class="small-value" contenteditable="false"></div>
                             </div>
                         </div>
 
@@ -176,15 +202,15 @@
                                 <div class="grid-3" style="margin-top:2px;">
                                     <div>
                                         <div class="muted">AREA:</div>
-                                        <div id="fs_area" class="small-value" contenteditable="false">\u2014</div>
+                                        <div id="fs_area" class="small-value" contenteditable="false"></div>
                                     </div>
                                     <div>
                                         <div class="muted">WARD:</div>
-                                        <div id="fs_ward" class="small-value" contenteditable="false">\u2014</div>
+                                        <div id="fs_ward" class="small-value" contenteditable="false"></div>
                                     </div>
                                     <div>
                                         <div class="muted">ZONE:</div>
-                                        <div id="fs_zone" class="small-value" contenteditable="false">\u2014</div>
+                                        <div id="fs_zone" class="small-value" contenteditable="false"></div>
                                     </div>
                                 </div>
                             </div>
@@ -194,14 +220,14 @@
                         <div class="row">
                             <div class="col block">
                                 <div class="title-small">PRODUCT / SERVICE SOLD</div>
-                                <div id="fs_product" class="value" contenteditable="false">\u2014</div>
+                                <div id="fs_product" class="value" contenteditable="false"></div>
                             </div>
                         </div>
 
                         <!-- Documents KYC - ALL IN SINGLE ROW -->
                         <div class="row">
                             <div class="col block">
-                                <div class="title-small">DOCUMENTS / KYC SUBMITTED (\u2714)</div>
+                                <div class="title-small">DOCUMENTS / KYC SUBMITTED</div>
 
                                 <!-- Checkboxes in single row -->
                                 <div class="docs-single-row">
@@ -221,11 +247,11 @@
                                     <div class="left-source-section">
                                         <div class="block">
                                             <div class="title-small">CLIENT SOURCE</div>
-                                            <div id="fs_source" class="small-value" contenteditable="false">\u2014</div>
+                                            <div id="fs_source" class="small-value" contenteditable="false"></div>
                                         </div>
                                         <div class="block">
                                             <div class="title-small">SOURCED BY (EMP. ID)</div>
-                                            <div id="fs_sourcedby" class="small-value" contenteditable="false">\u2014</div>
+                                            <div id="fs_sourcedby" class="small-value" contenteditable="false"></div>
                                         </div>
                                     </div>
 
@@ -236,19 +262,19 @@
                                             <tbody>
                                                 <tr>
                                                     <td>ELECTRIC BILL NO:</td>
-                                                    <td id="fs_electric" contenteditable="false">\u2014</td>
+                                                    <td id="fs_electric" contenteditable="false"></td>
                                                 </tr>
                                                 <tr>
                                                     <td>PROPERTY TAX NO:</td>
-                                                    <td id="fs_proptax" contenteditable="false">\u2014</td>
+                                                    <td id="fs_proptax" contenteditable="false"></td>
                                                 </tr>
                                                 <tr>
                                                     <td>SQ FT:</td>
-                                                    <td id="fs_sqft" contenteditable="false">\u2014</td>
+                                                    <td id="fs_sqft" contenteditable="false"></td>
                                                 </tr>
                                                 <tr>
                                                     <td>OTHER DETAILS:</td>
-                                                    <td id="fs_otherdoc" contenteditable="false">\u2014</td>
+                                                    <td id="fs_otherdoc" contenteditable="false"></td>
                                                 </tr>
                                             </tbody>
                                         </table>
@@ -261,11 +287,11 @@
                         <div class="row">
                             <div class="col block">
                                 <div class="title-small">CROSS SELL OF OTHER PRODUCTS</div>
-                                <div id="fs_crosssell" class="small-value" contenteditable="false">\u2014</div>
+                                <div id="fs_crosssell" class="small-value" contenteditable="false"></div>
                             </div>
                             <div class="col block" style="flex:0 0 35%;">
                                 <div class="title-small">DETAILS</div>
-                                <div id="fs_crossdetails" class="small-value" contenteditable="false">\u2014</div>
+                                <div id="fs_crossdetails" class="small-value" contenteditable="false"></div>
                             </div>
                         </div>
 
@@ -273,7 +299,7 @@
                         <div class="row">
                             <div class="col block">
                                 <div class="title-small">COMMENTS / REMARKS</div>
-                                <div id="fs_comments" class="value" contenteditable="false" style="min-height:50px;">\u2014</div>
+                                <div id="fs_comments" class="value" contenteditable="false" style="min-height:50px;"></div>
                                
                             </div>
 
@@ -283,15 +309,15 @@
                                     <div class="left">
                                         <div>
                                             <div class="muted">LOGIN: </div>
-                                            <div id="fs_login" class="small-value" contenteditable="false">\u2014</div>
+                                            <div id="fs_login" class="small-value" contenteditable="false"></div>
                                         </div>
                                         <div>
                                             <div class="muted">PSWRD:</div>
-                                            <div id="fs_password" class="small-value" contenteditable="false">\u2014</div>
+                                            <div id="fs_password" class="small-value" contenteditable="false"></div>
                                         </div>
                                         <div class="right">
                                             <div class="muted">DETAILS:</div>
-                                            <div id="fs_details" class="details" contenteditable="false">\u2014</div>
+                                            <div id="fs_details" class="details" contenteditable="false"></div>
                                         </div>
                                     </div>
                                     <div class="col block" style="flex:0 0 42%;">
@@ -323,11 +349,11 @@
                             <div class="grid-2">
                                 <div>
                                     <div class="muted">NAME:</div>
-                                    <div id="fs_docname" class="small-value" contenteditable="false">\u2014</div>
+                                    <div id="fs_docname" class="small-value" contenteditable="false"></div>
                                 </div>
                                 <div>
                                     <div class="muted">SIGN:</div>
-                                    <div id="fs_docsign" class="small-value" contenteditable="false">\u2014</div>
+                                    <div id="fs_docsign" class="small-value" contenteditable="false"></div>
                                 </div>
                             </div>
                         </div>
