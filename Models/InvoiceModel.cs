@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace Investica.Models
 {
@@ -10,42 +12,33 @@ namespace Investica.Models
         [Required]
         public string InvoiceNumber { get; set; } = string.Empty;
 
-        public string? InvoiceTo { get; set; }
+        [Required]
+        public DateTime InvoiceDate { get; set; } = DateTime.UtcNow;
 
+        public string? InvoiceTo { get; set; }
         [Required]
         public string GstNoTo { get; set; } = string.Empty;
+        public string? InvoiceToAddress { get; set; }
 
         public string? InvoiceFrom { get; set; }
-
         [Required]
         public string GstNoFrom { get; set; } = string.Empty;
+        public string? InvoiceFromAddress { get; set; }
 
-        public string? Particulars { get; set; }
-
-        [Required]
-        public string GrossAmoutRs { get; set; } = string.Empty;
-
-        [Required]
-        public string NetAmoutRsm { get; set; } = string.Empty;
-
-        [Required]
-        public string SubTotal { get; set; } = string.Empty;
-
-        public int IGST { get; set; }
-
-        [Required]
-        public string NetTotal { get; set; } = string.Empty;
+        public decimal SubTotal { get; set; }
+        public decimal Igst { get; set; }
+        public decimal TaxAmount { get; set; }
+        public decimal NetTotal { get; set; }
+        public string? NetTotalWords { get; set; }
 
         public DateTime? CreatedDate { get; set; }
 
-        // FK Employees.Id
         public int? CreatedBy { get; set; }
-
         public DateTime? ModifiedDate { get; set; }
-
-        // FK Employees.Id
         public int? ModifiedBy { get; set; }
-
         public bool IsActive { get; set; } = true;
+
+        // child line items
+        public List<InvoiceLineItemModel> LineItems { get; set; } = new();
     }
 }

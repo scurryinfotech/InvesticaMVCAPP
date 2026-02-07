@@ -1,6 +1,6 @@
 ﻿using Investica.Models;
+using System;
 using System.Collections.Generic;
-using System.Net.Sockets;
 using System.Threading.Tasks;
 
 namespace Investica.Repository.Interface
@@ -57,15 +57,14 @@ namespace Investica.Repository.Interface
         Task<List<Ticket>> GetTicketsAsync();
         Task<Ticket?> GetTicketByIdAsync(int id);
         Task<int> CreateTicketAsync(Ticket t);
-        //Task<bool> UpdateTicketAsync(Ticket t);        this is the  old one which is working before update new Iservice
+        Task<bool> UpdateTicketAsync(Ticket ticket);
         Task<bool> SoftDeleteTicketAsync(int id, int modifiedBy);
         Task<List<Ticket>> GetTicketsByFilterAsync(TicketFilterRequest filter);
         Task<int> CreateNoteAsync(int ticketId, string noteText, int userId);
         Task<List<Log>> GetNotesByTicketIdAsync(int ticketId);
         Task<Log> GetNoteByIdAsync(int id);
-        Task<bool> UpdateTicketAsync(Ticket ticket);
 
-        // This section is for the Attachments 
+        // Attachments 
         Task<List<TicketAttachment>> GetByTicketIdAsync(int ticketId);
         Task<TicketAttachment> SaveAsync(TicketAttachment attachment);
         Task<TicketAttachmentDownload> DownloadAsync(int id);
@@ -79,10 +78,6 @@ namespace Investica.Repository.Interface
         Task<bool> DeleteAsync(int id);
         Task<DropdownData> GetDropdownDataAsync();
 
-        // helper used in duplicate renewal endpoint
-        //Task<List<UpcomingRenewalDto>> GetUpcomingRenewalsAsync();
-
-
         // FontSheet
         Task<List<FontSheet>> GetFontSheetsAsync();
         Task<FontSheet?> GetFontSheetByIdAsync(int id);
@@ -90,6 +85,7 @@ namespace Investica.Repository.Interface
         Task<bool> UpdateFontSheetAsync(FontSheet f);
         Task<bool> DeleteFontSheetAsync(int id);
         Task<List<DropdownItem>> GetEntityTypesAsync();
+
         // ShopCategoryLinks                                           
         Task<List<ShopCategoryLink>> GetShopLinksAsync();
         Task<int> CreateShopLinkAsync(ShopCategoryLink s);
@@ -105,9 +101,9 @@ namespace Investica.Repository.Interface
         Task<List<InvoiceModel>> GetInvoicesAsync();
         Task<int> CreateInvoiceAsync(InvoiceModel inv);
         Task<bool> UpdateInvoiceAsync(InvoiceModel inv);
-        //Task<List<InvoiceModel>> GetInvoiceByIdAsync(int id);
-        //Task<bool> GetInvoiceByIdAsync(int id);
-
-       
+        Task<List<InvoiceModel>> GetAllAsync();
+        Task<InvoiceModel?> GetByIdAsync(int id);
+        Task<List<InvoiceModel>> FilterAsync(string? invoiceNumber, DateTime? invoiceDate);
+        Task<bool> UpdateAsync(InvoiceModel invoice);
     }
 }

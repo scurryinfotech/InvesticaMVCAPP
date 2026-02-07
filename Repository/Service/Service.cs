@@ -2017,16 +2017,18 @@ namespace Investica.Repository
 SELECT
     Id,
     InvoiceNumber,
+    InvoiceDate,
     InvoiceTo,
     GstNoTo,
+    InvoiceToAddress,
     InvoiceFrom,
     GstNoFrom,
-    Particulars,
-    GrossAmoutRs,
-    NetAmoutRsm,
+    InvoiceFromAddress,
     SubTotal,
-    IGST,
+    Igst,
+    TaxAmount,
     NetTotal,
+    NetTotalWords,
     CreatedDate,
     CreatedBy,
     ModifiedDate,
@@ -2065,21 +2067,23 @@ WHERE 1=1
                 {
                     Id = rdr.GetInt32(0),
                     InvoiceNumber = rdr.IsDBNull(1) ? string.Empty : rdr.GetString(1),
-                    InvoiceTo = rdr.IsDBNull(2) ? null : rdr.GetString(2),
-                    GstNoTo = rdr.IsDBNull(3) ? string.Empty : rdr.GetString(3),
-                    InvoiceFrom = rdr.IsDBNull(4) ? null : rdr.GetString(4),
-                    GstNoFrom = rdr.IsDBNull(5) ? string.Empty : rdr.GetString(5),
-                    Particulars = rdr.IsDBNull(6) ? null : rdr.GetString(6),
-                    GrossAmoutRs = rdr.IsDBNull(7) ? string.Empty : rdr.GetString(7),
-                    NetAmoutRsm = rdr.IsDBNull(8) ? string.Empty : rdr.GetString(8),
-                    SubTotal = rdr.IsDBNull(9) ? string.Empty : rdr.GetString(9),
-                    IGST = rdr.IsDBNull(10) ? 0 : rdr.GetInt32(10),
-                    NetTotal = rdr.IsDBNull(11) ? string.Empty : rdr.GetString(11),
-                    CreatedDate = rdr.IsDBNull(12) ? null : rdr.GetDateTime(12),
-                    CreatedBy = rdr.IsDBNull(13) ? null : rdr.GetInt32(13),
-                    ModifiedDate = rdr.IsDBNull(14) ? null : rdr.GetDateTime(14),
-                    ModifiedBy = rdr.IsDBNull(15) ? null : rdr.GetInt32(15),
-                    IsActive = rdr.IsDBNull(16) ? true : rdr.GetBoolean(16)
+                    InvoiceDate = rdr.IsDBNull(2) ? DateTime.MinValue : rdr.GetDateTime(2),
+                    InvoiceTo = rdr.IsDBNull(3) ? null : rdr.GetString(3),
+                    GstNoTo = rdr.IsDBNull(4) ? string.Empty : rdr.GetString(4),
+                    InvoiceToAddress = rdr.IsDBNull(5) ? null : rdr.GetString(5),
+                    InvoiceFrom = rdr.IsDBNull(6) ? null : rdr.GetString(6),
+                    GstNoFrom = rdr.IsDBNull(7) ? string.Empty : rdr.GetString(7),
+                    InvoiceFromAddress = rdr.IsDBNull(8) ? null : rdr.GetString(8),
+                    SubTotal = rdr.IsDBNull(9) ? 0m : rdr.GetDecimal(9),
+                    Igst = rdr.IsDBNull(10) ? 0m : rdr.GetDecimal(10),
+                    TaxAmount = rdr.IsDBNull(11) ? 0m : rdr.GetDecimal(11),
+                    NetTotal = rdr.IsDBNull(12) ? 0m : rdr.GetDecimal(12),
+                    NetTotalWords = rdr.IsDBNull(13) ? null : rdr.GetString(13),
+                    CreatedDate = rdr.IsDBNull(14) ? null : (DateTime?)rdr.GetDateTime(14),
+                    CreatedBy = rdr.IsDBNull(15) ? null : (int?)rdr.GetInt32(15),
+                    ModifiedDate = rdr.IsDBNull(16) ? null : (DateTime?)rdr.GetDateTime(16),
+                    ModifiedBy = rdr.IsDBNull(17) ? null : (int?)rdr.GetInt32(17),
+                    IsActive = !rdr.IsDBNull(18) && rdr.GetBoolean(18)
                 });
             }
 
@@ -2088,7 +2092,12 @@ WHERE 1=1
         public async Task<List<InvoiceModel>> GetInvoicesAsync()
         {
             var list = new List<InvoiceModel>();
-            const string sql = @"SELECT Id, InvoiceNumber, InvoiceTo, GstNoTo, InvoiceFrom, GstNoFrom, Particulars, GrossAmoutRs, NetAmoutRsm, SubTotal, IGST, NetTotal, CreatedDate, CreatedBy, ModifiedDate, ModifiedBy, IsActive FROM Invoice ORDER BY CreatedDate DESC";
+            const string sql = @"
+SELECT 
+    Id, InvoiceNumber, InvoiceDate, InvoiceTo, GstNoTo, InvoiceToAddress, InvoiceFrom, GstNoFrom, InvoiceFromAddress,
+    SubTotal, Igst, TaxAmount, NetTotal, NetTotalWords, CreatedDate, CreatedBy, ModifiedDate, ModifiedBy, IsActive
+FROM Invoice
+ORDER BY CreatedDate DESC";
             await using var con = Conn();
             await con.OpenAsync();
             await using var cmd = new SqlCommand(sql, con);
@@ -2099,21 +2108,23 @@ WHERE 1=1
                 {
                     Id = rdr.GetInt32(0),
                     InvoiceNumber = rdr.IsDBNull(1) ? null : rdr.GetString(1),
-                    InvoiceTo = rdr.IsDBNull(2) ? null : rdr.GetString(2),
-                    GstNoTo = rdr.IsDBNull(3) ? null : rdr.GetString(3),
-                    InvoiceFrom = rdr.IsDBNull(4) ? null : rdr.GetString(4),
-                    GstNoFrom = rdr.IsDBNull(5) ? null : rdr.GetString(5),
-                    Particulars = rdr.IsDBNull(6) ? null : rdr.GetString(6),
-                    GrossAmoutRs = rdr.IsDBNull(7) ? null : rdr.GetString(7),
-                    NetAmoutRsm = rdr.IsDBNull(8) ? null : rdr.GetString(8),
-                    SubTotal = rdr.IsDBNull(9) ? null : rdr.GetString(9),
-                    IGST = rdr.IsDBNull(10) ? 0 : rdr.GetInt32(10),
-                    NetTotal = rdr.IsDBNull(11) ? null : rdr.GetString(11),
-                    CreatedDate = rdr.IsDBNull(12) ? null : (DateTime?)rdr.GetDateTime(12),
-                    CreatedBy = rdr.IsDBNull(13) ? null : (int?)rdr.GetInt32(13),
-                    ModifiedDate = rdr.IsDBNull(14) ? null : (DateTime?)rdr.GetDateTime(14),
-                    ModifiedBy = rdr.IsDBNull(15) ? null : (int?)rdr.GetInt32(15),
-                    IsActive = !rdr.IsDBNull(16) && rdr.GetBoolean(16)
+                    InvoiceDate = rdr.IsDBNull(2) ? DateTime.MinValue : rdr.GetDateTime(2),
+                    InvoiceTo = rdr.IsDBNull(3) ? null : rdr.GetString(3),
+                    GstNoTo = rdr.IsDBNull(4) ? null : rdr.GetString(4),
+                    InvoiceToAddress = rdr.IsDBNull(5) ? null : rdr.GetString(5),
+                    InvoiceFrom = rdr.IsDBNull(6) ? null : rdr.GetString(6),
+                    GstNoFrom = rdr.IsDBNull(7) ? null : rdr.GetString(7),
+                    InvoiceFromAddress = rdr.IsDBNull(8) ? null : rdr.GetString(8),
+                    SubTotal = rdr.IsDBNull(9) ? 0m : rdr.GetDecimal(9),
+                    Igst = rdr.IsDBNull(10) ? 0m : rdr.GetDecimal(10),
+                    TaxAmount = rdr.IsDBNull(11) ? 0m : rdr.GetDecimal(11),
+                    NetTotal = rdr.IsDBNull(12) ? 0m : rdr.GetDecimal(12),
+                    NetTotalWords = rdr.IsDBNull(13) ? null : rdr.GetString(13),
+                    CreatedDate = rdr.IsDBNull(14) ? null : (DateTime?)rdr.GetDateTime(14),
+                    CreatedBy = rdr.IsDBNull(15) ? null : (int?)rdr.GetInt32(15),
+                    ModifiedDate = rdr.IsDBNull(16) ? null : (DateTime?)rdr.GetDateTime(16),
+                    ModifiedBy = rdr.IsDBNull(17) ? null : (int?)rdr.GetInt32(17),
+                    IsActive = !rdr.IsDBNull(18) && rdr.GetBoolean(18)
                 });
             }
             return list;
@@ -2121,23 +2132,31 @@ WHERE 1=1
 
         public async Task<int> CreateInvoiceAsync(InvoiceModel inv)
         {
-            const string sql = @"INSERT INTO Invoice (InvoiceNumber, InvoiceTo, GstNoTo, InvoiceFrom, GstNoFrom, Particulars, GrossAmoutRs, NetAmoutRsm, SubTotal, IGST, NetTotal, CreatedDate, CreatedBy, ModifiedDate, ModifiedBy, IsActive)
-                                 OUTPUT INSERTED.Id
-                                 VALUES(@InvoiceNumber,@InvoiceTo,@GstNoTo,@InvoiceFrom,@GstNoFrom,@Particulars,@GrossAmoutRs,@NetAmoutRsm,@SubTotal,@IGST,@NetTotal,@CreatedDate,@CreatedBy,@ModifiedDate,@ModifiedBy,@IsActive)";
+            const string sql = @"
+INSERT INTO Invoice (
+    InvoiceNumber, InvoiceDate, InvoiceTo, GstNoTo, InvoiceToAddress, InvoiceFrom, GstNoFrom, InvoiceFromAddress,
+    SubTotal, Igst, TaxAmount, NetTotal, NetTotalWords, CreatedDate, CreatedBy, ModifiedDate, ModifiedBy, IsActive
+) OUTPUT INSERTED.Id
+VALUES (
+    @InvoiceNumber, @InvoiceDate, @InvoiceTo, @GstNoTo, @InvoiceToAddress, @InvoiceFrom, @GstNoFrom, @InvoiceFromAddress,
+    @SubTotal, @Igst, @TaxAmount, @NetTotal, @NetTotalWords, @CreatedDate, @CreatedBy, @ModifiedDate, @ModifiedBy, @IsActive
+)";
             await using var con = Conn();
             await con.OpenAsync();
             await using var cmd = new SqlCommand(sql, con);
             cmd.Parameters.AddWithValue("@InvoiceNumber", inv.InvoiceNumber ?? string.Empty);
+            cmd.Parameters.AddWithValue("@InvoiceDate", inv.InvoiceDate);
             cmd.Parameters.AddWithValue("@InvoiceTo", inv.InvoiceTo ?? (object)DBNull.Value);
             cmd.Parameters.AddWithValue("@GstNoTo", inv.GstNoTo ?? string.Empty);
+            cmd.Parameters.AddWithValue("@InvoiceToAddress", inv.InvoiceToAddress ?? (object)DBNull.Value);
             cmd.Parameters.AddWithValue("@InvoiceFrom", inv.InvoiceFrom ?? (object)DBNull.Value);
             cmd.Parameters.AddWithValue("@GstNoFrom", inv.GstNoFrom ?? string.Empty);
-            cmd.Parameters.AddWithValue("@Particulars", inv.Particulars ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@GrossAmoutRs", inv.GrossAmoutRs ?? string.Empty);
-            cmd.Parameters.AddWithValue("@NetAmoutRsm", inv.NetAmoutRsm ?? string.Empty);
-            cmd.Parameters.AddWithValue("@SubTotal", inv.SubTotal ?? string.Empty);
-            cmd.Parameters.AddWithValue("@IGST", inv.IGST);
-            cmd.Parameters.AddWithValue("@NetTotal", inv.NetTotal ?? string.Empty);
+            cmd.Parameters.AddWithValue("@InvoiceFromAddress", inv.InvoiceFromAddress ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@SubTotal", inv.SubTotal);
+            cmd.Parameters.AddWithValue("@Igst", inv.Igst);
+            cmd.Parameters.AddWithValue("@TaxAmount", inv.TaxAmount);
+            cmd.Parameters.AddWithValue("@NetTotal", inv.NetTotal);
+            cmd.Parameters.AddWithValue("@NetTotalWords", inv.NetTotalWords ?? (object)DBNull.Value);
             cmd.Parameters.AddWithValue("@CreatedDate", inv.CreatedDate ?? DateTime.UtcNow);
             cmd.Parameters.AddWithValue("@CreatedBy", inv.CreatedBy ?? (object)DBNull.Value);
             cmd.Parameters.AddWithValue("@ModifiedDate", inv.ModifiedDate ?? (object)DBNull.Value);
@@ -2147,26 +2166,43 @@ WHERE 1=1
             return id == null ? 0 : Convert.ToInt32(id);
         }
 
-        public async Task<bool> UpdateInvoiceAsync(InvoiceModel inv )
+        public async Task<bool> UpdateInvoiceAsync(InvoiceModel inv)
         {
-            const string sql = @"UPDATE Invoice SET InvoiceNumber=@InvoiceNumber, InvoiceTo=@InvoiceTo, GstNoTo=@GstNoTo,
-InvoiceFrom=@InvoiceFrom, GstNoFrom=@GstNoFrom, Particulars=@Particulars, GrossAmoutRs=@GrossAmoutRs, 
-NetAmoutRsm=@NetAmoutRsm, SubTotal=@SubTotal, IGST=@IGST, NetTotal=@NetTotal, ModifiedDate=@ModifiedDate, 
-ModifiedBy=@ModifiedBy, IsActive=@IsActive WHERE Id=@Id";
+            const string sql = @"
+UPDATE Invoice SET
+    InvoiceNumber=@InvoiceNumber,
+    InvoiceDate=@InvoiceDate,
+    InvoiceTo=@InvoiceTo,
+    GstNoTo=@GstNoTo,
+    InvoiceToAddress=@InvoiceToAddress,
+    InvoiceFrom=@InvoiceFrom,
+    GstNoFrom=@GstNoFrom,
+    InvoiceFromAddress=@InvoiceFromAddress,
+    SubTotal=@SubTotal,
+    Igst=@Igst,
+    TaxAmount=@TaxAmount,
+    NetTotal=@NetTotal,
+    NetTotalWords=@NetTotalWords,
+    ModifiedDate=@ModifiedDate,
+    ModifiedBy=@ModifiedBy,
+    IsActive=@IsActive
+WHERE Id=@Id";
             await using var con = Conn();
             await con.OpenAsync();
             await using var cmd = new SqlCommand(sql, con);
             cmd.Parameters.AddWithValue("@InvoiceNumber", inv.InvoiceNumber ?? string.Empty);
+            cmd.Parameters.AddWithValue("@InvoiceDate", inv.InvoiceDate);
             cmd.Parameters.AddWithValue("@InvoiceTo", inv.InvoiceTo ?? (object)DBNull.Value);
             cmd.Parameters.AddWithValue("@GstNoTo", inv.GstNoTo ?? string.Empty);
+            cmd.Parameters.AddWithValue("@InvoiceToAddress", inv.InvoiceToAddress ?? (object)DBNull.Value);
             cmd.Parameters.AddWithValue("@InvoiceFrom", inv.InvoiceFrom ?? (object)DBNull.Value);
             cmd.Parameters.AddWithValue("@GstNoFrom", inv.GstNoFrom ?? string.Empty);
-            cmd.Parameters.AddWithValue("@Particulars", inv.Particulars ?? (object)DBNull.Value);
-            cmd.Parameters.AddWithValue("@GrossAmoutRs", inv.GrossAmoutRs ?? string.Empty);
-            cmd.Parameters.AddWithValue("@NetAmoutRsm", inv.NetAmoutRsm ?? string.Empty);
-            cmd.Parameters.AddWithValue("@SubTotal", inv.SubTotal ?? string.Empty);
-            cmd.Parameters.AddWithValue("@IGST", inv.IGST);
-            cmd.Parameters.AddWithValue("@NetTotal", inv.NetTotal ?? string.Empty);
+            cmd.Parameters.AddWithValue("@InvoiceFromAddress", inv.InvoiceFromAddress ?? (object)DBNull.Value);
+            cmd.Parameters.AddWithValue("@SubTotal", inv.SubTotal);
+            cmd.Parameters.AddWithValue("@Igst", inv.Igst);
+            cmd.Parameters.AddWithValue("@TaxAmount", inv.TaxAmount);
+            cmd.Parameters.AddWithValue("@NetTotal", inv.NetTotal);
+            cmd.Parameters.AddWithValue("@NetTotalWords", inv.NetTotalWords ?? (object)DBNull.Value);
             cmd.Parameters.AddWithValue("@ModifiedDate", inv.ModifiedDate ?? DateTime.UtcNow);
             cmd.Parameters.AddWithValue("@ModifiedBy", inv.ModifiedBy ?? (object)DBNull.Value);
             cmd.Parameters.AddWithValue("@IsActive", inv.IsActive);
@@ -2175,7 +2211,301 @@ ModifiedBy=@ModifiedBy, IsActive=@IsActive WHERE Id=@Id";
             return rows > 0;
         }
 
-       
-        #endregion
+        public async Task<List<InvoiceModel>> GetAllAsync()
+        {
+            var invoices = new List<InvoiceModel>();
+            using var conn = new SqlConnection(_conn);
+            await conn.OpenAsync();
+
+            // Load invoices
+            var cmdInv = conn.CreateCommand();
+            cmdInv.CommandText = "SELECT * FROM dbo.Invoice WHERE IsActive = 1 ORDER BY CreatedDate DESC";
+            using var rdr = await cmdInv.ExecuteReaderAsync();
+            var ids = new List<int>();
+            while (await rdr.ReadAsync())
+            {
+                var inv = new InvoiceModel
+                {
+                    Id = (int)rdr["Id"],
+                    InvoiceNumber = rdr["InvoiceNumber"]?.ToString() ?? string.Empty,
+                    InvoiceDate = rdr["InvoiceDate"] as DateTime? ?? DateTime.MinValue,
+                    InvoiceTo = rdr["InvoiceTo"] as string,
+                    GstNoTo = rdr["GstNoTo"] as string ?? string.Empty,
+                    InvoiceToAddress = rdr["InvoiceToAddress"] as string,
+                    InvoiceFrom = rdr["InvoiceFrom"] as string,
+                    GstNoFrom = rdr["GstNoFrom"] as string ?? string.Empty,
+                    InvoiceFromAddress = rdr["InvoiceFromAddress"] as string,
+                    SubTotal = rdr["SubTotal"] as decimal? ?? 0m,
+                    Igst = rdr["Igst"] as decimal? ?? 0m,
+                    TaxAmount = rdr["TaxAmount"] as decimal? ?? 0m,
+                    NetTotal = rdr["NetTotal"] as decimal? ?? 0m,
+                    NetTotalWords = rdr["NetTotalWords"] as string,
+                    CreatedDate = rdr["CreatedDate"] as DateTime?
+                };
+                invoices.Add(inv);
+                ids.Add(inv.Id);
+            }
+            await rdr.CloseAsync();
+
+            if (ids.Count == 0) return invoices;
+
+            // Load line items for invoices
+            var cmdItems = conn.CreateCommand();
+            cmdItems.CommandText = $"SELECT * FROM dbo.InvoiceLineItem WHERE InvoiceId IN ({string.Join(",", ids)}) ORDER BY InvoiceId, LineOrder";
+            using var rdrItems = await cmdItems.ExecuteReaderAsync();
+            while (await rdrItems.ReadAsync())
+            {
+                var invoiceId = (int)rdrItems["InvoiceId"];
+                var item = new InvoiceLineItemModel
+                {
+                    Id = (int)rdrItems["Id"],
+                    InvoiceId = invoiceId,
+                    LineOrder = rdrItems["LineOrder"] as int? ?? 0,
+                    ItemType = rdrItems["ItemType"] as string ?? "data",
+                    HeadingText = rdrItems["HeadingText"] as string,
+                    Particulars = rdrItems["Particulars"] as string,
+                    GrossAmount = rdrItems["GrossAmount"] as decimal?,
+                    NetAmount = rdrItems["NetAmount"] as decimal?,
+                    CreatedDate = rdrItems["CreatedDate"] as DateTime?
+                };
+
+                var parent = invoices.Find(x => x.Id == invoiceId);
+                if (parent != null)
+                {
+                    parent.LineItems.Add(item);
+                }
+            }
+            await rdrItems.CloseAsync();
+
+            return invoices;
+        }
+
+        public async Task<InvoiceModel?> GetByIdAsync(int id)
+        {
+            using var conn = new SqlConnection(_conn);
+            await conn.OpenAsync();
+
+            var cmd = conn.CreateCommand();
+            cmd.CommandText = "SELECT * FROM dbo.Invoice WHERE Id = @Id";
+            cmd.Parameters.Add(new SqlParameter("@Id", SqlDbType.Int) { Value = id });
+
+            using var rdr = await cmd.ExecuteReaderAsync();
+            InvoiceModel? inv = null;
+            if (await rdr.ReadAsync())
+            {
+                inv = new InvoiceModel
+                {
+                    Id = (int)rdr["Id"],
+                    InvoiceNumber = rdr["InvoiceNumber"]?.ToString() ?? string.Empty,
+                    InvoiceDate = rdr["InvoiceDate"] as DateTime? ?? DateTime.MinValue,
+                    InvoiceTo = rdr["InvoiceTo"] as string,
+                    GstNoTo = rdr["GstNoTo"] as string ?? string.Empty,
+                    InvoiceToAddress = rdr["InvoiceToAddress"] as string,
+                    InvoiceFrom = rdr["InvoiceFrom"] as string,
+                    GstNoFrom = rdr["GstNoFrom"] as string ?? string.Empty,
+                    InvoiceFromAddress = rdr["InvoiceFromAddress"] as string,
+                    SubTotal = rdr["SubTotal"] as decimal? ?? 0m,
+                    Igst = rdr["Igst"] as decimal? ?? 0m,
+                    TaxAmount = rdr["TaxAmount"] as decimal? ?? 0m,
+                    NetTotal = rdr["NetTotal"] as decimal? ?? 0m,
+                    NetTotalWords = rdr["NetTotalWords"] as string,
+                    CreatedDate = rdr["CreatedDate"] as DateTime?
+                };
+            }
+            await rdr.CloseAsync();
+
+            if (inv == null) return null;
+
+            var cmdItems = conn.CreateCommand();
+            cmdItems.CommandText = "SELECT * FROM dbo.InvoiceLineItem WHERE InvoiceId = @InvoiceId ORDER BY LineOrder";
+            cmdItems.Parameters.Add(new SqlParameter("@InvoiceId", SqlDbType.Int) { Value = id });
+
+            using var rdrItems = await cmdItems.ExecuteReaderAsync();
+            while (await rdrItems.ReadAsync())
+            {
+                var item = new InvoiceLineItemModel
+                {
+                    Id = (int)rdrItems["Id"],
+                    InvoiceId = id,
+                    LineOrder = rdrItems["LineOrder"] as int? ?? 0,
+                    ItemType = rdrItems["ItemType"] as string ?? "data",
+                    HeadingText = rdrItems["HeadingText"] as string,
+                    Particulars = rdrItems["Particulars"] as string,
+                    GrossAmount = rdrItems["GrossAmount"] as decimal?,
+                    NetAmount = rdrItems["NetAmount"] as decimal?,
+                    CreatedDate = rdrItems["CreatedDate"] as DateTime?
+                };
+                inv.LineItems.Add(item);
+            }
+            await rdrItems.CloseAsync();
+
+            return inv;
+        }
+
+        public async Task<List<InvoiceModel>> FilterAsync(string? invoiceNumber, DateTime? invoiceDate)
+        {
+            var invoices = new List<InvoiceModel>();
+            using var conn = new SqlConnection(_conn);
+            await conn.OpenAsync();
+
+            var cmd = conn.CreateCommand();
+            var where = "WHERE IsActive = 1";
+            if (!string.IsNullOrEmpty(invoiceNumber))
+            {
+                where += " AND InvoiceNumber LIKE @InvoiceNumber";
+                cmd.Parameters.Add(new SqlParameter("@InvoiceNumber", SqlDbType.NVarChar, 200) { Value = $"%{invoiceNumber}%" });
+            }
+            if (invoiceDate.HasValue && invoiceDate.Value != DateTime.MinValue)
+            {
+                where += " AND InvoiceDate = @InvoiceDate";
+                cmd.Parameters.Add(new SqlParameter("@InvoiceDate", SqlDbType.Date) { Value = invoiceDate.Value.Date });
+            }
+
+            cmd.CommandText = $"SELECT * FROM dbo.Invoice {where} ORDER BY CreatedDate DESC";
+
+            using var rdr = await cmd.ExecuteReaderAsync();
+            var ids = new List<int>();
+            while (await rdr.ReadAsync())
+            {
+                var inv = new InvoiceModel
+                {
+                    Id = (int)rdr["Id"],
+                    InvoiceNumber = rdr["InvoiceNumber"]?.ToString() ?? string.Empty,
+                    InvoiceDate = rdr["InvoiceDate"] as DateTime? ?? DateTime.MinValue,
+                    InvoiceTo = rdr["InvoiceTo"] as string,
+                    GstNoTo = rdr["GstNoTo"] as string ?? string.Empty,
+                    InvoiceToAddress = rdr["InvoiceToAddress"] as string,
+                    InvoiceFrom = rdr["InvoiceFrom"] as string,
+                    GstNoFrom = rdr["GstNoFrom"] as string ?? string.Empty,
+                    InvoiceFromAddress = rdr["InvoiceFromAddress"] as string,
+                    SubTotal = rdr["SubTotal"] as decimal? ?? 0m,
+                    Igst = rdr["Igst"] as decimal? ?? 0m,
+                    TaxAmount = rdr["TaxAmount"] as decimal? ?? 0m,
+                    NetTotal = rdr["NetTotal"] as decimal? ?? 0m,
+                    NetTotalWords = rdr["NetTotalWords"] as string,
+                    CreatedDate = rdr["CreatedDate"] as DateTime?
+                };
+                invoices.Add(inv);
+                ids.Add(inv.Id);
+            }
+            await rdr.CloseAsync();
+
+            if (ids.Count == 0) return invoices;
+
+            var cmdItems = conn.CreateCommand();
+            cmdItems.CommandText = $"SELECT * FROM dbo.InvoiceLineItem WHERE InvoiceId IN ({string.Join(",", ids)}) ORDER BY InvoiceId, LineOrder";
+            using var rdrItems = await cmdItems.ExecuteReaderAsync();
+            while (await rdrItems.ReadAsync())
+            {
+                var invoiceId = (int)rdrItems["InvoiceId"];
+                var item = new InvoiceLineItemModel
+                {
+                    Id = (int)rdrItems["Id"],
+                    InvoiceId = invoiceId,
+                    LineOrder = rdrItems["LineOrder"] as int? ?? 0,
+                    ItemType = rdrItems["ItemType"] as string ?? "data",
+                    HeadingText = rdrItems["HeadingText"] as string,
+                    Particulars = rdrItems["Particulars"] as string,
+                    GrossAmount = rdrItems["GrossAmount"] as decimal?,
+                    NetAmount = rdrItems["NetAmount"] as decimal?,
+                    CreatedDate = rdrItems["CreatedDate"] as DateTime?
+                };
+
+                var parent = invoices.Find(x => x.Id == invoiceId);
+                if (parent != null)
+                {
+                    parent.LineItems.Add(item);
+                }
+            }
+            await rdrItems.CloseAsync();
+
+            return invoices;
+        }
+
+        public async Task<bool> UpdateAsync(InvoiceModel invoice)
+        {
+            using var conn = new SqlConnection(_conn);
+            await conn.OpenAsync();
+
+            using var tx = conn.BeginTransaction();
+            try
+            {
+                // Update invoice master
+                var cmd = conn.CreateCommand();
+                cmd.Transaction = tx;
+                cmd.CommandText = @"
+UPDATE dbo.Invoice SET
+    InvoiceNumber = @InvoiceNumber,
+    InvoiceDate = @InvoiceDate,
+    InvoiceTo = @InvoiceTo,
+    GstNoTo = @GstNoTo,
+    InvoiceToAddress = @InvoiceToAddress,
+    InvoiceFrom = @InvoiceFrom,
+    GstNoFrom = @GstNoFrom,
+    InvoiceFromAddress = @InvoiceFromAddress,
+    SubTotal = @SubTotal,
+    Igst = @Igst,
+    TaxAmount = @TaxAmount,
+    NetTotal = @NetTotal,
+    NetTotalWords = @NetTotalWords,
+    ModifiedDate = GETDATE()
+WHERE Id = @Id";
+
+                cmd.Parameters.Add(new SqlParameter("@InvoiceNumber", SqlDbType.NVarChar, 200) { Value = invoice.InvoiceNumber ?? (object)DBNull.Value });
+                cmd.Parameters.Add(new SqlParameter("@InvoiceDate", SqlDbType.Date) { Value = invoice.InvoiceDate.Date });
+                cmd.Parameters.Add(new SqlParameter("@InvoiceTo", SqlDbType.NVarChar, 300) { Value = (object?)invoice.InvoiceTo ?? DBNull.Value });
+                cmd.Parameters.Add(new SqlParameter("@GstNoTo", SqlDbType.NVarChar, 50) { Value = invoice.GstNoTo ?? (object)DBNull.Value });
+                cmd.Parameters.Add(new SqlParameter("@InvoiceToAddress", SqlDbType.NVarChar, -1) { Value = (object?)invoice.InvoiceToAddress ?? DBNull.Value });
+                cmd.Parameters.Add(new SqlParameter("@InvoiceFrom", SqlDbType.NVarChar, 300) { Value = (object?)invoice.InvoiceFrom ?? DBNull.Value });
+                cmd.Parameters.Add(new SqlParameter("@GstNoFrom", SqlDbType.NVarChar, 50) { Value = invoice.GstNoFrom ?? (object)DBNull.Value });
+                cmd.Parameters.Add(new SqlParameter("@InvoiceFromAddress", SqlDbType.NVarChar, -1) { Value = (object?)invoice.InvoiceFromAddress ?? DBNull.Value });
+                cmd.Parameters.Add(new SqlParameter("@SubTotal", SqlDbType.Decimal) { Precision = 18, Scale = 2, Value = invoice.SubTotal });
+                cmd.Parameters.Add(new SqlParameter("@Igst", SqlDbType.Decimal) { Precision = 18, Scale = 2, Value = invoice.Igst });
+                cmd.Parameters.Add(new SqlParameter("@TaxAmount", SqlDbType.Decimal) { Precision = 18, Scale = 2, Value = invoice.TaxAmount });
+                cmd.Parameters.Add(new SqlParameter("@NetTotal", SqlDbType.Decimal) { Precision = 18, Scale = 2, Value = invoice.NetTotal });
+                cmd.Parameters.Add(new SqlParameter("@NetTotalWords", SqlDbType.NVarChar, 300) { Value = (object?)invoice.NetTotalWords ?? DBNull.Value });
+                cmd.Parameters.Add(new SqlParameter("@Id", SqlDbType.Int) { Value = invoice.Id });
+
+                await cmd.ExecuteNonQueryAsync();
+
+                // Delete existing line items for invoice and re-insert (simple and safe)
+                var del = conn.CreateCommand();
+                del.Transaction = tx;
+                del.CommandText = "DELETE FROM dbo.InvoiceLineItem WHERE InvoiceId = @InvoiceId";
+                del.Parameters.Add(new SqlParameter("@InvoiceId", SqlDbType.Int) { Value = invoice.Id });
+                await del.ExecuteNonQueryAsync();
+
+                // Insert new items
+                var insert = conn.CreateCommand();
+                insert.Transaction = tx;
+                insert.CommandText = @"
+INSERT INTO dbo.InvoiceLineItem (InvoiceId, LineOrder, ItemType, HeadingText, Particulars, GrossAmount, NetAmount, CreatedDate)
+VALUES (@InvoiceId, @LineOrder, @ItemType, @HeadingText, @Particulars, @GrossAmount, @NetAmount, GETDATE())";
+
+                foreach (var item in invoice.LineItems)
+                {
+                    insert.Parameters.Clear();
+                    insert.Parameters.Add(new SqlParameter("@InvoiceId", SqlDbType.Int) { Value = invoice.Id });
+                    insert.Parameters.Add(new SqlParameter("@LineOrder", SqlDbType.Int) { Value = item.LineOrder });
+                    insert.Parameters.Add(new SqlParameter("@ItemType", SqlDbType.NVarChar, 20) { Value = item.ItemType });
+                    insert.Parameters.Add(new SqlParameter("@HeadingText", SqlDbType.NVarChar, 300) { Value = (object?)item.HeadingText ?? DBNull.Value });
+                    insert.Parameters.Add(new SqlParameter("@Particulars", SqlDbType.NVarChar, -1) { Value = (object?)item.Particulars ?? DBNull.Value });
+                    insert.Parameters.Add(new SqlParameter("@GrossAmount", SqlDbType.Decimal) { Precision = 18, Scale = 2, Value = (object?)item.GrossAmount ?? DBNull.Value });
+                    insert.Parameters.Add(new SqlParameter("@NetAmount", SqlDbType.Decimal) { Precision = 18, Scale = 2, Value = (object?)item.NetAmount ?? DBNull.Value });
+                    await insert.ExecuteNonQueryAsync();
+                }
+
+                await tx.CommitAsync();
+                return true;
+            }
+            catch
+            {
+                await tx.RollbackAsync();
+                throw;
+            }
+        }
     }
+
+
+    #endregion
 }
