@@ -577,6 +577,99 @@ namespace Investica.Repository
         }
         #endregion
 
+        #region entitytypes
+        public async Task<List<EntityType>> GetEntitiesAsync()
+        {
+            var list = new List<EntityType>();
+            const string sql = @"SELECT Id, EntityType, CreatedDate, CreatedBy, ModifiedDate, ModifiedBy, IsActive FROM EntitType ORDER BY EntityType";
+            await using var con = Conn();
+            await con.OpenAsync();
+            await using var cmd = new SqlCommand(sql, con);
+            await using var rdr = await cmd.ExecuteReaderAsync();
+            while (await rdr.ReadAsync())
+            {
+                list.Add(new EntityType
+                {
+                    Id = rdr.GetInt32(0),
+                    Name = rdr.IsDBNull(1) ? string.Empty : rdr.GetString(1),
+                    CreatedDate = rdr.IsDBNull(2) ? null : rdr.GetDateTime(2),
+                    // CreatedBy and ModifiedBy are not currently in the EntityType model — ignore or extend model if needed
+                    ModifiedDate = rdr.IsDBNull(4) ? null : rdr.GetDateTime(4),
+                    IsActive = !rdr.IsDBNull(6) && rdr.GetBoolean(6)
+                });
+            }
+            return list;
+        }
+
+        public async Task<EntityType?> GetEntityByIdAsync(int id)
+        {
+            const string sql = @"SELECT Id, EntityType, CreatedDate, CreatedBy, ModifiedDate, ModifiedBy, IsActive FROM EntitType WHERE Id = @Id";
+            await using var con = Conn();
+            await con.OpenAsync();
+            await using var cmd = new SqlCommand(sql, con);
+            cmd.Parameters.AddWithValue("@Id", id);
+            await using var rdr = await cmd.ExecuteReaderAsync();
+            if (await rdr.ReadAsync())
+            {
+                return new EntityType
+                {
+                    Id = rdr.GetInt32(0),
+                    Name = rdr.IsDBNull(1) ? string.Empty : rdr.GetString(1),
+                    CreatedDate = rdr.IsDBNull(2) ? null : rdr.GetDateTime(2),
+                    ModifiedDate = rdr.IsDBNull(4) ? null : rdr.GetDateTime(4),
+                    IsActive = !rdr.IsDBNull(6) && rdr.GetBoolean(6)
+                };
+            }
+            return null;
+        }
+
+        public async Task<int> CreateEntityAsync(EntityType e)
+        {
+            const string sql = @"INSERT INTO EntitType (EntityType, CreatedDate, CreatedBy, IsActive) 
+                                 OUTPUT INSERTED.Id
+                                 VALUES (@EntityType, @CreatedDate, @CreatedBy, @IsActive)";
+            await using var con = Conn();
+            await con.OpenAsync();
+            await using var cmd = new SqlCommand(sql, con);
+            cmd.Parameters.AddWithValue("@EntityType", e.Name ?? string.Empty);
+            cmd.Parameters.AddWithValue("@CreatedDate", e.CreatedDate ?? DateTime.UtcNow);
+            cmd.Parameters.AddWithValue("@CreatedBy", DBNull.Value);
+            cmd.Parameters.AddWithValue("@IsActive", e.IsActive);
+            var id = await cmd.ExecuteScalarAsync();
+            return id == null ? 0 : Convert.ToInt32(id);
+        }
+
+        public async Task<bool> UpdateEntityAsync(EntityType e)
+        {
+            const string sql = @"UPDATE EntitType 
+                                 SET EntityType = @EntityType, ModifiedDate = @ModifiedDate, ModifiedBy = @ModifiedBy, IsActive = @IsActive 
+                                 WHERE Id = @Id";
+            await using var con = Conn();
+            await con.OpenAsync();
+            await using var cmd = new SqlCommand(sql, con);
+            cmd.Parameters.AddWithValue("@EntityType", e.Name ?? string.Empty);
+            cmd.Parameters.AddWithValue("@ModifiedDate", e.ModifiedDate ?? DateTime.UtcNow);
+            cmd.Parameters.AddWithValue("@ModifiedBy", DBNull.Value);
+            cmd.Parameters.AddWithValue("@IsActive", e.IsActive);
+            cmd.Parameters.AddWithValue("@Id", e.Id);
+            var rows = await cmd.ExecuteNonQueryAsync();
+            return rows > 0;
+        }
+
+        public async Task<bool> SoftDeleteEntityAsync(int id, int modifiedBy)
+        {
+            const string sql = @"UPDATE EntitType SET IsActive = 0, ModifiedDate = @ModifiedDate, ModifiedBy = @ModifiedBy WHERE Id = @Id";
+            await using var con = Conn();
+            await con.OpenAsync();
+            await using var cmd = new SqlCommand(sql, con);
+            cmd.Parameters.AddWithValue("@ModifiedDate", DateTime.UtcNow);
+            cmd.Parameters.AddWithValue("@ModifiedBy", modifiedBy);
+            cmd.Parameters.AddWithValue("@Id", id);
+            var rows = await cmd.ExecuteNonQueryAsync();
+            return rows > 0;
+        }
+        #endregion
+
         #region Tickets
         // Tickets - fixed column order to include CompanyAddress in SELECT so mapping uses correct indexes
         public async Task<List<Ticket>> GetTicketsAsync()
