@@ -669,6 +669,44 @@ namespace Investica.Controllers
 
         #region  Invoce Management
 
+
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
+        {
+            var list = await _service.GetAllAsync();
+            return Ok(list);
+        }
+
+        [HttpGet("filter")]
+        public async Task<IActionResult> Filter([FromQuery] string? invoiceNumber, [FromQuery] DateTime? invoiceDate)
+        {
+            var list = await _service.FilterAsync(invoiceNumber, invoiceDate);
+            return Ok(list);
+        }
+
+        [HttpPut("{id:int}")]
+        public async Task<IActionResult> Update(int id, [FromBody] InvoiceModel model)
+        {
+            if (model == null || model.Id != id)
+            {
+                return BadRequest("Invoice payload invalid or Id mismatch.");
+            }
+
+            // assign LineOrder if missing
+            if (model.LineItems != null)
+            {
+                int order = 1;
+                foreach (var li in model.LineItems.OrderBy(x => x.LineOrder))
+                {
+                    li.LineOrder = order++;
+                }
+            }
+
+            var result = await _service.UpdateAsync(model);
+            if (result) return Ok(model);
+            return StatusCode(500, "Unable to update invoice");
+        }
+
         [HttpGet("invoice/filter")]
         public async Task<IActionResult> FilterInvoice([FromQuery] InvoiceFilterRequest filter)
         {
